@@ -9,17 +9,19 @@ num_layers = 9
 num_params_per_layer = 1
 total_num_params = num_layers * num_params_per_layer
 
-num_training_points = 30  # Increase the number of training points
+num_training_points = 10  # Increase the number of training points
 training_inputs = np.linspace(0, 10, num_training_points)  # Use np.linspace for even distribution
-training_iterations = 200
+training_iterations = 20
+reruns = 5  #how many times should this be evaluated
+prediction = 100  #how much should be predicted
 
 dev = qml.device("default.qubit", wires=num_qubits)
 opt = qml.GradientDescentOptimizer(0.001)
+trained_params_list = []
 
 
 def f(x):
-    return np.sin(x)
-    #  return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
+    return np.sin(x)  #  return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
 
 
 def guess_starting_params():
@@ -71,31 +73,35 @@ def cost(params, x, target):
     return ((predicted_output - target) ** 2) / 2
 
 
-def train_circuit(training_params, num_iterations):
-    print("Training the circuit...")
+def train_circuit(training_params, num_iterations, prediction_num):
+    print("Training the circuit "+str(prediction_num)+"...")
+    runinfo = str(prediction_num)+"/"+str(reruns)
     for iteration in range(num_iterations):
         for training_x, training_y in training_data:
             training_params = opt.step(cost, training_params, x=training_x, target=training_y)
-
         if iteration % 10 == 0:
             print(f"Iteration {iteration}:")
             for training_x, training_y in training_data:
                 predicted_output = circuit(training_params, training_x)
                 error = np.abs(predicted_output - training_y)
                 print(
-                    f"Input: {training_x}, Expected: {training_y:.4f}, Predicted: {predicted_output:.4f}, Error: {error:.4f}")
+                    f"Run: {runinfo} Input: {training_x}, Expected: {training_y:.4f}, Predicted: {predicted_output:.4f}, Error: {error:.4f}")
     return training_params
 
-def evaluate_circuit(final_params):
+
+def evaluate_circuit(params_list: list):
     print("Evaluating the trained circuit...")
-    print(final_params)
-    x_values = np.linspace(-3 * np.pi, 6 * np.pi, 100)  # Define range for plotting
+    x_values = np.linspace(-3 * np.pi, 6 * np.pi+prediction, 100)  # Define range for plotting
     actual_ouput = f(x_values)
-    predicted_outputs = [circuit(final_params, x) for x in x_values]
     plt.ylim(-2, 2)
     plt.grid(True)
     plt.plot(x_values, actual_ouput, label="Actual f(x)")
-    plt.plot(x_values, predicted_outputs, label="Predicted Sin")
+    for i in range(0 , len(params_list)):
+        final_params = params_list[i]
+        print(final_params)
+        predicted_outputs = [circuit(final_params, x) for x in x_values]
+        plt.plot(x_values, predicted_outputs, label="predicted_output"+str(i))
+    #plt.plot(x_values, avarage_output, label="Avarage")
     plt.legend()
     plt.xlabel("x")
     plt.ylabel("Sin(x)")
@@ -105,7 +111,12 @@ def evaluate_circuit(final_params):
 
 training_data = [(x, f(x)) for x in training_inputs]
 
-for i in range(30):
+for j in range(reruns):
     starting_params = guess_starting_params()
-    trained_params = train_circuit(starting_params, training_iterations)
-    evaluate_circuit(trained_params)
+    trained_params = train_circuit(starting_params, training_iterations, j+1)
+    trained_params_list.append(trained_params)
+
+#average_params = circuit(np.array(trained_params_list).mean(axis=0), x=training_inputs)
+#print(average_params)
+#print(trained_params_list)
+evaluate_circuit(trained_params_list)
