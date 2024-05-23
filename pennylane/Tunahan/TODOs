@@ -1,0 +1,18 @@
+Ich denke, der nächste Schritt ist, die Daten stochastisch zu machen.
+
+ZB den Sinus mit gausschem Rauschen mit sigma=0,1 zu überlagern.
+
+Dann den Fit machen.
+Dann das VQC mit shots auszuwerten und zu sehen, welche Verteilung sich ergibt.
+
+
+
+Wenn das sinnvoll aussehen sollte,
+dann wären die nächsten Schritte komplexeres Rauschen zu addieren,
+zunächst heteroskedastisch, zB gaussches Rauschen mit sigma=phi/max_phi
+
+Wenn bisher y=sin(phi).
+
+Und noch schwieriger, bimodal,
+wobei die y-Werte gezogen werden
+aus einer Verteilung wie in https://arxiv.org/pdf/1605.07127 Fig. 5 oben.
