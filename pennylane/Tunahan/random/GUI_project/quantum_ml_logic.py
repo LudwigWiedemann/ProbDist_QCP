@@ -153,7 +153,7 @@ if __name__ == '__main__':
                 print(f"An error occurred: {e}")
                 continue
             while True:
-                if input("Change the plot settings? (Enter 'y' or 'yes' if so): ").lower() in ["yes" or "y"]:
+                if input("Change the plot settings? (Enter 'y' or 'yes' if so): ").lower() in ["yes", "y"]:
                     x_min = float(input("Enter the minimum x value: "))
                     x_max = float(input("Enter the maximum x value: "))
                     n_points = int(input("Enter the number of points: "))
