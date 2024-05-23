@@ -2,6 +2,7 @@ import pennylane as qml
 from pennylane import numpy as np
 import matplotlib.pyplot as plt
 import numpy as numpy
+import os
 
 # TODO: Create a distribution using many circuits trying to approximate sin(x) functions with noise
 
@@ -25,7 +26,7 @@ def f(x):
     # return np.sin(x) * np.cos(2*x)/2*np.sin(x)
     return np.sin(x)
     # return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
-
+training_data = [(x, f(x)) for x in training_inputs]
 
 def guess_starting_params():
     print("guessing best starting parameters ... ")
@@ -47,7 +48,6 @@ def guess_starting_params():
             best_attempt = i
     print("Best params: " + str(attempts[best_attempt]))
     return attempts[best_attempt]
-
 
 @qml.qnode(dev)
 def circuit(params, x):
@@ -135,22 +135,22 @@ def load_params(filename):
     params = numpy.fromstring(params_str, sep=',')
     return params
 
-
-training_data = [(x, f(x)) for x in training_inputs]
-
-# for i in range(30):
-#     starting_params = guess_starting_params()
-#     trained_params = train_circuit(starting_params, training_iterations)
-#     evaluate_circuit(trained_params)
-
 if __name__ == '__main__':
     while True:
-        user_input_start = input("Do you want to load a trained model? (Enter 'y' for yes and 'n' for no): ")
-        if user_input_start.lower() == 'y' or user_input_start.lower() == 'yes':
-            user_input_filename = input("Enter the filename: ")
-            trained_params = load_params(user_input_filename)
+        user_input_start = input("Do you want to load a trained model? "
+                                 "(Enter 'y' for yes and 'n' for no): ").lower() in ["yes", "y"]
+        if user_input_start:
+            try:
+                filenames = os.listdir('Saved Circuit Models')
+                for i, filename in enumerate(filenames):
+                    print(f"{i}: {filename}")
+                user_input_filename = filenames[int(input("Enter the number of the file: "))]
+                trained_params = load_params(user_input_filename)
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                continue
             while True:
-                if input("Change the plot settings? (Enter 'y' or 'yes' if so): ").lower() == "yes" or "y":
+                if input("Change the plot settings? (Enter 'y' or 'yes' if so): ").lower() in ["yes" or "y"]:
                     x_min = float(input("Enter the minimum x value: "))
                     x_max = float(input("Enter the maximum x value: "))
                     n_points = int(input("Enter the number of points: "))
