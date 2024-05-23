@@ -16,6 +16,7 @@ class QuantumMlAlgorithm:
 
     def __init__(self):
         # Define problem parameters
+        numpy.random.seed(200)
         self.num_qubits = 1
         self.num_layers = 9
         self.num_params_per_layer = 1
