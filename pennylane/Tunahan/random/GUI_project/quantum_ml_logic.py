@@ -11,7 +11,7 @@ class QuantumMlAlgorithm:
     def f(x):
         # return np.sin(x) + noise
         # return np.sin(x) * np.cos(2*x)/2*np.sin(x)
-        return np.sin(x)
+        return np.sin(x) + 0.1 * np.random.randn(len(x))
         # return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
 
     def __init__(self):
