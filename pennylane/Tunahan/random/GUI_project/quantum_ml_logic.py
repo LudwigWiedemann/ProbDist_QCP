@@ -17,7 +17,7 @@ class QuantumMlAlgorithm:
 
     def __init__(self):
         # Define problem parameters
-        numpy.random.seed(200)
+        #numpy.random.seed(200)
         self.num_qubits = 1
         self.num_layers = 9
         self.num_params_per_layer = 1
@@ -71,13 +71,13 @@ class QuantumMlAlgorithm:
             # qml.RY(params[2] / x, wires=0) geht nicht weil kein int
 
             return qml.expval(qml.PauliZ(wires=0))
+
         return _circuit(params, x)
 
     # Define some functions to use as cost function
     @staticmethod
     def i_have_no_idea(prediction, target):
         return ((prediction - target) ** 2) / 2
-
     @staticmethod
     def mean_squared_error(prediction, target):
         return np.mean((prediction - target) ** 2)
