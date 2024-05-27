@@ -1,3 +1,4 @@
+import os
 import random
 import time
 
@@ -7,6 +8,8 @@ import matplotlib.pyplot as plt
 import logging
 from pygit2 import Repository
 
+version=os.path.basename(os.path.normpath(os.path.abspath(os.getcwd())))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -15,7 +18,7 @@ logging.basicConfig(
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 rootLogger = logging.getLogger()
 
-filename = time.strftime("%d.%m.%Y-%H,%M,%S", time.gmtime())+"-"+Repository('.').head.shorthand
+filename = time.strftime("%d.%m.%Y-%H,%M,%S", time.gmtime())+"-"+version
 fileHandler = logging.FileHandler("{0}/{1}.log".format("..\Logger", filename))
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
@@ -110,8 +113,6 @@ def circuit(params, x):
                     output = output+"RZ(params["+str(i)+"] ** x)"
         counter=counter+3
     # qml.RY(params[2] / x, wires=0) geht nicht weil kein int
-
-    print("WICHTIG:"+randomStringMultiplier)
     return qml.expval(qml.PauliZ(wires=0))
 
 
@@ -175,7 +176,39 @@ def choosecircuit():
             randomStringMultiplier = randomStringMultiplier + str(ran)
 
 
+def readcircuit():
+    output = ""
+    counter = 0
+    for i in range(num_layers):
+        if randomStringXYZ[counter] == "1":
+            match randomStringMultiplier[counter]:
+                case "0":
+                    output = output+"RY(params["+str(i)+"] * x)"
+                case "1":
+                    output = output+"RY(params["+str(i)+"])"
+                case "2":
+                    output = output+"RY(params["+str(i)+"] ** x)"
+        if randomStringXYZ[counter + 1] == "1":
+            match randomStringMultiplier[counter+1]:
+                case "0":
+                    output = output+"RX(params["+str(i)+"] * x)"
+                case "1":
+                    output = output+"RX(params["+str(i)+"])"
+                case "2":
+                    output = output+"RX(params["+str(i)+"] ** x)"
+        if randomStringXYZ[counter + 2] == "1":
+            match randomStringMultiplier[counter+2]:
+                case "0":
+                    output = output+"RZ(params["+str(i)+"] * x)"
+                case "1":
+                    output = output+"RZ(params["+str(i)+"])"
+                case "2":
+                    output = output+"RZ(params["+str(i)+"] ** x)"
+        counter=counter+3
+    logging.info("Used Circuit: "+output)
+
 choosecircuit()
+readcircuit()
 for j in range(reruns):
     starting_params = guess_starting_params()
     trained_params = train_circuit(starting_params, training_iterations, j+1)
@@ -184,6 +217,6 @@ for j in range(reruns):
 average_params = np.mean(np.array(trained_params_list), axis=0)
 logging.info("average: ")
 logging.info(average_params)
-#logging.info("RandomSTringXYZ:" + randomStringXYZ)
-#logging.info("RandomSTringMult:" + randomStringMultiplier)
+logging.info("RandomSTringXYZ:" + randomStringXYZ)
+logging.info("RandomSTringMult:" + randomStringMultiplier)
 evaluate_circuit(trained_params_list,average_params)
