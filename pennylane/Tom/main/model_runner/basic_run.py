@@ -18,15 +18,18 @@ from model.basic_hybrid_model import train_hybrid_model, evaluate_model
 
 config = {
     # training data parameter
-    'num_points': 100,
-    'range_start': -5,
-    'range_end': 15,
-    'noise_level': 0.1,
+    'num_points': 200,
+    'range_start': 10,
+    'range_end': 0,
+    'noise_level': 0.3,
+    # run parmeter
+    'epochs': 100,
+    'batch_size': 15,
     # Q_layer parameter
     'n_qubits': 5,
-    'n_layers': 3,
+    'n_layers': 5,
     # Optimisation parameter
-    'learning_rate': 0.1,
+    'learning_rate': 0.05,
     'loss_function': 'mse',
 }
 

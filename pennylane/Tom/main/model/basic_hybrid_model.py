@@ -1,16 +1,26 @@
+
+import datetime
 import tensorflow as tf
 from pennylane import numpy as np
+from tensorflow.keras.callbacks import TensorBoard
 
-from model.div.metric_tools import plot_results
+from model.div.metric_tools import plot_results, TrainingPlot
 from model.div.model_shape_tools import create_quantum_circuit, create_model
 
 
 def train_hybrid_model(training_data, config):
-    quantum_circuit, weight_shapes = create_quantum_circuit(config)
+    # TensorBoard callback
+    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
+    # Custom TrainingPlot callback
+    training_plot_callback = TrainingPlot()
 
+    quantum_circuit, weight_shapes = create_quantum_circuit(config)
     model = create_model(quantum_circuit, weight_shapes, config)
+
     x_train, y_train = training_data
-    model.fit(x_train, y_train, epochs=200, batch_size=20, verbose=1)
+    model.fit(x_train, y_train, epochs=config['epochs'], batch_size=config['batch_size'], verbose=1,
+              callbacks=[tensorboard_callback, training_plot_callback])
     return model
 
 
