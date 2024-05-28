@@ -7,21 +7,23 @@ num_training_points = 60
 training_inputs = np.linspace(0, 10, num_training_points)
 
 
-def prepare_data():
-    training_data = [(x, tr.f(x)) for x in training_inputs]
-    noise = ns.white(num_training_points)
-    i = 0
-    for x, y in training_data:
-        y += noise[i]
-        i += 1
-    return training_data
+def prepare_data(num_shots):
+    training_datasets = [[]] * num_shots
+    for i in range(num_shots):
+        training_datasets[i] = [(x, tr.f(x)) for x in training_inputs]
+        noise = ns.white(num_training_points)
+        j = 0
+        for x, y in training_datasets[i]:
+            y += noise[j]
+            j += 1
+    return training_datasets
 
 
-def run():
+def run(num_shots):
     print("run")
-    training_data = prepare_data()
-    optimized_params = tr.train_params(training_data)
-    plot.plot(optimized_params, training_data, tr.f)
+    training_distributions = prepare_data(num_shots)
+    param_list = tr.train_params(training_distributions)
+    plot.plot(param_list, training_distributions, tr.f)
 
 
-run()
+run(10)
