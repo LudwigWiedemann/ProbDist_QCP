@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 def plot_results(x_test, y_test, x_train, y_train, y_pred):
     plt.figure(figsize=(10, 6))
@@ -11,3 +12,20 @@ def plot_results(x_test, y_test, x_train, y_train, y_pred):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
+class TrainingPlot(tf.keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = []
+
+    def on_epoch_end(self, epoch, logs={}):
+        self.losses.append(logs.get('loss'))
+        if epoch % 10 == 0:  # Plot every 10 epochs
+            plt.figure()
+            plt.plot(range(len(self.losses)), self.losses, label='Loss')
+            plt.xlabel('Epochs')
+            plt.ylabel('Loss')
+            plt.title('Training Loss')
+            plt.legend()
+            plt.show()
+
