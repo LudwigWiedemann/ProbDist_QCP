@@ -59,6 +59,10 @@ class QuantumMlAlgorithm:
             # for i in range(num_layers):
             #     qml.RY(params[i] * x, wires=0)
             #     qml.RY(params[i + 1] + x, wires=0)
+            # qml.StronglyEntanglingLayers(params[0], wires=range(self.num_qubits))
+            # qml.RX(x, wires=self.num_qubits)
+            # qml.StronglyEntanglingLayers(params[1], wires=range(self.num_qubits))
+
             qml.RY(params[0] * x, wires=0)
             qml.RY(params[1] * x, wires=0)
             qml.RY(params[2], wires=0)
@@ -68,6 +72,8 @@ class QuantumMlAlgorithm:
             qml.RY(params[6], wires=0)
             qml.RY(params[7], wires=0)
             qml.RY(params[8], wires=0)
+
+
             # qml.RY(params[2] / x, wires=0) geht nicht weil kein int
 
             return qml.expval(qml.PauliZ(wires=0))
