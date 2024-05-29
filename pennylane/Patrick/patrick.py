@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import logging
 from pygit2 import Repository
 
-version=os.path.basename(os.path.normpath(os.path.abspath(os.getcwd())))
+version = os.path.basename(os.path.normpath(os.path.abspath(os.getcwd())))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,7 +18,7 @@ logging.basicConfig(
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 rootLogger = logging.getLogger()
 
-filename = time.strftime("%d.%m.%Y-%H,%M,%S", time.gmtime())+"-"+version
+filename = time.strftime("%d.%m.%Y-%H,%M,%S", time.gmtime()) + "-" + version
 fileHandler = logging.FileHandler("{0}/{1}.log".format("..\Logger", filename))
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
@@ -29,22 +29,31 @@ rootLogger.addHandler(consoleHandler)
 
 # Define problem parameters
 num_qubits = 1
-randomStringXYZ: str= ""
-randomStringMultiplier: str=""
+randomStringXYZ: str = ""
+randomStringMultiplier: str = ""
 
-num_layers = 9
+num_layers = random.randint(1, 9)
 num_params_per_layer = 1
 total_num_params = num_layers * num_params_per_layer
 
-num_training_points = 10  # Increase the number of training points
+num_training_points = random.randint(1, 200)  # Increase the number of training points
 training_inputs = np.linspace(0, 10, num_training_points)  # Use np.linspace for even distribution
-training_iterations = 20
-reruns = 5  #how many times should this be evaluated
+training_iterations = random.randint(1, 200)
+reruns = 1  #how many times should this be evaluated
 prediction = 0  #how much should be predicted
 
 dev = qml.device("default.qubit", wires=num_qubits)
 opt = qml.GradientDescentOptimizer(0.001)
 trained_params_list = []
+
+logging.info("__________________________________________________________________________________________________" +
+            "\nLayers: " + str(num_layers) +
+            "\n  trainingPoints: " + str(num_training_points) +
+            "\n  training inputs: " + str(training_inputs) +
+            "\n  Iterations: " + str(training_iterations) +
+            "\n  reruns: " + str(reruns) +
+            "\n  prediction: " + str(prediction) +
+            "\n___________________________________________________________________________________________________")
 
 
 def f(x):
@@ -82,36 +91,54 @@ def circuit(params, x):
             match randomStringMultiplier[counter]:
                 case "0":
                     qml.RY(params[i] * x, wires=0)
-                    output = output+"RY(params["+str(i)+"] * x)"
+                    output = output + "RY(params[" + str(i) + "] * x)"
                 case "1":
                     qml.RY(params[i], wires=0)
-                    output = output+"RY(params["+str(i)+"])"
+                    output = output + "RY(params[" + str(i) + "])"
                 case "2":
                     qml.RY(params[i] ** x, wires=0)
-                    output = output+"RY(params["+str(i)+"] ** x)"
+                    output = output + "RY(params[" + str(i) + "] ** x)"
+                case "3":
+                    qml.RY(params[i] + x, wires=0)
+                    output = output + "RY(params[" + str(i) + " + x])"
+                case "4":
+                    qml.RY(params[i] - x, wires=0)
+                    output = output + "RY(params[" + str(i) + "] - x)"
         if randomStringXYZ[counter + 1] == "1":
-            match randomStringMultiplier[counter+1]:
+            match randomStringMultiplier[counter + 1]:
                 case "0":
                     qml.RX(params[i] * x, wires=0)
-                    output = output+"RX(params["+str(i)+"] * x)"
+                    output = output + "RX(params[" + str(i) + "] * x)"
                 case "1":
                     qml.RX(params[i], wires=0)
-                    output = output+"RX(params["+str(i)+"])"
+                    output = output + "RX(params[" + str(i) + "])"
                 case "2":
                     qml.RX(params[i] ** x, wires=0)
-                    output = output+"RX(params["+str(i)+"] ** x)"
-        if randomStringXYZ[counter + 2] == "1":
-            match randomStringMultiplier[counter+2]:
+                    output = output + "RX(params[" + str(i) + "] ** x)"
+                case "3":
+                    qml.RX(params[i] + x, wires=0)
+                    output = output + "RX(params[" + str(i) + " + x])"
+                case "4":
+                    qml.RX(params[i] - x, wires=0)
+                    output = output + "RX(params[" + str(i) + "] - x)"
+        if randomStringXYZ[counter + 2] == "5":
+            match randomStringMultiplier[counter + 2]:
                 case "0":
                     qml.RZ(params[i] * x, wires=0)
-                    output = output+"RZ(params["+str(i)+"] * x)"
+                    output = output + "RZ(params[" + str(i) + "] * x)"
                 case "1":
                     qml.RZ(params[i], wires=0)
-                    output = output+"RZ(params["+str(i)+"])"
+                    output = output + "RZ(params[" + str(i) + "])"
                 case "2":
                     qml.RZ(params[i] ** x, wires=0)
-                    output = output+"RZ(params["+str(i)+"] ** x)"
-        counter=counter+3
+                    output = output + "RZ(params[" + str(i) + "] ** x)"
+                case "3":
+                    qml.RZ(params[i] + x, wires=0)
+                    output = output + "RZ(params[" + str(i) + " + x])"
+                case "4":
+                    qml.RZ(params[i] - x, wires=0)
+                    output = output + "RZ(params[" + str(i) + "] - x)"
+        counter = counter + 3
     # qml.RY(params[2] / x, wires=0) geht nicht weil kein int
     return qml.expval(qml.PauliZ(wires=0))
 
@@ -125,8 +152,8 @@ def cost(params, x, target):
 
 
 def train_circuit(training_params, num_iterations, prediction_num):
-    logging.info("Training the circuit "+str(prediction_num)+"...")
-    runinfo = str(prediction_num)+"/"+str(reruns)
+    logging.info("Training the circuit " + str(prediction_num) + "...")
+    runinfo = str(prediction_num) + "/" + str(reruns)
     for iteration in range(num_iterations):
         for training_x, training_y in training_data:
             training_params = opt.step(cost, training_params, x=training_x, target=training_y)
@@ -142,25 +169,29 @@ def train_circuit(training_params, num_iterations, prediction_num):
 
 def evaluate_circuit(params_list: list, average_params):
     logging.info("Evaluating the trained circuit...")
-    x_values = np.linspace(-3 * np.pi, 6 * np.pi+prediction, 100)  # Define range for plotting
+    x_values = np.linspace(-3 * np.pi, 6 * np.pi + prediction, 100)  # Define range for plotting
     actual_ouput = f(x_values)
     plt.ylim(-2, 2)
     plt.grid(True)
     plt.plot(x_values, actual_ouput, label="Actual f(x)")
-    for i in range(0 , len(params_list)):
+    for i in range(0, len(params_list)):
         final_params = params_list[i]
-        logging.info("final: predicted_output"+str(i))
+        logging.info("final: predicted_output" + str(i))
         logging.info(final_params)
         predicted_outputs = [circuit(final_params, x) for x in x_values]
-        plt.plot(x_values, predicted_outputs, label="predicted_output"+str(i))
+        if i == 0:
+            plt.plot(x_values, predicted_outputs,'y--', label="predicted_output")
+        else:
+            plt.plot(x_values, predicted_outputs,'y--')
     average_outputs = [circuit(average_params, x) for x in x_values]
     plt.plot(x_values, average_outputs, label="Avarage")
     plt.legend()
     plt.xlabel("x")
     plt.ylabel("Sin(x)")
     plt.title("Actual vs. Predicted Sin")
-    plt.savefig("../Logger/"+filename+".png")
+    plt.savefig("../Logger/" + filename + ".png")
     plt.show()
+
 
 training_data = [(x, f(x)) for x in training_inputs]
 
@@ -170,9 +201,9 @@ def choosecircuit():
     global randomStringMultiplier
     for i in range(num_layers):
         for j in range(3):
-            ran = random.randint(0,1) #defines if XYZ is used
+            ran = random.randint(0, 1)  #defines if XYZ is used
             randomStringXYZ = randomStringXYZ + str(ran)
-            ran=random.randint(0,2) #defines if *1, *x or **x is used
+            ran = random.randint(0, 4)  #defines if *1, *x or **x is used
             randomStringMultiplier = randomStringMultiplier + str(ran)
 
 
@@ -183,35 +214,36 @@ def readcircuit():
         if randomStringXYZ[counter] == "1":
             match randomStringMultiplier[counter]:
                 case "0":
-                    output = output+"RY(params["+str(i)+"] * x)"
+                    output = output + "RY(params[" + str(i) + "] * x)"
                 case "1":
-                    output = output+"RY(params["+str(i)+"])"
+                    output = output + "RY(params[" + str(i) + "])"
                 case "2":
-                    output = output+"RY(params["+str(i)+"] ** x)"
+                    output = output + "RY(params[" + str(i) + "] ** x)"
         if randomStringXYZ[counter + 1] == "1":
-            match randomStringMultiplier[counter+1]:
+            match randomStringMultiplier[counter + 1]:
                 case "0":
-                    output = output+"RX(params["+str(i)+"] * x)"
+                    output = output + "RX(params[" + str(i) + "] * x)"
                 case "1":
-                    output = output+"RX(params["+str(i)+"])"
+                    output = output + "RX(params[" + str(i) + "])"
                 case "2":
-                    output = output+"RX(params["+str(i)+"] ** x)"
+                    output = output + "RX(params[" + str(i) + "] ** x)"
         if randomStringXYZ[counter + 2] == "1":
-            match randomStringMultiplier[counter+2]:
+            match randomStringMultiplier[counter + 2]:
                 case "0":
-                    output = output+"RZ(params["+str(i)+"] * x)"
+                    output = output + "RZ(params[" + str(i) + "] * x)"
                 case "1":
-                    output = output+"RZ(params["+str(i)+"])"
+                    output = output + "RZ(params[" + str(i) + "])"
                 case "2":
-                    output = output+"RZ(params["+str(i)+"] ** x)"
-        counter=counter+3
-    logging.info("Used Circuit: "+output)
+                    output = output + "RZ(params[" + str(i) + "] ** x)"
+        counter = counter + 3
+    logging.info("Used Circuit: " + output)
+
 
 choosecircuit()
 readcircuit()
 for j in range(reruns):
     starting_params = guess_starting_params()
-    trained_params = train_circuit(starting_params, training_iterations, j+1)
+    trained_params = train_circuit(starting_params, training_iterations, j + 1)
     trained_params_list.append(trained_params)
 
 average_params = np.mean(np.array(trained_params_list), axis=0)
@@ -219,4 +251,4 @@ logging.info("average: ")
 logging.info(average_params)
 logging.info("RandomSTringXYZ:" + randomStringXYZ)
 logging.info("RandomSTringMult:" + randomStringMultiplier)
-evaluate_circuit(trained_params_list,average_params)
+evaluate_circuit(trained_params_list, average_params)
