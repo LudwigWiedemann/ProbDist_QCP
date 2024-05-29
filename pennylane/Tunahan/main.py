@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as numpy
 import os
 
+import circuits as cs
+
 
 class QuantumMlAlgorithm:
 
@@ -53,24 +55,8 @@ class QuantumMlAlgorithm:
         return attempts[best_attempt]
 
     def circuit(self, params, x):
-        @qml.qnode(self.dev)
-        def _circuit(params, x):
-            # for i in range(num_layers):
-            #     qml.RY(params[i] * x, wires=0)
-            #     qml.RY(params[i + 1] + x, wires=0)
-            qml.RY(params[0] * x, wires=0)
-            qml.RY(params[1] * x, wires=0)
-            qml.RY(params[2], wires=0)
-            qml.RY(params[3], wires=0)
-            qml.RY(params[4] * x, wires=0)
-            qml.RY(params[5], wires=0)
-            qml.RY(params[6], wires=0)
-            qml.RY(params[7], wires=0)
-            qml.RY(params[8], wires=0)
-            # qml.RY(params[2] / x, wires=0) geht nicht weil kein int
-
-            return qml.expval(qml.PauliZ(wires=0))
-        return _circuit(params, x)
+        circuits = cs.Circuits(self.num_qubits, self.num_layers)
+        return circuits.ry_circuit(params, x)
 
     # Define some functions to use as cost function
     @staticmethod
