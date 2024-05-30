@@ -1,4 +1,4 @@
-from pennylane import numpy as np
+import numpy as np
 
 
 def white(num_training_points):

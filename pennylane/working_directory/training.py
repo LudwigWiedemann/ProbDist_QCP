@@ -1,5 +1,5 @@
 import pennylane as qml
-from pennylane import numpy as np
+import numpy as np
 import circuit as cir
 
 optimizer = qml.GradientDescentOptimizer(0.001)
