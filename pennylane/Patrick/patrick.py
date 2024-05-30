@@ -3,7 +3,7 @@ import random
 import time
 
 import pennylane as qml
-from pennylane import numpy as np
+import numpy as np
 import matplotlib.pyplot as plt
 import logging
 from pygit2 import Repository
@@ -87,7 +87,7 @@ def circuit(params, x):
     output = ""
     counter = 0
     for i in range(num_layers):
-        if randomStringXYZ[counter] == "1":
+        if randomStringXYZ[counter]:
             match randomStringMultiplier[counter]:
                 case "0":
                     qml.RY(params[i] * x, wires=0)
@@ -104,7 +104,7 @@ def circuit(params, x):
                 case "4":
                     qml.RY(params[i] - x, wires=0)
                     output = output + "RY(params[" + str(i) + "] - x)"
-        if randomStringXYZ[counter + 1] == "1":
+        if randomStringXYZ[counter + 1]:
             match randomStringMultiplier[counter + 1]:
                 case "0":
                     qml.RX(params[i] * x, wires=0)
@@ -121,7 +121,7 @@ def circuit(params, x):
                 case "4":
                     qml.RX(params[i] - x, wires=0)
                     output = output + "RX(params[" + str(i) + "] - x)"
-        if randomStringXYZ[counter + 2] == "5":
+        if randomStringXYZ[counter + 2]:
             match randomStringMultiplier[counter + 2]:
                 case "0":
                     qml.RZ(params[i] * x, wires=0)
@@ -201,7 +201,7 @@ def choosecircuit():
     global randomStringMultiplier
     for i in range(num_layers):
         for j in range(3):
-            ran = random.randint(0, 1)  #defines if XYZ is used
+            ran = random.randrange(True, False)  #defines if XYZ is used
             randomStringXYZ = randomStringXYZ + str(ran)
             ran = random.randint(0, 4)  #defines if *1, *x or **x is used
             randomStringMultiplier = randomStringMultiplier + str(ran)
@@ -211,7 +211,7 @@ def readcircuit():
     output = ""
     counter = 0
     for i in range(num_layers):
-        if randomStringXYZ[counter] == "1":
+        if randomStringXYZ[counter]:
             match randomStringMultiplier[counter]:
                 case "0":
                     output = output + "RY(params[" + str(i) + "] * x)"
@@ -219,7 +219,7 @@ def readcircuit():
                     output = output + "RY(params[" + str(i) + "])"
                 case "2":
                     output = output + "RY(params[" + str(i) + "] ** x)"
-        if randomStringXYZ[counter + 1] == "1":
+        if randomStringXYZ[counter + 1]:
             match randomStringMultiplier[counter + 1]:
                 case "0":
                     output = output + "RX(params[" + str(i) + "] * x)"
@@ -227,7 +227,7 @@ def readcircuit():
                     output = output + "RX(params[" + str(i) + "])"
                 case "2":
                     output = output + "RX(params[" + str(i) + "] ** x)"
-        if randomStringXYZ[counter + 2] == "1":
+        if randomStringXYZ[counter + 2]:
             match randomStringMultiplier[counter + 2]:
                 case "0":
                     output = output + "RZ(params[" + str(i) + "] * x)"
