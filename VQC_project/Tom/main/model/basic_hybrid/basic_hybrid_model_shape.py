@@ -1,12 +1,12 @@
 import pennylane as qml
 import tensorflow as tf
+from keras import Model
 
-from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.optimizers import Adam
 
 
-def create_model(quantum_circuit, weight_shapes, config):
+def create_bh_model(quantum_circuit, weight_shapes, config):
     # Classic layers
     inputs = Input(shape=(1,))
     dense1 = Dense(10, activation='relu')(inputs)
@@ -26,8 +26,10 @@ def create_model(quantum_circuit, weight_shapes, config):
     model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
     return model
 
-def create_quantum_circuit(config):
+
+def create_bh_quantum_circuit(config):
     dev = qml.device("default.qubit", wires=config['n_qubits'])
+
     @qml.qnode(dev, interface='tf')
     def quantum_circuit(inputs, weights):
         qml.AngleEmbedding(inputs, wires=range(config['n_qubits']))

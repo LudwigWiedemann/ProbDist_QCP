@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-def plot_results(x_test, y_test, x_train, y_train, y_pred):
+
+def plot_bh_results(x_test, y_test, x_train, y_train, y_pred):
     plt.figure(figsize=(10, 6))
     plt.plot(x_test.numpy(), y_test, label='True Function', color='blue')
     plt.plot(x_test.numpy(), y_pred, label='VQC Approximation', color='red')
@@ -13,8 +14,7 @@ def plot_results(x_test, y_test, x_train, y_train, y_pred):
     plt.grid(True)
     plt.show()
 
-
-class TrainingPlot(tf.keras.callbacks.Callback):
+class Bh_TrainingPlot(tf.keras.callbacks.Callback):
     def on_train_begin(self, logs={}):
         self.losses = []
 
@@ -28,4 +28,3 @@ class TrainingPlot(tf.keras.callbacks.Callback):
             plt.title('Training Loss')
             plt.legend()
             plt.show()
-
