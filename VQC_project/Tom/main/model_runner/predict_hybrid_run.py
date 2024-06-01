@@ -9,11 +9,15 @@ from VQC_project.Tom.main.model.predict_hybrid.predict_hybrid_model import PHMod
 
 config = {
     # training data parameter
-    'data_length': 600,
-    'time_steps': 240,  # Ensure this is less than the length of x_data in generate_time_series_data
-    'num_samples': 480,
-    'noise_level': 0,  # Adjust noise level as needed
-    'future_steps': 60,  # Number of future steps for prediction
+    'time_frame_start': -8 * np.pi,
+    'time_frame_end': 8 * np.pi,
+    'data_length': 600,  # How many points are in the full timeframe
+    'time_steps': 25,  # How many consecutive points are in one sample
+    'future_steps': 10,  # How many points are predicted in one sample
+    'num_samples': 1000,  # How many timeframes are generated from the timeframe
+    'noise_level': 0,  # Noise level
+    'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
+
     # run parameter
     'epochs': 25,  # Adjusted to start with a reasonable number
     'batch_size': 32,  # Keep this value for now
@@ -22,7 +26,7 @@ config = {
     'n_qubits': 5,
     'n_layers': 5,
     # Optimization parameter
-    'learning_rate': 0.007,  # Adjusted to a common starting point
+    'learning_rate': 0.003,  # Adjusted to a common starting point
     'loss_function': 'mse',
 }
 
@@ -45,7 +49,7 @@ def main():
 
     # Make predictions on the future data
     y_pred_future = model.predict(x_future)
-    x_future_flat = np.linspace(0, 8 * np.pi, config['future_steps'])  # Match future range length
+    x_future_flat = np.linspace(config['time_frame_start'], config['time_frame_end'], config['future_steps'])  # Match future range length
 
     # Debug: Print shapes and values
     print("Shapes and some values for debugging:")
