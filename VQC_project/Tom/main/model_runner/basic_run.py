@@ -1,35 +1,29 @@
-#Needs to be before
+# Needs to be before
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+from VQC_project.Tom.main.div.training_data_manager import generate_training_data
+from VQC_project.Tom.main.model.basic_hybrid.basic_hybrid_model import train_hybrid_model, evaluate_model
 
 
-import sys
+
 import time
 from silence_tensorflow import silence_tensorflow
 from pennylane import numpy as np
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-main_dir = os.path.abspath(os.path.join(current_dir, '..'))
-os.chdir(main_dir)
-sys.path.insert(0, main_dir)
-
-from div.training_data_manager import generate_training_data
-from model.basic_hybrid_model import train_hybrid_model, evaluate_model
-
 config = {
     # training data parameter
-    'num_points': 200,
+    'n_points': 200,
     'range_start': 10,
     'range_end': 0,
     'noise_level': 0.3,
-    # run parmeter
+    # run parameter
     'epochs': 100,
     'batch_size': 15,
     # Q_layer parameter
     'n_qubits': 5,
     'n_layers': 5,
-    # Optimisation parameter
-    'learning_rate': 0.05,
+    # Optimization parameter
+    'learning_rate': 0.001,
     'loss_function': 'mse',
 }
 
@@ -50,5 +44,4 @@ def main():
 if __name__ == "__main__":
     # Mutes all tf warnings, specifically the losing the complex part of the VQC layer one
     silence_tensorflow()
-
     main()
