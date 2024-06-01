@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot(param_list, distributions, f):
+def plot(param_list, distributions, f, seed):
 
     x_axis = np.linspace(0, 20, 200)
 
     firstparam = True
     for params in param_list:
-        predicted_outputs = [cir.run_circuit(params, x) for x in x_axis]
+        predicted_outputs = [cir.run_seeded_circuit(params, x, seed) for x in x_axis]
         if firstparam:
             plt.plot(x_axis, predicted_outputs, 'g--', label="Predicted Sin", alpha=0.1)
         else:

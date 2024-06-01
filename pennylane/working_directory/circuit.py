@@ -21,76 +21,37 @@ def run_circuit(params, x):
 
 
 @qml.qnode(device)
-def run_random_circuit(params, x, xyz_seed, arithmetic_seed):
-    for i in range(num_layers*3):
-        if xyz_seed[i] == "1":
-            match i % 3:
-                case 1:
-                    code_line = "qml.RX(params[" + str(i) + "]"
-                case 2:
-                    code_line = "qml.RY(params[" + str(i) + "]"
-                case 0:
-                    code_line = "qml.RZ(params[" + str(i) + "]"
-                case _:
-                    raise Exception("unexpected Value " + xyz_seed[i] + " for xyz_seed at " + i)
-                    break
-
-            match arithmetic_seed[i]:
-                case "0":
-                    code_line += ", wires=0)"
-                case "1":
-                    code_line += " * x, wires=0)"
-                case "2":
-                    code_line += " ** x, wires=0)"
-                case "3":
-                    code_line += " + x, wires=0)"
-                case "4":
-                    code_line += " - x, wires=0)"
-                case _:
-                    raise Exception("unexpected Value " + arithmetic_seed[i] + " for arithmetic_seed at " + i)
-                    break
-            exec(code_line)
+def run_seeded_circuit(params, x, seed):
+    for elements in seed:
+        layer, cir = elements
+        xyz, arithmetic = cir[0], cir[1:]
+        code_line = "qml.RY(params[" + str(layer) + "]" + str(arithmetic) + ", wires=0)"
+        exec(code_line)
+        print(code_line)
     return qml.expval(qml.PauliZ(wires=0))
 
 
-def read_circuit(params, x, xyz_seed, arithmetic_seed):
-    output = ""
-    for i in range(num_layers*3):
-        if xyz_seed[i] == "1":
-            match i % 3:
-                case 1:
-                    output += "RX(params[" + str(i) + "]"
-                case 2:
-                    output += "RY(params[" + str(i) + "]"
-                case 0:
-                    output += "RZ(params[" + str(i) + "]"
-                case _:
-                    raise Exception("unexpected Value " + xyz_seed[i] + " for xyz_seed at " + i)
-                    break
-
-            match arithmetic_seed[i]:
-                case "0":
-                    output += ")"
-                case "1":
-                    output += " * x)"
-                case "2":
-                    output += " ** x)"
-                case "3":
-                    output += " + x])"
-                case "4":
-                    output += " - x)"
-                case _:
-                    raise Exception("unexpected Value " + arithmetic_seed[i] + " for arithmetic_seed at " + i)
-                    break
-    return output
+def read_circuit(seed: [int, str]):
+    s: str = ""
+    for elements in seed:
+        layer, cir = elements
+        xyz, arithmetic = cir[0], cir[1:]
+        s += "R"+str(xyz)+"(params["+str(layer)+"]"+str(arithmetic)+") "
+    print(s)
 
 
 def randomize_circuit():
-    xyz_seed = ""
-    arithmetic_seed = ""
-    for i in range(num_layers*3):
-        ran = random.randrange(True, False)  #defines if X Y and Z is used
-        xyz_seed += str(ran)
-        ran = random.randint(0, 4)  #defines if *1, *x, **x, +x or -x is used
-        arithmetic_seed += str(ran)
-    return xyz_seed, arithmetic_seed
+    seed = []
+    for i in range(num_layers):
+        #random trakes for RX
+        if random.choice([True, False]):
+            seed.append([i, random.choice(['X*1', 'X+x', 'X-x', 'X*x', 'X**x'])])
+        #random trakes for RY
+        if random.choice([True, False]):
+            seed.append([i, random.choice(['Y*1', 'Y+x', 'Y-x', 'Y*x', 'Y**x'])])
+        #random trakes for RZ
+        if random.choice([True, False]):
+            seed.append([i, random.choice(['Z*1', 'Z+x', 'Z-x', 'Z*x', 'Z**x'])])
+    return seed
+
+print(randomize_circuit())
