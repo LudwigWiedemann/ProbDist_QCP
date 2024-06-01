@@ -3,7 +3,7 @@ import tensorflow as tf
 
 def generate_training_data(target_function, config):
     # Choose random points in range
-    x_train = np.linspace(config['range_start'], config['range_end'], config['num_points'])
+    x_train = np.linspace(config['range_start'], config['range_end'], config['n_points'])
 
     # Generate y values and add noise
     y_train = target_function(x_train)
@@ -16,3 +16,4 @@ def generate_training_data(target_function, config):
     x_train = tf.reshape(x_train, (-1, 1))
     y_train = tf.reshape(y_train, (-1, 1))
     return x_train, y_train
+
