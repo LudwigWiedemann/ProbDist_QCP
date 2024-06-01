@@ -1,4 +1,4 @@
-import pennylane as qml
+from pennylane import pennylane as qml
 import random
 
 num_qubits = 1

@@ -1,5 +1,4 @@
-
-import numpy as np
+from pennylane import numpy as np
 import noise as ns
 import training as tr
 import plotting as plot
@@ -7,7 +6,6 @@ import plotting as plot
 num_training_points = 60
 start = 0
 stop = 10
-
 
 
 def prepare_data(num_shots):
@@ -26,7 +24,6 @@ def run(num_shots):
     training_distributions = prepare_data(num_shots)
     param_list = tr.train_params(training_distributions)
     plot.plot(param_list, training_distributions, tr.f)
-
 
 
 def questions():
@@ -50,18 +47,18 @@ def questions():
     return num_training_points, start, stop, shots, runs
 
 
-while True:
-    try:
-        num_training_points, start, stop, num_shots, runs = questions()
-        break
-    except Exception as e:
-        print(e)
+# while True:
+#     try:
+#         num_training_points, start, stop, num_shots, runs = questions()
+#         break
+#     except Exception as e:
+#         print(e)
 
 training_inputs = np.linspace(start, stop, num_training_points)
-print("run")
-if runs == "inf":
-    while True:
-        run(num_shots)
-else:
-    for i in range(int(runs)):
-        run(num_shots)
+# print("run")
+# if runs == "inf":
+#     while True:
+run(3)
+# else:
+#     for i in range(int(runs)):
+#         run(num_shots)
