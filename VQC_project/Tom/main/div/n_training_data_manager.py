@@ -16,7 +16,7 @@ def generate_time_series_data(config, func):
 
     # Ensure the length of x_data is greater than time_steps
     data_length = max(time_steps + future_steps, data_length)  # Ensure a minimum length
-    x_data = np.linspace(0, 4 * np.pi, data_length)  # Extended range for more future data
+    x_data = np.linspace(config['time_frame_start'],config['time_frame_end'], data_length)  # Extended range for more future data
     y_data = func(x_data)
 
     x_train = []
@@ -35,7 +35,7 @@ def generate_time_series_data(config, func):
         # Add noise to the samples
         x_sample += np.random.normal(0, noise_level, x_sample.shape)
 
-        if np.random.rand() < 0.8:
+        if np.random.rand() < config['train_test_ratio']:
             x_train.append(x_sample)
             y_train.append(y_sample)
         else:

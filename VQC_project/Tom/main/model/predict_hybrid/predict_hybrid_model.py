@@ -5,6 +5,24 @@ import pennylane as qml
 import tensorflow as tf
 
 
+class PHModel:
+    def __init__(self, config):
+        self.config = config
+        quantum_circuit, weight_shapes = create_ph_quantum_circuit(config)
+        self.model = create_ph_model(quantum_circuit, weight_shapes, config)
+
+    def train(self, x_train, y_train):
+        history = self.model.fit(x_train, y_train, epochs=self.config['epochs'], batch_size=self.config['batch_size'])
+        return history
+
+    def evaluate(self, x_test, y_test):
+        loss = self.model.evaluate(x_test, y_test)
+        return loss
+
+    def predict(self, x):
+        return self.model.predict(x)
+
+
 def create_ph_model(quantum_circuit, weight_shapes, config):
     inputs = Input(shape=(config['time_steps'], config['input_dim']))
     lstm1 = LSTM(50, return_sequences=True)(inputs)
@@ -35,21 +53,3 @@ def create_ph_quantum_circuit(config):
 
     weight_shapes = {"weights": (config['n_layers'], config['n_qubits'], 3)}
     return quantum_circuit, weight_shapes
-
-
-class PHModel:
-    def __init__(self, config):
-        self.config = config
-        quantum_circuit, weight_shapes = create_ph_quantum_circuit(config)
-        self.model = create_ph_model(quantum_circuit, weight_shapes, config)
-
-    def train(self, x_train, y_train):
-        history = self.model.fit(x_train, y_train, epochs=self.config['epochs'], batch_size=self.config['batch_size'])
-        return history
-
-    def evaluate(self, x_test, y_test):
-        loss = self.model.evaluate(x_test, y_test)
-        return loss
-
-    def predict(self, x):
-        return self.model.predict(x)
