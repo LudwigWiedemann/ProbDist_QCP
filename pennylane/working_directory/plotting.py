@@ -6,15 +6,23 @@ from pennylane import numpy as np
 def plot(param_list, distributions, f):
 
     x_axis = np.linspace(0, 20, 200)
-
+    shots = []
     firstparam = True
     for params in param_list:
         predicted_outputs = [cir.run_circuit(params, x) for x in x_axis]
+        shots.append(predicted_outputs)
         if firstparam:
             plt.plot(x_axis, predicted_outputs, 'g--', label="Predicted Sin", alpha=0.1)
         else:
             plt.plot(x_axis, predicted_outputs, 'g--', alpha=0.1)
         firstparam = False
+
+    mean = [0.0] * len(x_axis)
+    for i in range(len(x_axis)):
+        for shot in shots:
+            mean[i] += shot[i]
+        mean[i] = mean[i] / len(shots)
+    plt.plot(x_axis, mean, label="mean", alpha=0.7)
 
 
     firstdist = True
