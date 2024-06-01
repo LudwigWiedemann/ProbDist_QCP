@@ -20,7 +20,7 @@ config = {
 
     # run parameter
     'epochs': 25,  # Adjusted to start with a reasonable number
-    'batch_size': 32,  # Keep this value for now
+    'batch_size': 64,  # Keep this value for now
     'input_dim': 1,
     # Q_layer parameter
     'n_qubits': 5,
