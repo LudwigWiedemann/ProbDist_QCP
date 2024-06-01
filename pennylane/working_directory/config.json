@@ -1,0 +1,18 @@
+{
+  "num_qubits": 4,
+  "num_layers": 5,
+  "circuit": "ry_circuit",
+
+  "probability_mode": false,
+  "shots": 0,
+
+  "training_iterations": 200,
+
+  "load_mode": false,
+  "plot_x": -10,
+  "plot_y": 10,
+  "plot_points": 10000,
+
+
+  "_comment": "Ich brauche die Rotationsmatrix und den Circuit"
+}
