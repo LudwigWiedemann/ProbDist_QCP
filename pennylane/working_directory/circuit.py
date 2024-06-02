@@ -5,10 +5,16 @@ from pennylane import numpy as np
 from logger import logger
 import save
 
+
 num_qubits = 1
 num_layers = 9
 device = qml.device("default.qubit", wires=num_qubits)
 
+
+def initialize(qubits, layers):
+    num_qubits = qubits
+    num_layers = layers
+    device = qml.device("default.qubit", wires=num_qubits)
 
 @qml.qnode(device)
 def run_circuit(params, x):

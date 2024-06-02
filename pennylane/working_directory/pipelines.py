@@ -1,10 +1,14 @@
 import ast
 
+import easygui
 import pennylane as qml
 from pennylane import numpy as np
 from autoray.autoray import nothing
 from logger import logger
+from pathlib import Path
+import os
 
+import circuit as cir
 import noise as ns
 import training as tr
 import plotting as plot
@@ -118,8 +122,6 @@ class Pipeline:
         :param plot_x: X axis of the plot
         :param plot_y: Y axis of the plot
         :param plot_points: count of points on x
-
-
         """
         differentiationline = "--------------------------------------------------------------------"
         msg = ("{" +
@@ -166,39 +168,68 @@ class Pipeline:
         """
         Loads the circuit and the rotation matrix as well as optionally used config.
         """
-        with open(f'../Saves/{filename}' + ".json", "r") as f:
-            data = json.load(f)
-            num_qbits = int(data['num_qbits: '])
-            num_layers = int(data['num_layers: '])
-            circuit= str(data['circuit: '])
-            rotation_matrix: [int] = data['rotation_matrix: '].replace(" ","").replace("\n","").strip("[array(").strip("\n").strip(")]").split(",")
-            rotation_matrix = [eval(i) for i in rotation_matrix]
-            probability_mode= bool(data['probability_mode: '])
-            shots= int(data['shots: '])
-            training_iterations= int(data['training_iterations: '])
-            load_mode= bool(data['load_mode: '])
-            plot_x_start= int(data['plot_x_start: '])
-            plot_x_stop= int(data['plot_x_stop: '])
-            plot_x_step= int(data['plot_x_step: '])
-            plot_y_start= int(data['plot_y_start: '])
-            plot_y_stop= int(data['plot_y_stop: '])
-            plot_y_step= int(data['plot_y_step: '])
-        return num_qbits,num_layers,circuit, rotation_matrix, probability_mode, shots, training_iterations, load_mode,plot_x_start, plot_x_stop, plot_x_step, plot_y_start, plot_y_stop, plot_y_step
+        with open(f'{filename.strip(".json")}' + ".json", "r") as f:
+                data = json.load(f)
+                num_qbits = int(data['num_qbits: '])
+                num_layers = int(data['num_layers: '])
+                circuit= str(data['circuit: '])
+                try:
+                    rotation_string = (data['rotation_matrix: '].replace(" ","").replace("\n","").replace("(","").replace(")","").replace("array","").strip("]").strip("["))
+                    rotation_matrix = rotation_string.split("],[")
+                    rotation_matrix_list = (i.split(",") for i in rotation_matrix)
+                    rotation_matrix_list = [[eval(i) for i in j] for j in rotation_matrix_list]
+                except Exception as e:
+                    rotation_matrix_list = [[]]
+                probability_mode= data['probability_mode: ']
+                shots= int(data['shots: '])
+                training_iterations= int(data['training_iterations: '])
+                load_mode= data['load_mode: ']
+                plot_x_start= int(data['plot_x_start: '])
+                plot_x_stop= int(data['plot_x_stop: '])
+                plot_x_step= int(data['plot_x_step: '])
+                plot_y_start= int(data['plot_y_start: '])
+                plot_y_stop= int(data['plot_y_stop: '])
+                plot_y_step= int(data['plot_y_step: '])
+        return num_qbits,num_layers,circuit, rotation_matrix_list, probability_mode, shots, training_iterations, load_mode,plot_x_start, plot_x_stop, plot_x_step, plot_y_start, plot_y_stop, plot_y_step
 
 
-def run(num_shots):
-    save.shots = num_shots
+def run(filename):
+    (num_qbits,num_layers,circuit, rotation_matrix_list,
+     probability_mode, shots, training_iterations, load_mode,
+     plot_x_start, plot_x_stop, plot_x_step, plot_y_start,
+     plot_y_stop, plot_y_step)= Pipeline.load(Pipeline,filename)
+    save.shots = shots
+    if not probability_mode:
+        shots= 1
+    cir.initialize(num_qbits, num_layers)
     gui = ParamGui()
     print("run")
-    training_distributions = gui.prepare_data(num_shots)
-    param_list = tr.train_params(training_distributions)
-    plot.plot(param_list, training_distributions, tr.f)
+    training_distributions = gui.prepare_data(shots)
+    if load_mode:
+        param_list = rotation_matrix_list
+    else:
+        param_list = tr.train_params(training_distributions, training_iterations)
+    plot.plot(param_list, training_distributions, tr.f, plot_x_start, plot_x_stop, plot_x_step, plot_y_start, plot_y_stop, plot_y_step, circuit)
     pip = Pipeline()
     pip.save(save.num_qbits, save.num_layers, save.circuit, save.rotation_matrix, save.shots, save.training_iterations,
              save.plot_x_start, save.plot_x_stop, save.plot_x_step, save.plot_y_start, save.plot_y_stop,
              save.plot_y_step)
 
 
-print(Pipeline.load(Pipeline,'02.06.2024-04,44,06-config'))
+if __name__ == '__main__':
+    try:
+        choice=easygui.buttonbox("Do you want to rerun from a previous config or from standard config", "Choose config", ["filepath", "standart"])
+        match choice:
+            case "filepath":
+                filepath = easygui.fileopenbox(msg='Please locate the config .json file',
+                                        title='Specify File', default='..\Saves\*.json',
+                                        filetypes='*.json')
+                run(filepath)
+            case "standart": run(str(Path.cwd().parent / "Saves" / "config.json"))
+            case _:
+                raise Exception("Not a valid input")
+    except Exception as e:
+        logger.error(e)
 
-run(1)
+
+
