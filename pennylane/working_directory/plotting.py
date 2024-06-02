@@ -1,22 +1,23 @@
 import circuit as cir
 import matplotlib.pyplot as plt
+from logger import logger
 import numpy as np
 import save
 
 
-def plot(param_list, distributions, f):
+def plot(param_list, distributions, f, x_start, x_stop, x_step, y_start, y_stop, y_step, circuit):
 
-    x_start=0
-    x_stop=20
-    x_step=200
-    y_start=-1
-    y_stop=1
-    y_step=1
     x_axis = np.linspace(x_start, x_stop, x_step)
 
     firstparam = True
     for params in param_list:
-        predicted_outputs = [cir.run_circuit(params, x) for x in x_axis]
+        match circuit:
+            case "run_circuit": predicted_outputs = [cir.run_circuit(params, x) for x in x_axis]
+            case "ry_circuit": predicted_outputs = [cir.Circuit.ry_circuit(params, x) for x in x_axis]
+            case "entangling_circuit" : predicted_outputs= [cir.Circuit.entangling_circuit(params, x) for x in x_axis]
+            case _ :
+                    logger.ERROR("Circuit not found!")
+                    raise InterruptedError("Circuit not found!")
         if firstparam:
             plt.plot(x_axis, predicted_outputs, 'g--', label="Predicted Sin", alpha=0.1)
         else:

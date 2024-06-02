@@ -5,7 +5,6 @@ from logger import logger
 import save
 
 optimizer = qml.GradientDescentOptimizer(0.001)
-training_iterations = 50
 
 
 def f(x):
@@ -13,7 +12,7 @@ def f(x):
     # return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
 
 
-def train_params(distributions):
+def train_params(distributions, training_iterations):
     param_list = [[]] * len(distributions)
     i = 0
     for dist in distributions:
