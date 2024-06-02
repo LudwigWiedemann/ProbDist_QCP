@@ -2,6 +2,8 @@ import pennylane as qml
 import matplotlib.pyplot as plt
 import random
 from pennylane import numpy as np
+from logger import logger
+import save
 
 num_qubits = 1
 num_layers = 9
@@ -19,6 +21,9 @@ def run_circuit(params, x):
     qml.RY(params[6], wires=0)
     qml.RY(params[7], wires=0)
     qml.RY(params[8], wires=0)
+    save.circuit="run_circuit"
+    save.num_qbits=num_qubits
+    save.num_layers=num_layers
     return qml.expval(qml.PauliZ(wires=0))
 
 
@@ -29,7 +34,10 @@ def run_seeded_circuit(params, x, seed):
         xyz, arithmetic = cir[0], cir[1:]
         code_line = "qml.RY(params[" + str(layer) + "]" + str(arithmetic) + ", wires=0)"
         exec(code_line)
-        print(code_line)
+        logger.info(code_line)
+    save.circuit="run_seeded_circuit"
+    save.num_qbits=num_qubits
+    save.num_layers=num_layers
     return qml.expval(qml.PauliZ(wires=0))
 
 
@@ -39,7 +47,7 @@ def read_circuit(seed: [int, str]):
         layer, cir = elements
         xyz, arithmetic = cir[0], cir[1:]
         s += "R"+str(xyz)+"(params["+str(layer)+"]"+str(arithmetic)+") "
-    print(s)
+    logger.info(s)
 
 
 def randomize_circuit():
@@ -115,6 +123,9 @@ class Circuits:
             qml.RY(weights[6], wires=0)
             qml.RY(weights[7], wires=0)
             qml.RY(weights[8], wires=0)
+            save.circuit="ry_circuit"
+            save.num_qbits=num_qubits
+            save.num_layers=num_layers
             return qml.expval(qml.PauliZ(wires=0))
 
         return _circuit
@@ -131,7 +142,9 @@ class Circuits:
             qml.AngleEmbedding(inputs, wires=range(self.num_qubits))
             qml.StronglyEntanglingLayers(weights, wires=range(self.num_qubits))
             return qml.expval(qml.PauliZ(wires=0))
-
+        save.circuit="entangling_circuit"
+        save.num_qbits=num_qubits
+        save.num_layers=num_layers
         return _circuit
 
     def random_circuit(self):
@@ -146,6 +159,9 @@ class Circuits:
             qml.RX(x, wires=0)
             qml.cond(mcm, qml.RY)(np.pi / 4, wires=3)
             qml.CRZ(z, wires=(3, 0))
+            save.circuit="random_circuit.py"
+            save.num_qbits=num_qubits
+            save.num_layers=num_layers
             return qml.expval(qml.Z(0)), qml.probs(op=mcm_out)
 
         return _circuit
@@ -163,7 +179,7 @@ class Circuits:
         """
         # Execute the circuit function with the provided arguments
         circuit_result = circuit_function(*args)
-        print(f"Result for given arguments is: {circuit_result}")
+        logger.info(f"Result for given arguments is: {circuit_result}")
 
         # Draw the circuit using qml.draw
         print(qml.draw(circuit_function)(*args))
@@ -172,6 +188,7 @@ class Circuits:
         qml.drawer.use_style("black_white")
         fig, ax = qml.draw_mpl(circuit_function)(*args)
         plt.show()
+        plt.savefig("../Logger/"+save.start_time+"-circuit.png")
 
 
 if __name__ == '__main__':
