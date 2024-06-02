@@ -3,8 +3,8 @@ from pennylane import numpy as np
 import circuit as cir
 
 optimizer = qml.GradientDescentOptimizer(0.001)
-training_iterations = 50
-
+training_iterations = 100
+num_params = cir.num_layers * 3
 
 def f(x):
     # return np.sin(x)
@@ -15,7 +15,7 @@ def train_params(distributions):
     param_list = [[]] * len(distributions)
     i = 0
     for dist in distributions:
-        params = guess_starting_params(9)
+        params = guess_starting_params(num_params)
         print("Training the circuit...")
         for iteration in range(training_iterations):
             for training_x, training_y in dist:

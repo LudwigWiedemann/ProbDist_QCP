@@ -4,7 +4,7 @@ import training as tr
 import plotting as plot
 
 num_training_points = 60
-start = 0
+start = 2
 stop = 10
 
 
@@ -23,6 +23,7 @@ def prepare_data(num_shots):
 def run(num_shots):
     training_distributions = prepare_data(num_shots)
     param_list = tr.train_params(training_distributions)
+    #param_list = [np.random.rand(15), np.random.rand(15), np.random.rand(15), np.random.rand(15)]
     plot.plot(param_list, training_distributions, tr.f)
 
 
@@ -58,7 +59,8 @@ training_inputs = np.linspace(start, stop, num_training_points)
 # print("run")
 # if runs == "inf":
 #     while True:
-run(3)
+# for i in range(10):
+run(2)
 # else:
 #     for i in range(int(runs)):
 #         run(num_shots)
