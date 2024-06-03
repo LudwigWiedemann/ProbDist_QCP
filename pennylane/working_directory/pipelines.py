@@ -193,7 +193,7 @@ class Pipeline:
         return num_qbits,num_layers,circuit, rotation_matrix_list, probability_mode, shots, training_iterations, load_mode,plot_x_start, plot_x_stop, plot_x_step, plot_y_start, plot_y_stop, plot_y_step
 
 
-def run(filename):
+def getfile(filename):
     (num_qbits,num_layers,circuit, rotation_matrix_list,
      probability_mode, shots, training_iterations, load_mode,
      plot_x_start, plot_x_stop, plot_x_step, plot_y_start,
@@ -201,6 +201,16 @@ def run(filename):
     save.shots = shots
     if not probability_mode:
         shots= 1
+    run(num_qbits,num_layers,circuit, rotation_matrix_list,
+        probability_mode, shots, training_iterations, load_mode,
+        plot_x_start, plot_x_stop, plot_x_step, plot_y_start,
+        plot_y_stop, plot_y_step)
+
+
+def run(num_qbits, num_layers, circuit, rotation_matrix_list,
+        probability_mode, shots, training_iterations, load_mode,
+        plot_x_start, plot_x_stop, plot_x_step, plot_y_start,
+        plot_y_stop, plot_y_step):
     cir.initialize(num_qbits, num_layers)
     gui = ParamGui()
     print("run")
@@ -224,8 +234,8 @@ if __name__ == '__main__':
                 filepath = easygui.fileopenbox(msg='Please locate the config .json file',
                                         title='Specify File', default='..\Saves\*.json',
                                         filetypes='*.json')
-                run(filepath)
-            case "standart": run(str(Path.cwd().parent / "Saves" / "config.json"))
+                getfile(filepath)
+            case "standart": getfile(str(Path.cwd().parent / "Saves" / "config.json"))
             case _:
                 raise Exception("Not a valid input")
     except Exception as e:
