@@ -1,23 +1,28 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 def plot_metrics(history):
-    # Plot the training loss
+    # Plot the training loss and validation loss if available
     plt.figure()
-    plt.plot(history.history['loss'], label='Loss')
+    plt.plot(history.history['loss'], label='Training Loss')
+    if 'val_loss' in history.history:
+        plt.plot(history.history['val_loss'], label='Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('Training Loss')
+    plt.title('Training and Validation Loss')
     plt.legend()
     plt.show()
 
 
-def plot_predictions(x_data, y_real, y_pred, title='Real vs Predicted'):
-    # Plot the real vs predicted values
+def plot_predictions(x_data, y_real, y_pred, title='Real vs Predicted', confidence_interval=None):
     plt.figure()
     plt.plot(x_data, y_real, label='Real', color='blue')
     plt.plot(x_data, y_pred, label='Predicted', color='red')
+
+    if confidence_interval is not None:
+        lower_bound, upper_bound = confidence_interval
+        plt.fill_between(x_data, lower_bound, upper_bound, color='red', alpha=0.2)
+
     plt.xlabel('Time Steps')
     plt.ylabel('Values')
     plt.title(title)
@@ -25,13 +30,26 @@ def plot_predictions(x_data, y_real, y_pred, title='Real vs Predicted'):
     plt.show()
 
 
-# Example usage
-if __name__ == "__main__":
-    # Generate dummy data for testing the plot functions
-    history = type('History', (object,), {'history': {'loss': [0.1, 0.08, 0.06, 0.04, 0.02]}})()
-    plot_metrics(history)
+def plot_residuals(y_real, y_pred, title='Residuals'):
+    residuals = y_real - y_pred
+    plt.figure()
+    plt.plot(residuals, label='Residuals', color='purple')
+    plt.axhline(0, color='black', linestyle='--')
+    plt.xlabel('Samples')
+    plt.ylabel('Residuals')
+    plt.title(title)
+    plt.legend()
+    plt.show()
 
-    x_data = np.linspace(0, 2 * np.pi, 50).reshape(-1, 1)
-    y_real = np.sin(x_data).flatten()
-    y_pred = y_real + np.random.normal(0, 0.1, y_real.shape)  # Adding some noise to simulate predictions
-    plot_predictions(x_data.flatten(), y_real, y_pred, title='Test Data: Real vs Predicted')
+
+def compare_multiple_predictions(x_data, y_real, predictions, labels, title='Comparison of Predictions'):
+    plt.figure()
+    plt.plot(x_data, y_real, label='Real', color='blue')
+    for y_pred, label in zip(predictions, labels):
+        plt.plot(x_data, y_pred, label=label)
+
+    plt.xlabel('Time Steps')
+    plt.ylabel('Values')
+    plt.title(title)
+    plt.legend()
+    plt.show()
