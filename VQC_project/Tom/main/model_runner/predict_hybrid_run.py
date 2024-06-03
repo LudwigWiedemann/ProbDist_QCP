@@ -4,31 +4,32 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 import numpy as np
 from VQC_project.Tom.main.div.n_training_data_manager import generate_time_series_data
-from VQC_project.Tom.main.model.predict_classic.n_predict_classic_metrics import plot_metrics, plot_predictions
+from VQC_project.Tom.main.model.predict_hybrid.predict_hybrid_metrics import plot_metrics, plot_predictions, plot_residuals, compare_multiple_predictions
 from VQC_project.Tom.main.model.predict_hybrid.predict_hybrid_model import PHModel
 
 config = {
     # training data parameter
     'time_frame_start': -8 * np.pi,
     'time_frame_end': 8 * np.pi,
-    'data_length': 600,  # How many points are in the full timeframe
-    'time_steps': 25,  # How many consecutive points are in one sample
+    'data_length': 300,  # How many points are in the full timeframe
+    'time_steps': 200,  # How many consecutive points are in one sample
     'future_steps': 10,  # How many points are predicted in one sample
-    'num_samples': 1000,  # How many timeframes are generated from the timeframe
+    'num_samples': 100,  # How many timeframes are generated from the timeframe
     'noise_level': 0,  # Noise level
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
-
     # run parameter
-    'epochs': 25,  # Adjusted to start with a reasonable number
-    'batch_size': 64,  # Keep this value for now
+    'epochs': 100,  # Adjusted to start with a reasonable number
+    'batch_size': 16,  # Keep this value for now
     'input_dim': 1,
     # Q_layer parameter
     'n_qubits': 5,
     'n_layers': 5,
     # Optimization parameter
-    'learning_rate': 0.003,  # Adjusted to a common starting point
+    'learning_rate': 0.004,  # Adjusted to a common starting point
     'loss_function': 'mse',
 }
+def target_function(x):
+    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
 def main():
     # Generate training data
@@ -49,27 +50,35 @@ def main():
 
     # Make predictions on the future data
     y_pred_future = model.predict(x_future)
-    x_future_flat = np.linspace(config['time_frame_start'], config['time_frame_end'], config['future_steps'])  # Match future range length
 
-    # Debug: Print shapes and values
-    print("Shapes and some values for debugging:")
-    print(f"x_future_flat.shape: {x_future_flat.shape}")
-    print(f"x_future_flat: {x_future_flat}")
-    print(f"y_pred_future.flatten().shape: {y_pred_future.flatten().shape}")
-    print(f"y_pred_future.flatten(): {y_pred_future.flatten()}")
-    print(f"np.sin(x_future_flat).shape: {np.sin(x_future_flat).shape}")
-    print(f"np.sin(x_future_flat): {np.sin(x_future_flat)}")
+    # Generate x-axes based on indices for consistency
+    x_test_indices = np.arange(len(y_test.flatten()))
+    x_future_indices = np.arange(config['future_steps'])
+
+    # Alternatively, use time-based range for both
+    x_test_time = np.linspace(config['time_frame_start'], config['time_frame_end'], len(y_test.flatten()))
+    x_future_time = np.linspace(config['time_frame_start'], config['time_frame_end'], config['future_steps'])
 
     # Plot training metrics
     plot_metrics(history)
 
     # Plot predictions vs real values for test set
-    plot_predictions(np.arange(len(y_test.flatten())), y_test.flatten(), y_pred_test.flatten(),
+    plot_predictions(x_test_indices, y_test.flatten(), y_pred_test.flatten(),
                      title='Test Data: Real vs Predicted')
 
     # Plot predictions vs real values for future data
-    plot_predictions(x_future_flat, np.sin(x_future_flat), y_pred_future.flatten(),
+    plot_predictions(x_future_indices, np.sin(x_future_indices), y_pred_future.flatten(),
                      title='Future Data: Real vs Predicted')
+
+    # Alternatively, if using time-based range
+    plot_predictions(x_test_time, y_test.flatten(), y_pred_test.flatten(),
+                     title='Test Data: Real vs Predicted (Time-Based)')
+
+    plot_predictions(x_future_time, np.sin(x_future_time), y_pred_future.flatten(),
+                     title='Future Data: Real vs Predicted (Time-Based)')
+
+    # Plot residuals for test data
+    plot_residuals(y_test.flatten(), y_pred_test.flatten(), title='Residuals on Test Data')
 
 
 if __name__ == "__main__":
