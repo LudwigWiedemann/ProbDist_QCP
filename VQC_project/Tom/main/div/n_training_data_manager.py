@@ -24,17 +24,17 @@ def generate_time_series_data(config, func):
     for _ in range(num_samples):
         start_idx = np.random.randint(0, len(x_data) - time_steps - future_steps)
         input_sample = y_data[start_idx:start_idx + time_steps]
-        ouput_sample = y_data[start_idx + time_steps:start_idx + time_steps + future_steps]
+        output_sample = y_data[start_idx + time_steps:start_idx + time_steps + future_steps]
 
         # Add noise to the samples
         input_sample += np.random.normal(0, noise_level, input_sample.shape)
 
         if np.random.rand() < config['train_test_ratio']:
             input_train.append(input_sample)
-            output_train.append(ouput_sample)
+            output_train.append(output_sample)
         else:
             input_test.append(input_sample)
-            output_test.append(ouput_sample)
+            output_test.append(output_sample)
 
     # Prepare future data for prediction
     future_start_idx = len(x_data) - time_steps
