@@ -56,7 +56,7 @@ class QuantumMlAlgorithm:
 
     def circuit(self, params, x):
         circuits = cs.Circuits(self.num_qubits, self.num_layers)
-        return circuits.ry_circuit(params, x)
+        return circuits.ry_circuit()(params, x)
 
     # Define some functions to use as cost function
     @staticmethod
