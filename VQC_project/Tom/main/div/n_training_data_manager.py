@@ -2,12 +2,6 @@ import numpy as np
 
 
 def generate_time_series_data(config, func):
-    """
-    Generate a more complex sample set based on a given mathematical function.
-    :param config: Configuration dictionary
-    :param func: A mathematical function to generate the data (e.g., np.sin)
-    :return: Tuple of training, testing, and future datasets (x_train, y_train, x_test, y_test, x_future)
-    """
     time_steps = config['time_steps']
     num_samples = config['num_samples']
     future_steps = config['future_steps']
@@ -19,56 +13,37 @@ def generate_time_series_data(config, func):
     x_data = np.linspace(config['time_frame_start'],config['time_frame_end'], data_length)  # Extended range for more future data
     y_data = func(x_data)
 
-    x_train = []
-    y_train = []
-    x_test = []
-    y_test = []
+    input_train = []
+    output_train = []
+    input_test = []
+    output_test = []
 
     if time_steps + future_steps >= len(x_data):
         raise ValueError("time_steps + future_steps must be less than the length of x_data")
 
     for _ in range(num_samples):
         start_idx = np.random.randint(0, len(x_data) - time_steps - future_steps)
-        x_sample = y_data[start_idx:start_idx + time_steps]
-        y_sample = y_data[start_idx + time_steps:start_idx + time_steps + future_steps]
+        input_sample = y_data[start_idx:start_idx + time_steps]
+        ouput_sample = y_data[start_idx + time_steps:start_idx + time_steps + future_steps]
 
         # Add noise to the samples
-        x_sample += np.random.normal(0, noise_level, x_sample.shape)
+        input_sample += np.random.normal(0, noise_level, input_sample.shape)
 
         if np.random.rand() < config['train_test_ratio']:
-            x_train.append(x_sample)
-            y_train.append(y_sample)
+            input_train.append(input_sample)
+            output_train.append(ouput_sample)
         else:
-            x_test.append(x_sample)
-            y_test.append(y_sample)
+            input_test.append(input_sample)
+            output_test.append(ouput_sample)
 
     # Prepare future data for prediction
     future_start_idx = len(x_data) - time_steps
-    x_future = y_data[future_start_idx:future_start_idx + time_steps]
+    input_future_prediction = y_data[future_start_idx:future_start_idx + time_steps]
 
-    x_train = np.array(x_train).reshape(-1, time_steps, 1)
-    y_train = np.array(y_train).reshape(-1, future_steps)
-    x_test = np.array(x_test).reshape(-1, time_steps, 1)
-    y_test = np.array(y_test).reshape(-1, future_steps)
-    x_future = np.array(x_future).reshape(1, time_steps, 1)  # Single future sequence
+    input_train = np.array(input_train).reshape(-1, time_steps, 1)
+    output_train = np.array(output_train).reshape(-1, future_steps)
+    input_test = np.array(input_test).reshape(-1, time_steps, 1)
+    output_test = np.array(output_test).reshape(-1, future_steps)
+    input_future_prediction = np.array(input_future_prediction).reshape(1, time_steps, 1)  # Single future sequence
 
-    return x_train, y_train, x_test, y_test, x_future
-
-
-# Example of usage
-if __name__ == "__main__":
-    config = {
-        "time_steps": 50,
-        "input_dim": 1,
-        "num_samples": 1000,
-        "noise_level": 0.1,  # Adjust noise level as needed
-        "future_steps": 50  # Number of future steps for prediction
-    }
-
-    x_train, y_train, x_test, y_test, x_future = generate_time_series_data(config, np.sin)
-    print("Generated time series data:")
-    print(f"x_train shape: {x_train.shape}")
-    print(f"y_train shape: {y_train.shape}")
-    print(f"x_test shape: {x_test.shape}")
-    print(f"y_test shape: {y_test.shape}")
-    print(f"x_future shape: {x_future.shape}")
+    return input_train, output_train, input_test, output_test, input_future_prediction
