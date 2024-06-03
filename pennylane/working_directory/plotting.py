@@ -14,7 +14,8 @@ def plot(param_list, distributions, f, x_start, x_stop, x_step, y_start, y_stop,
         match circuit:
             case "run_circuit": predicted_outputs = [cir.run_circuit(params, x) for x in x_axis]
             case "ry_circuit": predicted_outputs = [cir.Circuit.ry_circuit(params, x) for x in x_axis]
-            case "entangling_circuit" : predicted_outputs= [cir.Circuit.entangling_circuit(params, x) for x in x_axis]
+            case "seeded_circuit": predicted_outputs = [cir.run_seeded_circuit(params, x, seed=cir.randomize_circuit(params, x))]
+            case "entangling_circuit" : predicted_outputs = [cir.Circuit.entangling_circuit(params, x) for x in x_axis]
             case _ :
                     logger.ERROR("Circuit not found!")
                     raise InterruptedError("Circuit not found!")
