@@ -15,21 +15,21 @@ config = {
     # training data parameter
     'time_frame_start': -4 * np.pi,  # start of timeframe
     'time_frame_end': 4 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
-    'data_length': 150,  # How many points are in the full timeframe
-    'time_steps': 7,  # How many consecutive points are in train/test sample
-    'future_steps': 3,  # How many points are predicted in train/test sample
-    'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'data_length': 300,  # How many points are in the full timeframe
+    'time_steps': 14,  # How many consecutive points are in train/test sample
+    'future_steps': 6,  # How many points are predicted in train/test sample
+    'num_samples': 2000,  # How many samples of time_steps/future_steps are generated from the timeframe
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
     # run parameter
-    'epochs': 150,  # Adjusted to start with a reasonable number
+    'epochs': 70,  # Adjusted to start with a reasonable number
     'batch_size': 64,  # Keep this value for now
     'input_dim': 1,  # Currently stays at one
     # Q_layer parameter
     'n_qubits': 7,  # Amount of wires used, when using the Quantum Model: n_qubits = time_steps
     'n_layers': 7,  # Amount of strongly entangled layers in
     # Optimization parameter
-    'learning_rate': 0.004,  # Adjusted to a common starting point
+    'learning_rate': 0.003,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forcasting parameter
     'steps_to_predict': 100
@@ -106,7 +106,7 @@ def main(target_function, model):
 
     # Plot predictions vs real values for each test sample
     for i in range(len(pred_y_test_data)):
-        if i % config['num_samples'] / 20 == 0:
+        if i % config['num_samples'] / 10 == 0:
             x_indices = np.arange(config['time_steps'] + config['future_steps'])
             y_real_combined = np.concatenate((input_test[i].flatten(), output_test[i].flatten()))
             y_pred_combined = np.concatenate((input_test[i].flatten(), pred_y_test_data[i].flatten()))
