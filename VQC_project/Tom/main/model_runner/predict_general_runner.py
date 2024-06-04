@@ -16,8 +16,8 @@ config = {
     'time_frame_start': -4 * np.pi,  # start of timeframe
     'time_frame_end': 4 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
     'data_length': 150,  # How many points are in the full timeframe
-    'time_steps': 10,  # How many consecutive points are in train/test sample
-    'future_steps': 5,  # How many points are predicted in train/test sample
+    'time_steps': 7,  # How many consecutive points are in train/test sample
+    'future_steps': 3,  # How many points are predicted in train/test sample
     'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
@@ -26,16 +26,18 @@ config = {
     'batch_size': 64,  # Keep this value for now
     'input_dim': 1,  # Currently stays at one
     # Q_layer parameter
-    'n_qubits': 10,  # Amount of wires used, when using the Quantum Model: n_qubits = time_steps
-    'n_layers': 10,  # Amount of strongly entangled layers in
+    'n_qubits': 7,  # Amount of wires used, when using the Quantum Model: n_qubits = time_steps
+    'n_layers': 7,  # Amount of strongly entangled layers in
     # Optimization parameter
-    'learning_rate': 0.005,  # Adjusted to a common starting point
+    'learning_rate': 0.004,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forcasting parameter
     'steps_to_predict': 100
 }
 
 active_model = PHModel(config)  # Hybrid_Model
+
+
 # active_model = PCModel(config) # Classic_Model
 # active_model = PQModel(config) # Quantum_Model
 
@@ -43,15 +45,20 @@ def function(x):
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
 
-def iterative_forecast(model, initial_input, config):
+def iterative_forecast(model, initial_input, steps, future_steps, time_steps):
     current_input = initial_input
     all_predictions = []
 
-    for _ in range(config['steps_to_predict'] // config['future_steps']):
+    for _ in range(steps // future_steps):
+        # Ensure the current input has the correct shape
+        if current_input.shape[1] < time_steps:
+            padding = np.zeros((current_input.shape[0], time_steps - current_input.shape[1], current_input.shape[2]))
+            current_input = np.concatenate((padding, current_input), axis=1)
+
         pred = model.predict(current_input)
         all_predictions.append(pred.flatten())
-        # Use the last `future_steps` of the combined current_input + prediction as the next input
-        current_input = np.concatenate((current_input.flatten(), pred.flatten()))[-config['future_steps']:].reshape(1, -1, 1)
+        # Use the last `time_steps` of the combined current_input + prediction as the next input
+        current_input = np.concatenate((current_input.flatten(), pred.flatten()))[-time_steps:].reshape(1, -1, 1)
 
     return np.concatenate(all_predictions)
 
@@ -84,14 +91,12 @@ def main(target_function, model):
     # Predict outputs for test inputs
     print("Predicting test data")
     pred_y_test_data = model.predict(input_test)
-    print(f"Test Predictions: {pred_y_test_data}")
 
     # Last known real y_values, used to make predict unknown y values
     input_future = dataset['Input_future']
     # Predict outputs for last known y values
     print("Predicting future data")
     pred_y_data_future_data = model.predict(input_future)
-    print(f"Future Predictions: {pred_y_data_future_data}")
 
     # Generate x-axes based on indices for consistency
     output_future_indices = np.arange(config['time_steps'] + config['future_steps'])
@@ -101,7 +106,7 @@ def main(target_function, model):
 
     # Plot predictions vs real values for each test sample
     for i in range(len(pred_y_test_data)):
-        if i % 10 == 0:
+        if i % config['num_samples'] / 20 == 0:
             x_indices = np.arange(config['time_steps'] + config['future_steps'])
             y_real_combined = np.concatenate((input_test[i].flatten(), output_test[i].flatten()))
             y_pred_combined = np.concatenate((input_test[i].flatten(), pred_y_test_data[i].flatten()))
@@ -121,15 +126,18 @@ def main(target_function, model):
     plot_residuals(output_test.flatten(), pred_y_test_data.flatten(), title='Residuals on Test Data')
 
     # Iterative forecasting
-    iter_predictions = iterative_forecast(model, input_future, config)
+    iter_predictions = iterative_forecast(model, input_future, config['steps_to_predict'], config['future_steps'],
+                                          config['time_steps'])
+
+    # Calculate all real future values at once
+    real_future_values = function(np.linspace(config['time_frame_end'], config['time_frame_end'] + config['steps_to_predict'], config['steps_to_predict']))
 
     # Generate x-axes for iterative predictions
     x_iter_indices = np.arange(config['time_steps'] + config['steps_to_predict'])
-    y_iter_combined = np.concatenate((input_future.flatten(), function(
-        np.linspace(config['time_frame_end'], config['time_frame_end'] + config['steps_to_predict'], config['steps_to_predict']))))
+    y_iter_combined = np.concatenate((input_future.flatten(), real_future_values))
     plot_predictions(x_iter_indices, input_future.flatten(), y_iter_combined,
                      np.concatenate((input_future.flatten(), iter_predictions)), noise_level=config['noise_level'],
-                     title='Iterative Forecast: Real vs Predicted')
+                     title='Iterative Forecast: Real vs Predicted', marker_distance=10)
 
 
 if __name__ == "__main__":
