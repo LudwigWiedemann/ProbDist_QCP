@@ -1,6 +1,6 @@
 import pennylane as qml
 import numpy as np
-import circuit as cir
+import circuits as cir
 from logger import logger
 import save
 
