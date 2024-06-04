@@ -3,19 +3,38 @@ import numpy as np
 
 
 def plot_metrics(history):
-    # Plot the training loss and validation loss if available
-    plt.figure()
-    plt.plot(history.history['loss'], label='Training Loss')
-    if 'val_loss' in history.history:
-        plt.plot(history.history['val_loss'], label='Validation Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Training and Validation Loss')
-    plt.legend()
-    plt.show()
+    # Check if history is a dictionary and contains 'loss' key
+    if isinstance(history, dict) and 'loss' in history:
+        plt.figure()
+        plt.plot(history['loss'], label='Training Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Training Loss')
+        plt.legend()
+        plt.show()
+    else:
+        print("History object does not contain 'loss'.")
 
 
-def plot_predictions(x_data, y_known, y_real, y_pred, noise_level=0, title='Real vs Predicted'):
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def plot_metrics(history):
+    # Check if history is a dictionary and contains 'loss' key
+    if isinstance(history, dict) and 'loss' in history:
+        plt.figure()
+        plt.plot(history['loss'], label='Training Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Training Loss')
+        plt.legend()
+        plt.show()
+    else:
+        print("History object does not contain 'loss'.")
+
+
+def plot_predictions(x_data, y_known, y_real, y_pred, noise_level=0, title='Real vs Predicted', marker_distance=5):
     plt.figure()
 
     # Add noise to the known data if noise level is specified
@@ -38,11 +57,23 @@ def plot_predictions(x_data, y_known, y_real, y_pred, noise_level=0, title='Real
 
     # Connect the last known point to the first predicted point
     if len(y_pred) > len(y_known):  # Only connect if there's a future prediction
-        plt.plot([x_data[len(y_known) - 1], x_data[len(y_known)]], [y_known[-1], y_pred[len(y_known)]], color='red',
+        plt.plot([x_data[len(y_known) - 1], x_data[len(y_known)]], [y_known[-1], y_real[len(y_known)]], color='blue',
                  linestyle='-')
 
     plt.xlabel('Time Steps')
     plt.ylabel('Values')
+    plt.title(title)
+    plt.legend()
+    plt.show()
+
+
+def plot_residuals(y_real, y_pred, title='Residuals'):
+    residuals = y_real - y_pred
+    plt.figure()
+    plt.plot(residuals, label='Residuals', color='purple')
+    plt.axhline(0, color='black', linestyle='--')
+    plt.xlabel('Samples')
+    plt.ylabel('Residuals')
     plt.title(title)
     plt.legend()
     plt.show()
