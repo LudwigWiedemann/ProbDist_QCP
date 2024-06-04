@@ -1,4 +1,4 @@
-import circuit as cir
+import circuits as cir
 import matplotlib.pyplot as plt
 from logger import logger
 import numpy as np
