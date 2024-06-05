@@ -1,0 +1,84 @@
+Usecases:
+
+circuit --> circuit.run(weights, input_value) -> output value : ??? (circuit?, value?, values?)
+class Circuit:
+    # hardcoded values:
+        n_qbits: int
+        n_layers: [int]
+    @qml.device(device)
+    def run(weights, input_value):
+        #tatsächliche Circuit definition
+        return output_value: int
+
+
+1) Weights trainieren (Dataset, (weights), Training_config, Circuit):
+    * Dataset vorbereiten (MODUL 1:)
+        + Ansatz 1:
+        + trainings_range (x_start: int, x_end : int, n_points: int)
+        + f(x):
+        + noise: int
+
+        + Ansatz 2:
+        + # TOM TOM TOM TOM TOM
+        + input [], output []
+        + sample [input, output]
+        + dataset [sample]
+    ==> output des moduls:
+
+    * Untrainierte Weights generieren
+        np.random.rand(len)
+
+    * Tatsächliches Training:
+        + circuit (siehe oben)
+        + Training Config:
+            - epochs (Iterations)
+            - cost_function (Mean Squared Error, Variant MSE...)
+            - batch_size
+            (- optimizer (Gradient Descend, Adam...))
+
+2) Evaluation (circuit, weights, traings_daten, f(x)):
+
+      * range auf der wir evaluieren
+      * genauigkeit (preidcted/real value) => Verteilung
+      * benötigte Zeit
+      * vergleich zu anderen konfigurationen
+
+
+
+|
+|
+|
+|
+|
+|
+3) > Save and load => Evaluation
+
+
+y
+|
+|
+|
+|
+|
+|
+|
+|
+|           [               ]
+|___|_______________________________________________________________|______x
+            5               13
+
+
+
+
+
+
+
+
+
+
+    Beispiel Tom:
+    dataset = [test_sample,train_sample]
+
+    sample = [Inputs, Outputs]
+    Input = [f(10), f(20), f(30), f(40)]
+    Output = [f(50), f(60), f(70)]
