@@ -1,7 +1,7 @@
 # Needs to be before
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-from VQC_project.Tom.main.div.training_data_manager import generate_training_data
+from VQC_project.Tom.workshop.training_data_manager import generate_training_data
 from VQC_project.Tom.main.model.basic_hybrid.basic_hybrid_model import train_hybrid_model, evaluate_model
 
 

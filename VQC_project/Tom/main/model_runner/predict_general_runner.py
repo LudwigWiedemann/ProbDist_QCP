@@ -1,51 +1,111 @@
-# Needs to be first import
+# Needs to be first import to
 import os
-
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-from time import sleep
 import numpy as np
-from VQC_project.Tom.main.div.n_training_data_manager import generate_time_series_data
-from VQC_project.Tom.main.model.predict_hybrid.predict_hybrid_metrics import plot_metrics, plot_predictions, plot_residuals
-from VQC_project.Tom.main.model.predict_classic.n_predict_model import PCModel
+import pennylane as qml
+
+from VQC_project.Tom.main.div.training_data_manager import generate_time_series_data
+from VQC_project.Tom.main.div.plot_manager import print_test_plots, print_iterative_forcast_plot
+# Different Models
+from VQC_project.Tom.main.model.predict_classic.predict_model import PCModel
 from VQC_project.Tom.main.model.predict_quantum.predict_quantum_model import PQModel
 from VQC_project.Tom.main.model.predict_hybrid.predict_hybrid_model import PHModel
+from VQC_project.Tom.main.model.predict_variable_circuit.predict_variable_circuit_model import PVCModel
 
-config = {
+full_config = {
     # training data parameter
     'time_frame_start': -4 * np.pi,  # start of timeframe
     'time_frame_end': 4 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
-    'data_length': 300,  # How many points are in the full timeframe
-    'time_steps': 14,  # How many consecutive points are in train/test sample
-    'future_steps': 6,  # How many points are predicted in train/test sample
-    'num_samples': 2000,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'data_length': 150,  # How many points are in the full timeframe
+    'time_steps': 60,  # How many consecutive points are in train/test sample
+    'future_steps': 10,  # How many points are predicted in train/test sample
+    'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
-    # run parameter
-    'epochs': 70,  # Adjusted to start with a reasonable number
+    # Run parameter
+    'model': 'Hybrid',
+    'epochs': 50,  # Adjusted to start with a reasonable number
     'batch_size': 64,  # Keep this value for now
-    'input_dim': 1,  # Currently stays at one
-    # Q_layer parameter
-    'n_qubits': 7,  # Amount of wires used, when using the Quantum Model: n_qubits = time_steps
-    'n_layers': 7,  # Amount of strongly entangled layers in
     # Optimization parameter
-    'learning_rate': 0.003,  # Adjusted to a common starting point
+    'learning_rate': 0.01,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forcasting parameter
-    'steps_to_predict': 100
+    'steps_to_predict': 25
 }
 
-active_model = PHModel(config)  # Hybrid_Model
+models = {'Hybrid': PHModel, 'Classic': PCModel, 'Quantum': PQModel, 'Variable_circuit': PVCModel}
 
-
-# active_model = PCModel(config) # Classic_Model
-# active_model = PQModel(config) # Quantum_Model
 
 def function(x):
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
 
-def iterative_forecast(model, initial_input, steps, future_steps, time_steps):
+def create_custom_circuit():
+    dev = qml.device("default.qubit", wires=1, interface='tf')
+
+    @qml.qnode(dev)
+    def quantum_circuit(inputs, weights):
+        qml.RX(inputs[0], wires=0)
+        qml.RX(weights[1], wires=0)
+        qml.RY(weights[2], wires=0)
+        qml.RZ(weights[3], wires=0)
+        return qml.expval(qml.PauliZ(0))
+
+
+    input_shape = []
+    weight_shapes = []
+    return quantum_circuit, weight_shapes
+
+
+def generate_dataset(target_function, config):
+    # Generate training data
+    print("Generating training data")
+    dataset = generate_time_series_data(config, target_function)
+    print("Training data generated")
+    return dataset
+
+
+def run_model(dataset, config, circuit=None):
+    # Initialised the current model
+    model = models[config['model']](config)
+
+    # Samples used for training
+    input_train = dataset['Input_train']
+    output_train = dataset['Output_train']
+    # Samples used for testing
+    input_test = dataset['Input_test']
+    output_test = dataset['Output_test']
+    # Samples used for forecasting
+    input_future = dataset['Input_future']
+
+    # Fit the model
+    print("Starting training")
+    history = model.train(input_train, output_train)
+    print("Training completed")
+
+    # Evaluate how well it learned the test_data
+    print("Starting evaluation")
+    loss = model.evaluate(input_test, output_test)
+    print(f"Test Loss: {loss}")
+
+    # Predict outputs for test inputs
+    print("Predicting test data")
+    pred_y_test_data = model.predict(input_test)
+
+    # Print plots related to the evaluation of test data
+    print_test_plots(input_test, output_test, pred_y_test_data, history, config)
+
+    return model
+
+
+def iterative_forecast(model, dataset, config):
+    steps = config['steps_to_predict']
+    time_steps = config['time_steps']
+    future_steps = config['future_steps']
+
+    initial_input = dataset['Future_Input']
+    # Start of prediction
     current_input = initial_input
     all_predictions = []
 
@@ -59,89 +119,21 @@ def iterative_forecast(model, initial_input, steps, future_steps, time_steps):
         all_predictions.append(pred.flatten())
         # Use the last `time_steps` of the combined current_input + prediction as the next input
         current_input = np.concatenate((current_input.flatten(), pred.flatten()))[-time_steps:].reshape(1, -1, 1)
+    print_iterative_forcast_plot(function, initial_input, np.concatenate(all_predictions), config)
 
-    return np.concatenate(all_predictions)
 
-
-def main(target_function, model):
-    print("Generating training data")
-    # Generate training data
-    dataset = generate_time_series_data(config, target_function)
-    print("Training data generated")
-
-    # Samples that are used as input, continuous set of y_values
-    input_train = dataset['Input_train']
-    # Samples that should be predicted, continuous set of y_values that follow after the input
-    output_train = dataset['Output_train']
-    # Train the model
-    print("Starting training")
-    history = model.train(input_train, output_train)
-    print("Training completed")
-
-    # Samples that are used as input, not seen before by the model
-    input_test = dataset['Input_test']
-    # Samples that should be predicted, continuous set of y_values that follow after the input, not seen before by
-    # the model
-    output_test = dataset['Output_test']
-    # Evaluate how well it learned the test_data
-    print("Starting evaluation")
-    loss = model.evaluate(input_test, output_test)
-    print(f"Test Loss: {loss}")
-
-    # Predict outputs for test inputs
-    print("Predicting test data")
-    pred_y_test_data = model.predict(input_test)
-
-    # Last known real y_values, used to make predict unknown y values
-    input_future = dataset['Input_future']
-    # Predict outputs for last known y values
-    print("Predicting future data")
-    pred_y_data_future_data = model.predict(input_future)
-
-    # Generate x-axes based on indices for consistency
-    output_future_indices = np.arange(config['time_steps'] + config['future_steps'])
-
-    # Plot training metrics
-    plot_metrics(history)
-
-    # Plot predictions vs real values for each test sample
-    for i in range(len(pred_y_test_data)):
-        if i % config['num_samples'] / 10 == 0:
-            x_indices = np.arange(config['time_steps'] + config['future_steps'])
-            y_real_combined = np.concatenate((input_test[i].flatten(), output_test[i].flatten()))
-            y_pred_combined = np.concatenate((input_test[i].flatten(), pred_y_test_data[i].flatten()))
-            plot_predictions(x_indices, input_test[i].flatten(), y_real_combined, y_pred_combined,
-                             noise_level=config['noise_level'],
-                             title=f'Test Data Sample {i + 1}: Real vs Predicted')
-            sleep(1.5)
-
-    # Plot predictions vs real values for future data
-    plot_predictions(output_future_indices, input_future.flatten(),
-                     np.concatenate((input_future.flatten(), pred_y_data_future_data.flatten())),
-                     np.concatenate((input_future.flatten(), pred_y_data_future_data.flatten())),
-                     noise_level=config['noise_level'],
-                     title='Future Data: Real vs Predicted')
-
-    # Plot residuals for test data
-    plot_residuals(output_test.flatten(), pred_y_test_data.flatten(), title='Residuals on Test Data')
-
-    # Iterative forecasting
-    iter_predictions = iterative_forecast(model, input_future, config['steps_to_predict'], config['future_steps'],
-                                          config['time_steps'])
-
-    # Calculate all real future values at once
-    real_future_values = function(np.linspace(config['time_frame_end'], config['time_frame_end'] + config['steps_to_predict'], config['steps_to_predict']))
-
-    # Generate x-axes for iterative predictions
-    x_iter_indices = np.arange(config['time_steps'] + config['steps_to_predict'])
-    y_iter_combined = np.concatenate((input_future.flatten(), real_future_values))
-    plot_predictions(x_iter_indices, input_future.flatten(), y_iter_combined,
-                     np.concatenate((input_future.flatten(), iter_predictions)), noise_level=config['noise_level'],
-                     title='Iterative Forecast: Real vs Predicted', marker_distance=10)
+def main():
+    # Generate dataset
+    dataset = generate_dataset(function, full_config)
+    # Train and evaluate model and plot results
+    model = run_model(dataset, full_config, circuit=None)
+    # Forecast using the fitted model and plot results
+    iterative_forecast(model, dataset, full_config)
 
 
 if __name__ == "__main__":
     from silence_tensorflow import silence_tensorflow
 
     silence_tensorflow()
-    main(function, active_model)
+
+    main()
