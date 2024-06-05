@@ -1,76 +1,55 @@
-import circuit as cir
+import circuits as cir
 import matplotlib.pyplot as plt
-from pennylane import numpy as np
+from logger import logger
+import numpy as np
+import save
 
 
-class Evaluation:
+def plot(param_list, distributions, f, x_start, x_stop, x_step, y_start, y_stop, y_step, circuit):
 
-    def __init__(self, mean, min, max):
-        self.mean_y = mean
-        self.y_min = min
-        self.y_max = max
+    x_axis = np.linspace(x_start, x_stop, x_step)
 
-
-def plot(param_list, distributions, f):
-    x_axis = np.linspace(0, 20, 200)
-    shots = []
     firstparam = True
     for params in param_list:
-        shot = [cir.run_circuit(params, x) for x in x_axis]
-        shots.append(shot)
-        plt.plot(x_axis, shot, alpha=0.1)
-        # if firstparam:
-        # else:
-        #     plt.plot(x_axis, shot[1], 'g--', alpha=0.1)
-        # firstparam = False
+        match circuit:
+            case "run_circuit": predicted_outputs = [cir.run_circuit(params, x) for x in x_axis]
+            case "ry_circuit": predicted_outputs = [cir.Circuit.ry_circuit(params, x) for x in x_axis]
+            case "seeded_circuit": predicted_outputs = [cir.run_seeded_circuit(params, x, seed=cir.randomize_circuit(params, x))]
+            case "entangling_circuit" : predicted_outputs = [cir.Circuit.entangling_circuit(params, x) for x in x_axis]
+            case _ :
+                    logger.ERROR("Circuit not found!")
+                    raise InterruptedError("Circuit not found!")
+        if firstparam:
+            plt.plot(x_axis, predicted_outputs, 'g--', label="Predicted Sin", alpha=0.1)
+        else:
+            plt.plot(x_axis, predicted_outputs, 'g--', alpha=0.1)
+        firstparam = False
 
-    evaluations = []
-    for i in range(len(x_axis)):
-        mean_y = 0
-        min_y = 100
-        max_y = -100
-
-        for shot in shots:
-            mean_y += shot[i]
-            if shot[i] < min_y:
-                min_y = shot[i]
-
-            if shot[i] > max_y:
-                max_y = shot[i]
-        mean_y /= len(shots)
-        eval = Evaluation(mean_y, min_y, max_y)
-        evaluations.append(eval)
-
-    mean = []
-    minima = []
-    maxima = []
-    for eval in evaluations:
-        mean.append(eval.mean_y)
-        minima.append(eval.y_min)
-        maxima.append(eval.y_max)
-
-    #plt.plot(x_axis, mean, label="mean", alpha=0.7)
-    plt.fill_between(x_axis, minima, maxima, alpha=0.3)
-    # plt.plot(x_axis, minima, label="minima", alpha=0.3)
-    # plt.plot(x_axis, maxima, label="maxima", alpha=0.3)
 
     firstdist = True
-    # for dist in distributions:
-    #     training_x = [data[0] for data in dist]
-    #     training_y = [data[1] for data in dist]
-    #     if firstdist:
-    #         plt.scatter(training_x, training_y, s=5, label="data points", alpha=0.1)
-    #     else:
-    #         plt.scatter(training_x, training_y, s=5, alpha=0.1)
-    #     firstdist = False
+    for dist in distributions:
+        training_x = [data[0] for data in dist]
+        training_y = [data[1] for data in dist]
+        if firstdist:
+            plt.scatter(training_x, training_y, s=5, label="data points", alpha=0.1)
+        else:
+            plt.scatter(training_x, training_y, s=5, alpha=0.1)
+        firstdist = False
 
     true_outputs = f(x_axis)
-    plt.plot(x_axis, true_outputs, label="Actual f(x)", alpha=0.9)
+    plt.plot(x_axis, true_outputs, label="Actual f(x)", alpha=0.3)
 
-    plt.ylim(-1, 1)
+    plt.ylim(y_start, y_stop)
     plt.grid(True)
     plt.legend()
     plt.xlabel("x")
     plt.ylabel("f(x)")
-    plt.title(str(len(distributions)) + " Shots")
+    plt.title(str(len(distributions))+" Shots")
+    plt.savefig("../Logger/" + save.start_time + "-plot.png")
     plt.show()
+    save.plot_x_start=x_start
+    save.plot_x_stop=x_stop
+    save.plot_x_step=x_step
+    save.plot_y_start=y_start
+    save.plot_y_stop=y_stop
+    save.plot_y_step=y_step

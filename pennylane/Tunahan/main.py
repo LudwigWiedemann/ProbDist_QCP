@@ -1,20 +1,23 @@
+import inspect
+
 import pennylane as qml
 from pennylane import numpy as np
 import matplotlib.pyplot as plt
 import numpy as numpy
 import os
 
-import circuits as cs
+import main_circuits as cs
 
 
 class QuantumMlAlgorithm:
 
+    # return np.sin(x) + noise
+    # return np.sin(x) * np.cos(2*x)/2*np.sin(x)
+    # return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
     @staticmethod
     def f(x):
-        # return np.sin(x) + noise
-        # return np.sin(x) * np.cos(2*x)/2*np.sin(x)
         return np.sin(x)
-        # return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
+
 
     def __init__(self):
         # Define problem parameters
@@ -56,11 +59,11 @@ class QuantumMlAlgorithm:
 
     def circuit(self, params, x):
         circuits = cs.Circuits(self.num_qubits, self.num_layers)
-        return circuits.ry_circuit(params, x)
+        return circuits.ry_circuit()(params, x)
 
     # Define some functions to use as cost function
     @staticmethod
-    def i_have_no_idea(prediction, target):
+    def variant_mse(prediction, target):
         return ((prediction - target) ** 2) / 2
 
     @staticmethod
@@ -69,7 +72,7 @@ class QuantumMlAlgorithm:
 
     def cost(self, params, x, target):
         predicted_output = self.circuit(params, x)
-        return self.i_have_no_idea(predicted_output, target)
+        return self.variant_mse(predicted_output, target)
 
     def train_circuit(self, training_params, num_iterations):
         print("Training the circuit...")
@@ -94,6 +97,12 @@ class QuantumMlAlgorithm:
         return training_params
 
     def evaluate_circuit(self, final_params, x_min=-5 * np.pi, x_max=5 * np.pi, n_points=10000):
+        f_source = inspect.getsource(QuantumMlAlgorithm.f)
+        # Find the index of 'return' in the source code
+        return_index = f_source.find('return')
+        # Extract the part after 'return'
+        return_part = f_source[return_index + len('return'):].strip()
+
         print("Evaluating the trained circuit...")
         print("Circuit uses these params:")
         print(final_params)
@@ -109,7 +118,7 @@ class QuantumMlAlgorithm:
         plt.legend()
         plt.xlabel("x")
         plt.ylabel("f(x)")
-        plt.title("Actual vs. Predicted function f(x)")
+        plt.title(f"Actual vs. Predicted function:\n{return_part}")
         plt.show()
 
     def save_params(self, params, filename, path='Saved Circuit Models'):

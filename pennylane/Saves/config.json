@@ -1,0 +1,16 @@
+{
+  "num_qbits: ": "1",
+  "num_layers: ": "9",
+  "circuit: ": "run_circuit",
+  "rotation_matrix: ": [[]],
+  "probability_mode: ": true,
+  "shots: ": "10",
+  "training_iterations: ": "50",
+  "load_mode: ": false,
+  "plot_x_start: ": "0",
+  "plot_x_stop: ": "20",
+  "plot_x_step: ": "200",
+  "plot_y_start: ": "-1",
+  "plot_y_stop: ": "1",
+  "plot_y_step: ": "1"
+}
