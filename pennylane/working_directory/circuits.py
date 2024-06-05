@@ -226,6 +226,6 @@ if __name__ == '__main__':
         np.random.random(4)
     )
 
-    circuits.print_circuit(circuits.ry_circuit(), weights_ry, input_1d)
+    circuits.print_circuit(circuits.(), weights_ry, input_1d)
     circuits.print_circuit(circuits.random_circuit(), input_1d, input_1d)
     circuits.print_circuit(circuits.entangling_circuit(), weights_entangling, inputs_entangling)
