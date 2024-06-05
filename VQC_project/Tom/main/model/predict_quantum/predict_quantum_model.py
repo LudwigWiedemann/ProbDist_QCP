@@ -24,7 +24,7 @@ class PQModel:
 
 
 def create_pq_model(quantum_circuit, weight_shapes, config):
-    inputs = Input(shape=(config['time_steps'], config['input_dim']))
+    inputs = Input(shape=(config['time_steps'], 1))
 
     # VQC layer, reshape the output to remove the complex part
     quantum_layer = qml.qnn.KerasLayer(quantum_circuit, weight_shapes, output_dim=1)(inputs)
