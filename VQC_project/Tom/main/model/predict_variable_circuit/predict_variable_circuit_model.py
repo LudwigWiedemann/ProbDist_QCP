@@ -31,7 +31,6 @@ class PVCModel:
 
             history['loss'].append(epoch_loss / steps_per_epoch)
             tqdm.write(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / steps_per_epoch}")
-
         return history
 
     def evaluate(self, x_test, y_test):
