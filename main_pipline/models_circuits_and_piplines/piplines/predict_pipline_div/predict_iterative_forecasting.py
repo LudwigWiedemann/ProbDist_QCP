@@ -4,6 +4,9 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
     show_all_forecasting_plots
 
 
+# Perhaps TODO integrate forecasting into model
+# Perhaps TODO expand on forecasting methods
+
 def iterative_forecast(function, model, dataset, config):
     # Samples used for forecasting
 
@@ -11,7 +14,7 @@ def iterative_forecast(function, model, dataset, config):
     time_steps = config['time_steps']
     future_steps = config['future_steps']
 
-    input_forecast = dataset['Input_forecast']
+    input_forecast = dataset['input_forecast']
     # Start of prediction
     current_input = input_forecast
     all_predictions = []
@@ -26,5 +29,4 @@ def iterative_forecast(function, model, dataset, config):
         all_predictions.append(pred.flatten())
         # Use the last `time_steps` of the combined current_input + prediction as the next input
         current_input = np.concatenate((current_input.flatten(), pred.flatten()))[-time_steps:].reshape(1, -1, 1)
-    show_all_forecasting_plots(function, input_forecast, np.concatenate(all_predictions), config)
-
+    show_all_forecasting_plots(function, np.concatenate(all_predictions), dataset, config)

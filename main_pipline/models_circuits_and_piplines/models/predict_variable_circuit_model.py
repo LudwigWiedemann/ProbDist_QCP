@@ -5,8 +5,8 @@ import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
 
-
-class old_PVCModel:
+# Perhaps TODO adapt Model to work with circuits if needed
+class PVCModel:
     def __init__(self, circuit, config):
         self.config = config
         self.model = create_pvc_model(circuit, config)
