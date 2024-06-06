@@ -40,7 +40,7 @@ def show_all_forecasting_plots(target_function, pred_y_forecast_data, dataset, c
     y_iter_combined = np.concatenate((input_forecast.flatten(), real_future_values))
     plot_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
                      np.concatenate((input_forecast.flatten(), pred_y_forecast_data)),
-                     title='Iterative Forecast: Real vs Predicted', marker_distance=5)
+                     title='Iterative Forecast: Real vs Predicted', )
 
 def plot_metrics(loss_progress):
     # Check if history is a dictionary and contains 'loss' key
@@ -55,8 +55,9 @@ def plot_metrics(loss_progress):
     else:
         print("History object does not contain 'loss'.")
 
-def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred, title='Real vs Predicted', marker_distance=5):
-    plt.figure()
+def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred, title='Real vs Predicted'):
+
+    plt.figure(figsize=(max(10, len(x_data) / 10), 10))
 
     # Plot the known time steps with line and markers
     plt.plot(x_data[:len(input_real)], input_real, label='Known', color='blue', marker='o', linestyle='-')
@@ -99,7 +100,7 @@ def plot_residuals(y_real, y_pred, title='Residuals'):
     plt.show()
 
 def plot_full_timeframe_data(x_data, y_data, y_noisy_data,  title='Full Timeframe Data'):
-    plt.figure()
+    plt.figure(figsize=(20,10))
 
     plt.plot(x_data, y_noisy_data, label='Noisy', color='red', marker='x', linestyle='--')
     plt.plot(x_data, y_data, label='Real', color='green', marker='o', linestyle='-')
