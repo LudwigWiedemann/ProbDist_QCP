@@ -1,7 +1,25 @@
 import numpy as np
 
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
+    plot_full_timeframe_data
 
-def generate_time_series_data(config, func):
+# TODO write all relevant settings. Currently only examples
+dataset_settings = {
+    "name": "Test_set_4_150_1_15",
+    "n_wires": 4,  # Number of wires for the quantum device.
+    "min_target_depth": 5,  # Minimum depth of target.
+    "max_target_depth": 15,  # Maximum depth of target.
+    "size": 150
+}
+
+
+# TODO expand list of potential functions
+def function():
+    return np.sin()
+# NOT USED ATM
+
+
+def generate_time_series_data(func, config):
     time_steps = config['time_steps']
     num_samples = config['num_samples']
     future_steps = config['future_steps']
@@ -47,8 +65,20 @@ def generate_time_series_data(config, func):
     output_test = np.array(output_test).reshape(-1, future_steps)
     input_future_prediction = np.array(input_future_prediction).reshape(1, time_steps, 1)  # Single future sequence
 
-    dataset = {'Input_train': input_train, 'Output_train': output_train,
-               'Input_test': input_test, 'Output_test': output_test,
-               'Input_future': input_future_prediction,
-               'x_data': x_data, 'y_data': y_data}
+    plot_full_timeframe_data(x_data, y_data, title='Full Timeframe Data')
+
+    dataset = {'input_train': input_train, 'output_train': output_train,
+               'input_test': input_test, 'output_test': output_test,
+               'input_forecast': input_future_prediction}
+
     return dataset
+
+
+# TODO function to save a dataset as a file use dill lib preferable
+def generate_and_save_dataset(save_path, config):
+    return
+
+
+# TODO function to load a dataset from a file
+def load_dataset(load_path, dataset, name):
+    return
