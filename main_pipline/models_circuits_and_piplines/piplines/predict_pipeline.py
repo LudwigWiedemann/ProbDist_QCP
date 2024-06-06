@@ -24,22 +24,22 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 # Perhaps TODO remove local config if config files are implemented or hold as alternative
 full_config = {
     # training data parameter
-    'time_frame_start':  0,  # start of timeframe
-    'time_frame_end': 6*np.pi,  # end of timeframe, needs to be bigger than time_frame_start
-    'data_length': 200,  # How many points are in the full timeframe
+    'time_frame_start': -4*np.pi,  # start of timeframe
+    'time_frame_end': 12*np.pi,  # end of timeframe, needs to be bigger than time_frame_start
+    'n_steps': 200,  # How many points are in the full timeframe
     'time_steps': 50,  # How many consecutive points are in train/test sample
     'future_steps': 10,  # How many points are predicted in train/test sample
     'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'noise_level': 0.001,  # Noise level on Inputs
+    'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
     # Run parameter
     'model': 'Hybrid',  # PCV is the current main_model others are for baseline
     'custom_circuit': False,  # For now only relevant for PCVModel
     'circuit': 'RY_Circuit',
-    'epochs': 50,  # Adjusted to start with a reasonable number
+    'epochs': 100,  # Adjusted to start with a reasonable number
     'batch_size': 64,  # Keep this value for now
     # Optimization parameter
-    'learning_rate': 0.008,  # Adjusted to a common starting point
+    'learning_rate': 0.005,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forecasting parameter
     'steps_to_predict': 60
@@ -72,6 +72,7 @@ def run_model(dataset, config, circuits):
     print("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
     print(f"Test Loss: {loss}")
+    pred_y_test_data, loss = model.evaluate(dataset)
 
     # Print plots related to the evaluation of test data
     show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config)
