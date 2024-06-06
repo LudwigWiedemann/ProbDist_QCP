@@ -36,10 +36,10 @@ full_config = {
     'model': 'Hybrid',  # PCV is the current main_model others are for baseline
     'custom_circuit': False,  # For now only relevant for PCVModel
     'circuit': 'RY_Circuit',
-    'epochs': 100,  # Adjusted to start with a reasonable number
+    'epochs': 250,  # Adjusted to start with a reasonable number
     'batch_size': 64,  # Keep this value for now
     # Optimization parameter
-    'learning_rate': 0.007,  # Adjusted to a common starting point
+    'learning_rate': 0.004,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forecasting parameter
     'steps_to_predict': 300
@@ -50,7 +50,7 @@ models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel}
 circuits = {'RY_Circuit': RY_Circuit, 'RYXZ_Circuit': RYXZ_Circuit}
 
 def function(x):
-    return np.sin(x)
+    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
 def run_model(dataset, config, circuits):
 
