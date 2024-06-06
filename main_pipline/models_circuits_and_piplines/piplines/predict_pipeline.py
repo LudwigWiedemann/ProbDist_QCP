@@ -25,12 +25,12 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 full_config = {
     # training data parameter
     'time_frame_start':  0,  # start of timeframe
-    'time_frame_end': 10*np.pi,  # end of timeframe, needs to be bigger than time_frame_start
-    'data_length': 100,  # How many points are in the full timeframe
+    'time_frame_end': 6*np.pi,  # end of timeframe, needs to be bigger than time_frame_start
+    'data_length': 200,  # How many points are in the full timeframe
     'time_steps': 50,  # How many consecutive points are in train/test sample
-    'future_steps': 5,  # How many points are predicted in train/test sample
+    'future_steps': 10,  # How many points are predicted in train/test sample
     'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'noise_level': 0.1,  # Noise level on Inputs
+    'noise_level': 0.001,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
     # Run parameter
     'model': 'Hybrid',  # PCV is the current main_model others are for baseline
@@ -39,7 +39,7 @@ full_config = {
     'epochs': 50,  # Adjusted to start with a reasonable number
     'batch_size': 64,  # Keep this value for now
     # Optimization parameter
-    'learning_rate': 0.006,  # Adjusted to a common starting point
+    'learning_rate': 0.008,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forecasting parameter
     'steps_to_predict': 60
