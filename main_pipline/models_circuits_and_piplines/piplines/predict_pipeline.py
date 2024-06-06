@@ -39,10 +39,10 @@ full_config = {
     'epochs': 100,  # Adjusted to start with a reasonable number
     'batch_size': 64,  # Keep this value for now
     # Optimization parameter
-    'learning_rate': 0.005,  # Adjusted to a common starting point
+    'learning_rate': 0.007,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forecasting parameter
-    'steps_to_predict': 60
+    'steps_to_predict': 300
 }
 # Perhaps TODO expand on models
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel}
