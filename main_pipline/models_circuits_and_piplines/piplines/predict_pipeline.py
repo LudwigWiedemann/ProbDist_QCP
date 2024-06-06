@@ -24,8 +24,8 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 # Perhaps TODO remove local config if config files are implemented or hold as alternative
 full_config = {
     # training data parameter
-    'time_frame_start':  -15,  # start of timeframe
-    'time_frame_end': 15,  # end of timeframe, needs to be bigger than time_frame_start
+    'time_frame_start':  0,  # start of timeframe
+    'time_frame_end': 10*np.pi,  # end of timeframe, needs to be bigger than time_frame_start
     'data_length': 100,  # How many points are in the full timeframe
     'time_steps': 50,  # How many consecutive points are in train/test sample
     'future_steps': 5,  # How many points are predicted in train/test sample
