@@ -6,7 +6,7 @@ import tensorflow as tf
 from tqdm import tqdm
 
 
-class PHModel_old:
+class PHModel:
     def __init__(self, config):
         circuit = None
         self.config = config
@@ -14,11 +14,13 @@ class PHModel_old:
         n_qubits = 5
         n_layers = 5
 
-
         quantum_circuit, weight_shapes = create_ph_quantum_circuit(n_qubits, n_layers, config)
         self.model = create_ph_model(n_qubits, quantum_circuit, weight_shapes, config)
 
-    def train(self, x_train, y_train):
+    def train(self, dataset):
+        x_train = dataset['input_train']
+        y_train = dataset['output_train']
+
         epochs = self.config['epochs']
         batch_size = self.config['batch_size']
         steps_per_epoch = len(x_train) // batch_size
@@ -41,12 +43,16 @@ class PHModel_old:
 
         return history
 
-    def evaluate(self, x_test, y_test):
-        loss = self.model.evaluate(x_test, y_test)
-        return loss
+    def evaluate(self, dataset):
+        x_test = dataset['input_test']
+        y_test = dataset['output_test']
 
-    def predict(self, x):
-        return self.model.predict(x)
+        pred_y_test_data = self.model.predict(x_test)
+        loss = self.model.evaluate(x_test, y_test)
+        return pred_y_test_data, loss
+
+    def predict(self, x_test):
+        return self.model.predict(x_test)
 
 
 def create_ph_model(n_qubits, quantum_circuit, weight_shapes, config):
@@ -68,7 +74,7 @@ def create_ph_model(n_qubits, quantum_circuit, weight_shapes, config):
     return model
 
 
-def create_ph_quantum_circuit(n_qubits,n_layers, config):
+def create_ph_quantum_circuit(n_qubits, n_layers, config):
     dev = qml.device("default.qubit", wires=n_qubits)
 
     @qml.qnode(dev, interface='tf')
