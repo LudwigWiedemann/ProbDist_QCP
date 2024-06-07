@@ -31,6 +31,7 @@ class ICircuit(ABC):
             pass
         pass
 
+
 class RY_Circuit(ICircuit):
 
     def run_without_shots(self):
@@ -97,8 +98,6 @@ class RYXZ_Circuit(ICircuit):
     def print_circuit(self, circuit_function, *args):
         pass
     # evaluation
-
-
 
 class Entangled_circuit:
     prediction_device = qml.device("default.qubit", wires=1, shots=1)

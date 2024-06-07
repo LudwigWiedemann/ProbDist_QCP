@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pennylane as qml
 from pennylane import numpy as np
-import circuit as cir
+import circuits as cir
 
 optimizer = qml.GradientDescentOptimizer(0.001)
 

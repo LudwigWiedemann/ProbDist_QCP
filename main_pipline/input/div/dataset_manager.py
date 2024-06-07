@@ -1,4 +1,5 @@
 import numpy as np
+import dill
 
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     plot_full_timeframe_data
@@ -12,10 +13,23 @@ dataset_settings = {
     "size": 150
 }
 
+test_config = {
+    # Example training data parameters
+
+    'time_frame_start': -4 * np.pi,  # start of timeframe
+    'time_frame_end': 12 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
+    'n_steps': 200,  # How many points are in the full timeframe
+    'time_steps': 50,  # How many consecutive points are in train/test sample
+    'future_steps': 10,  # How many points are predicted in train/test sample
+    'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'noise_level': 0.1,  # Noise level on Inputs
+    'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
+}
+
 
 # TODO expand list of potential functions
-def function():
-    return np.sin()
+def function(x):
+    return np.sin(x)
 # NOT USED ATM
 
 
@@ -31,7 +45,7 @@ def generate_time_series_data(func, config):
     x_data = np.linspace(config['time_frame_start'], config['time_frame_end'],
                          n_steps)
     y_data = func(x_data)
-    noisy_y_data = y_data + np.random.normal(0, noise_level, size= y_data.shape)
+    noisy_y_data = y_data + np.random.normal(0, noise_level, size=y_data.shape)
 
     input_train = []
     output_train = []
@@ -49,8 +63,6 @@ def generate_time_series_data(func, config):
         input_noisy_sample = noisy_y_data[start_idx:start_idx + time_steps]
         output_sample = y_data[start_idx + time_steps:start_idx + time_steps + future_steps]
 
-
-
         if np.random.rand() < config['train_test_ratio']:
             input_train.append(input_noisy_sample)
             output_train.append(output_sample)
@@ -58,8 +70,6 @@ def generate_time_series_data(func, config):
             input_noisy_test.append(input_noisy_sample)
             input_real_test.append(input_sample)
             output_test.append(output_sample)
-
-
 
     # Prepare data for foresight
     future_start_idx = len(x_data) - time_steps
@@ -75,20 +85,41 @@ def generate_time_series_data(func, config):
     input_foresight = np.array(input_foresight).reshape(1, time_steps, 1)
     input_noisy_foresight = np.array(input_noisy_foresight).reshape(1, time_steps, 1)
 
-    plot_full_timeframe_data(x_data, y_data,noisy_y_data, title='Full Timeframe Data')
+    plot_full_timeframe_data(x_data, y_data, noisy_y_data, title='Full Timeframe Data')
 
     dataset = {'input_train': input_train, 'output_train': output_train, 'input_noisy_test': input_noisy_test,
                'input_test': input_real_test, 'output_test': output_test,
-               'input_forecast': input_foresight, 'input_noisy_forecast': input_noisy_foresight,'step_size': step_size}
+               'input_forecast': input_foresight, 'input_noisy_forecast': input_noisy_foresight, 'step_size': step_size}
 
     return dataset
 
 
-# TODO function to save a dataset as a file use dill lib preferable
-def generate_and_save_dataset(save_path, config):
-    return
+def generate_and_save_dataset(dataset_name, config):
+    """
+    Generates the dataset with given config and saves it into a deserializable pickle
+    file in the datasets directory
+    """
+    dataset_to_save = generate_time_series_data(function, config)
+    with open(f"datasets/{dataset_name}.pkl", 'wb') as f:
+        dill.dump(dataset_to_save, f)
+
+def load_dataset(dataset_name):
+    """
+    Loads the given pickle file from datasets directory
+    """
+    with open(f"datasets/{dataset_name}.pkl", 'rb') as f:
+        dataset_to_load = dill.load(f)
+    return dataset_to_load
 
 
-# TODO function to load a dataset from a file
-def load_dataset(load_path, dataset, name):
-    return
+def test_functionality(file_name="test_dataset"):
+    """
+    Test if the save load works with a valid config
+    """
+    generate_and_save_dataset(file_name, test_config)
+    dataset = load_dataset(file_name)
+    print(dataset)
+
+if __name__ == '__main__':
+    test_functionality()
+    test_functionality("WOWXDGHG")
