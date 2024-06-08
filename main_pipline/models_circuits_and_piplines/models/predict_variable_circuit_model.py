@@ -1,6 +1,7 @@
 from keras.models import Model
 from tensorflow.keras.layers import Dense, Input, LSTM
 from tensorflow.keras.optimizers import Adam
+from main_pipline.input.div.logger import logger
 import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
@@ -28,8 +29,8 @@ class PVCModel:
 
                 batch_loss = self.model.train_on_batch(x_batch, y_batch)
                 epoch_loss += batch_loss
-
             history['loss'].append(epoch_loss / steps_per_epoch)
+            logger.info(f"Epoch {epoch+1}/{epochs} loss: {epoch_loss / steps_per_epoch}")
             tqdm.write(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / steps_per_epoch}")
         return history
 

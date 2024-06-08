@@ -5,6 +5,8 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 import time
 import numpy as np
+from main_pipline.input.div.logger import logger
+import main_pipline.input.div.filemanager as filemanager
 
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_evaluation_plots, plot_full_timeframe_data
@@ -64,14 +66,14 @@ def run_model(dataset, config, circuits):
         model = models[config['model']](config)
 
     # Fit the model
-    print("Starting training")
+    logger.info("Starting training")
     loss_progress = model.train(dataset)
-    print("Training completed")
+    logger.info("Training completed")
 
     # Evaluate the model based on the test data
-    print("Starting evaluation")
+    logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
-    print(f"Test Loss: {loss}")
+    logger.info(f"Test Loss: {loss}")
     pred_y_test_data, loss = model.evaluate(dataset)
 
     # Print plots related to the evaluation of test data
@@ -82,9 +84,9 @@ def run_model(dataset, config, circuits):
 def main():
 
     # Generate dataset
-    print("Generating training data")
+    logger.info("Generating training data")
     dataset = generate_time_series_data(function, full_config)
-    print("Training data generated")
+    logger.info("Training data generated")
 
     # Train and evaluate model and plot results
     model = run_model(dataset, full_config, circuits)
@@ -93,10 +95,11 @@ def main():
     iterative_forecast(function, model, dataset, full_config)
 
 if __name__ == "__main__":
+    filemanager.create_folder()         #Creates Folder
     start_time = time.time()
     from silence_tensorflow import silence_tensorflow
 
     silence_tensorflow()
 
     main()
-    print(f"Pipline complete in {time.time() - start_time} seconds")
+    logger.info(f"Pipline complete in {time.time() - start_time} seconds")

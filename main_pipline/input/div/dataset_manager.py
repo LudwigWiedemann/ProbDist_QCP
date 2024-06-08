@@ -121,5 +121,17 @@ def test_functionality(file_name="test_dataset"):
     print(dataset)
 
 if __name__ == '__main__':
+    generate_and_save_dataset("PAT", {
+        # Example training data parameters
+
+        'time_frame_start': -4 * np.pi,  # start of timeframe
+        'time_frame_end': 12 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
+        'n_steps': 200,  # How many points are in the full timeframe
+        'time_steps': 50,  # How many consecutive points are in train/test sample
+        'future_steps': 10,  # How many points are predicted in train/test sample
+        'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
+        'noise_level': 0.1,  # Noise level on Inputs
+        'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
+    })
     test_functionality()
     test_functionality("WOWXDGHG")

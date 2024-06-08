@@ -1,7 +1,12 @@
 import pennylane as qml
 import matplotlib.pyplot as plt
+from main_pipline.input.div.logger import logger
+import main_pipline.input.div.filemanager as file
+from pathlib import Path
 from pennylane import numpy as np
 from abc import ABC, abstractmethod
+
+path= Path(file.path).parent.joinpath("\Circuits")
 
 # TODO adapt circuit model so it works with tensorflow architecture
 # TODO split circuits into single files, perhaps a manager for generating new ones
@@ -18,6 +23,7 @@ class ICircuit(ABC):
         print(qml.draw(circuit_function)(*args))
         qml.drawer.use_style("black_white")
         fig, ax = qml.draw_mpl(circuit_function)(*args)
+        plt.savefig(f"{path}\ICircuit-{file.time_started}.png")  #saves Circuit.png
         plt.show()
 
     @abstractmethod
@@ -132,10 +138,10 @@ class Entangled_circuit:
 #     return target
 
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
     #circuit = Entangled_circuit
     #circuit.create()([], 1)
-    abstract_circuit = RY_Circuit.print_circuit()
+    #abstract_circuit = RY_Circuit.print_circuit()
 
 
 

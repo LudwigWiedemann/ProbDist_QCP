@@ -1,5 +1,7 @@
 from time import sleep
 import matplotlib.pyplot as plt
+from main_pipline.input.div.logger import logger
+import main_pipline.input.div.filemanager as file
 import numpy as np
 
 def show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config):
@@ -51,9 +53,10 @@ def plot_metrics(loss_progress):
         plt.ylabel('Loss')
         plt.title('Training Loss')
         plt.legend()
+        plt.savefig(file.path+"/plot_metrics.png")
         plt.show()
     else:
-        print("History object does not contain 'loss'.")
+        logger.info("History object does not contain 'loss'.")
 
 def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred, title='Real vs Predicted'):
 
@@ -86,6 +89,7 @@ def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred, title='Rea
     plt.ylabel('Values')
     plt.title(title)
     plt.legend()
+    plt.savefig(file.path+"/plot_predictions.png")
     plt.show()
 
 def plot_residuals(y_real, y_pred, title='Residuals'):
@@ -97,6 +101,7 @@ def plot_residuals(y_real, y_pred, title='Residuals'):
     plt.ylabel('Residuals')
     plt.title(title)
     plt.legend()
+    plt.savefig(file.path+"/plot_residuals.png")
     plt.show()
 
 def plot_full_timeframe_data(x_data, y_data, y_noisy_data,  title='Full Timeframe Data'):
@@ -110,4 +115,5 @@ def plot_full_timeframe_data(x_data, y_data, y_noisy_data,  title='Full Timefram
     plt.ylabel('Values')
     plt.title(title)
     plt.legend()
+    plt.savefig(file.path+"/plot_full_timeframe_data.png")
     plt.show()
