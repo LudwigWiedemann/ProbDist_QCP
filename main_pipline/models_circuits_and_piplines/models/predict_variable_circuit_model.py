@@ -6,13 +6,17 @@ import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
 
-# Perhaps TODO adapt Model to work with circuits if needed
-class PVCModel:
-    def __init__(self, circuit, config):
-        self.config = config
-        self.model = create_pvc_model(circuit, config)
 
-    def train(self, x_train, y_train):
+class PVCModel:
+    def __init__(self, variable_circuit, config):
+        self.config = config
+        self.circuit = variable_circuit()
+        self.model = self.create_pvc_model(self.circuit, config)
+
+    def train(self, dataset):
+        x_train = dataset['input_train']
+        y_train = dataset['output_train']
+
         epochs = self.config['epochs']
         batch_size = self.config['batch_size']
         steps_per_epoch = len(x_train) // batch_size
@@ -30,25 +34,29 @@ class PVCModel:
                 batch_loss = self.model.train_on_batch(x_batch, y_batch)
                 epoch_loss += batch_loss
             history['loss'].append(epoch_loss / steps_per_epoch)
-            logger.info(f"Epoch {epoch+1}/{epochs} loss: {epoch_loss / steps_per_epoch}")
+            logger.info(f"Epoch {epoch + 1}/{epochs} loss: {epoch_loss / steps_per_epoch}")
             tqdm.write(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / steps_per_epoch}")
         return history
 
-    def evaluate(self, x_test, y_test):
+    def evaluate(self, dataset):
+        x_test = dataset['input_test']
+        y_test = dataset['output_test']
+
+        pred_y_test_data = self.model.predict(x_test)
         loss = self.model.evaluate(x_test, y_test)
-        return loss
+        return pred_y_test_data, loss
 
-    def predict(self, x):
-        return self.model.predict(x)
+    def predict(self, x_test):
+        return self.model.predict(x_test)
 
+    def create_pvc_model(self, circuit, config):
+        inputs = Input(shape=(config['time_steps'], 1))
+        reshapelayer1 = Dense(circuit.get_wires(), activation='linear')(inputs)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=circuit.get_wires())(reshapelayer1)
+        quantum_layer = tf.reshape(quantum_layer, (-1, 1))
+        reshapelayer2 = Dense(circuit.get_wires(), activation='linear')(quantum_layer)
+        output = Dense(config['future_steps'], activation='linear')(reshapelayer2)
 
-def create_pvc_model(quantum_circuit, config):
-    inputs = Input(shape=(config['time_steps'], config['input_dim']))
-    dense1 = Dense(config['n_qubits'], activation='linear')(inputs)
-    quantum_layer = qml.qnn.KerasLayer(quantum_circuit, output_dim=1)(dense1)
-    quantum_layer = tf.reshape(quantum_layer, (-1, 1))
-    output = Dense(config['future_steps'], activation='linear')(quantum_layer)
-
-    model = Model(inputs=inputs, outputs=output)
-    model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
-    return model
+        model = Model(inputs=inputs, outputs=output)
+        model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
+        return model
