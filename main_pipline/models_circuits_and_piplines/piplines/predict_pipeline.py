@@ -1,7 +1,8 @@
 # Basic tensorflow optimisation, needs to be before every other import
 import os
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 import time
 import numpy as np
@@ -15,7 +16,9 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
     iterative_forecast
 
 # Current list of circuits
-from main_pipline.models_circuits_and_piplines.circuits.circuits import RY_Circuit, RYXZ_Circuit
+from Pipeline.circuits import RY_Circuit
+from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit
+
 
 # Current main model ()
 from main_pipline.models_circuits_and_piplines.models.predict_variable_circuit_model import PVCModel
@@ -26,8 +29,8 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 # Perhaps TODO remove local config if config files are implemented or hold as alternative
 full_config = {
     # training data parameter
-    'time_frame_start': -4*np.pi,  # start of timeframe
-    'time_frame_end': 12*np.pi,  # end of timeframe, needs to be bigger than time_frame_start
+    'time_frame_start': -4 * np.pi,  # start of timeframe
+    'time_frame_end': 12 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
     'n_steps': 200,  # How many points are in the full timeframe
     'time_steps': 50,  # How many consecutive points are in train/test sample
     'future_steps': 10,  # How many points are predicted in train/test sample
@@ -35,9 +38,9 @@ full_config = {
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
     # Run parameter
-    'model': 'Hybrid',  # PCV is the current main_model others are for baseline
-    'custom_circuit': False,  # For now only relevant for PCVModel
-    'circuit': 'RY_Circuit',
+    'model': 'Variable_circuit',  # PCV is the current main_model others are for baseline
+    'custom_circuit': True,  # For now only relevant for PCVModel
+    'circuit': 'new_RYXZ_Circuit',
     'epochs': 250,  # Adjusted to start with a reasonable number
     'batch_size': 64,  # Keep this value for now
     # Optimization parameter
@@ -45,17 +48,19 @@ full_config = {
     'loss_function': 'mse',  # currently at 'mse'
     # Forecasting parameter
     'steps_to_predict': 300
+
 }
 # Perhaps TODO expand on models
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel}
 # Perhaps TODO expand on circuits
-circuits = {'RY_Circuit': RY_Circuit, 'RYXZ_Circuit': RYXZ_Circuit}
+circuits = {'RY_Circuit': RY_Circuit, 'new_RYXZ_Circuit': new_RYXZ_Circuit}
+
 
 def function(x):
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
-def run_model(dataset, config, circuits):
 
+def run_model(dataset, config):
     # Initialised the current model
     # TODO adapt model with flag to automatically differentiate
     if config['custom_circuit']:
@@ -81,21 +86,22 @@ def run_model(dataset, config, circuits):
 
     return model
 
-def main():
 
+def main():
     # Generate dataset
     logger.info("Generating training data")
     dataset = generate_time_series_data(function, full_config)
     logger.info("Training data generated")
 
     # Train and evaluate model and plot results
-    model = run_model(dataset, full_config, circuits)
+    model = run_model(dataset, full_config)
 
     # Forecast using the fitted model and plot results
     iterative_forecast(function, model, dataset, full_config)
 
+
 if __name__ == "__main__":
-    filemanager.create_folder()         #Creates Folder
+    filemanager.create_folder()  # Creates Folder
     start_time = time.time()
     from silence_tensorflow import silence_tensorflow
 

@@ -39,7 +39,6 @@ class ICircuit(ABC):
 
 
 class RY_Circuit(ICircuit):
-
     def run_without_shots(self):
         @qml.qnode(self.training_device)
         def _circuit(weights, inputs):
@@ -75,10 +74,10 @@ class RYXZ_Circuit(ICircuit):
         super().__init__(num_qubits=5, num_layers=5) # add changes inside the brackets
 
     # prediction_device = qml.device("default.qubit", wires=1, shots=1)
-    # training_device = qml.device("default.qubit", wires=1)
-    # num_layers = 2
-    # num_weights_per_layer = 3
-    # num_weights = num_layers * num_weights_per_layer
+    training_device = qml.device("default.qubit", wires=1)
+    num_layers = 2
+    num_weights_per_layer = 3
+    num_weights = num_layers * num_weights_per_layer
     def run_without_shots(self):
         @qml.qnode(self.training_device)
         def _circuit(weights, inputs):
