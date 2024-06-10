@@ -40,7 +40,7 @@ class PHModel:
                 epoch_loss += batch_loss
 
             history['loss'].append(epoch_loss / steps_per_epoch)
-            logger.info(f"\nEpoch {epoch+1}/{epochs} Loss: {epoch_loss / steps_per_epoch}")
+            logger.info(f"\nEpoch {epoch + 1}/{epochs} Loss: {epoch_loss / steps_per_epoch}")
             tqdm.write(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / steps_per_epoch}")
         return history
 
@@ -68,9 +68,9 @@ def create_ph_model(n_qubits, quantum_circuit, weight_shapes, config):
     quantum_layer = tf.reshape(quantum_layer, (-1, 1))
 
     dense3 = Dense(n_qubits, activation='relu')(quantum_layer)
-    dense4 = Dense(config['future_steps'], activation='linear')(dense3)
+    output = Dense(config['future_steps'], activation='linear')(dense3)
 
-    model = Model(inputs=inputs, outputs=dense4)
+    model = Model(inputs=inputs, outputs=output)
     model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
     return model
 
@@ -82,7 +82,7 @@ def create_ph_quantum_circuit(n_qubits, n_layers, config):
     def quantum_circuit(inputs, weights):
         qml.AngleEmbedding(inputs, wires=range(n_qubits))
         qml.StronglyEntanglingLayers(weights, wires=range(n_qubits))
-        return qml.expval(qml.PauliZ(0))
+        return qml.expval(qml.PauliZ(range(n_qubits)))
 
     weight_shapes = {"weights": (n_layers, n_qubits, 3)}
     return quantum_circuit, weight_shapes

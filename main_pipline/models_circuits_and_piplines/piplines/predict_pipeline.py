@@ -18,8 +18,7 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
 
 # Current list of circuits
 from Pipeline.circuits import RY_Circuit
-from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit
-
+from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit, new_baseline
 
 # Current main model ()
 from main_pipline.models_circuits_and_piplines.models.predict_variable_circuit_model import PVCModel
@@ -42,7 +41,7 @@ full_config = {
     'model': 'Variable_circuit',  # PCV is the current main_model others are for baseline
     'custom_circuit': True,  # For now only relevant for PCVModel
     'circuit': 'new_RYXZ_Circuit',
-    'epochs': 250,  # Adjusted to start with a reasonable number
+    'epochs': 50,  # Adjusted to start with a reasonable number
     'batch_size': 64,  # Keep this value for now
     # Optimization parameter
     'learning_rate': 0.004,  # Adjusted to a common starting point
@@ -54,7 +53,7 @@ full_config = {
 # Perhaps TODO expand on models
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel}
 # Perhaps TODO expand on circuits
-circuits = {'RY_Circuit': RY_Circuit, 'new_RYXZ_Circuit': new_RYXZ_Circuit}
+circuits = {'RY_Circuit': RY_Circuit, 'new_RYXZ_Circuit': new_RYXZ_Circuit, 'new_baseline': new_baseline}
 
 
 def function(x):
@@ -80,7 +79,6 @@ def run_model(dataset, config):
     logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
     logger.info(f"Test Loss: {loss}")
-    pred_y_test_data, loss = model.evaluate(dataset)
 
     # Print plots related to the evaluation of test data
     show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config)
@@ -102,11 +100,12 @@ def main():
 
 
 if __name__ == "__main__":
-    full_config = loader.dialog_load_config()
-    filemanager.create_folder()  # Creates Folder
-    start_time = time.time()
-    from silence_tensorflow import silence_tensorflow
 
+    # full_config = loader.dialog_load_config()
+    # filemanager.create_folder()  # Creates Folder
+    start_time = time.time()
+
+    from silence_tensorflow import silence_tensorflow
     silence_tensorflow()
 
     main()
