@@ -2,6 +2,7 @@ import pennylane as qml
 import matplotlib.pyplot as plt
 from main_pipline.input.div.logger import logger
 import main_pipline.input.div.filemanager as file
+import main_pipline.input.div.config_manager as config
 from pathlib import Path
 from pennylane import numpy as np
 from abc import ABC, abstractmethod
@@ -23,6 +24,7 @@ class ICircuit(ABC):
         print(qml.draw(circuit_function)(*args))
         qml.drawer.use_style("black_white")
         fig, ax = qml.draw_mpl(circuit_function)(*args)
+        config.circuit_used="ICircuit"
         plt.savefig(f"{path}\ICircuit-{file.time_started}.png")  #saves Circuit.png
         plt.show()
 
@@ -51,6 +53,7 @@ class RY_Circuit(ICircuit):
             qml.RY(weights[6], wires=0)
             qml.RY(weights[7], wires=0)
             qml.RY(weights[8], wires=0)
+            config.circuit_used="RY_Circuit without shots"
             return qml.expval(qml.PauliZ(wires=0))
         return _circuit
 
@@ -66,6 +69,7 @@ class RY_Circuit(ICircuit):
             qml.RY(weights[6], wires=0)
             qml.RY(weights[7], wires=0)
             qml.RY(weights[8], wires=0)
+            config.circuit_used="RY_Circuit with shots"
             return qml.expval(qml.PauliZ(wires=0))
         return _circuit
 
@@ -86,6 +90,7 @@ class RYXZ_Circuit(ICircuit):
                 qml.RX(weights[3 * i], wires=0)
                 qml.RY(weights[3 * i + 1], wires=0)
                 qml.RZ(weights[3 * i + 2], wires=0)
+                config.circuit_used="RYXZ_Circuit without shots"
             return qml.expval(qml.PauliZ(wires=0))
         return _circuit
     def run_with_shots(self):
@@ -96,8 +101,8 @@ class RYXZ_Circuit(ICircuit):
                 qml.RX(weights[3 * i], wires=0)
                 qml.RY(weights[3 * i + 1], wires=0)
                 qml.RZ(weights[3 * i + 2], wires=0)
+                config.circuit_used="RYXZ_Circuit with shots"
             return qml.expval(qml.PauliZ(wires=0))
-
         return _circuit
 
     def print_circuit(self, circuit_function, *args):
@@ -119,6 +124,7 @@ class Entangled_circuit:
         def _circuit(weights, inputs):
             qml.AngleEmbedding(inputs, wires=range(self.num_qubits))
             qml.StronglyEntanglingLayers(weights, wires=range(self.num_qubits))
+            config.circuit_used="Entangled_Circuit"
             return qml.expval(qml.PauliZ(wires=0))
         return _circuit
 

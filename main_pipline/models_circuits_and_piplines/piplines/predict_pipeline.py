@@ -1,5 +1,6 @@
 # Basic tensorflow optimisation, needs to be before every other import
 import os
+import main_pipline.input.div.load_manager as loader
 
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -101,6 +102,7 @@ def main():
 
 
 if __name__ == "__main__":
+    full_config = loader.dialog_load_config()
     filemanager.create_folder()  # Creates Folder
     start_time = time.time()
     from silence_tensorflow import silence_tensorflow
