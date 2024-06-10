@@ -71,7 +71,7 @@ def dialog_load_config():
         case "create custom one":
             default_config=[]
         case "load exising":
-            filepath = easygui.fileopenbox(msg='Please locate the config .json file',
+            filepath = easygui.fileopenbox(msg='Please locate the config.json file',
                                            title='Specify File', default='output\*.PKL',
                                            filetypes='*.json')
             config = config_manager.config_load(filepath)
