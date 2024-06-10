@@ -1,5 +1,5 @@
 from keras.models import Model
-from tensorflow.keras.layers import Dense, Input, LSTM
+from tensorflow.keras.layers import Dense, Input, Flatten
 from tensorflow.keras.optimizers import Adam
 from main_pipline.input.div.logger import logger
 import pennylane as qml
@@ -51,12 +51,10 @@ class PVCModel:
 
     def create_pvc_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
-        reshapelayer1 = Dense(circuit.get_wires(), activation='linear')(inputs)
-        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=circuit.get_wires())(reshapelayer1)
-        quantum_layer = tf.reshape(quantum_layer, (-1, 1))
-        reshapelayer2 = Dense(circuit.get_wires(), activation='linear')(quantum_layer)
-        output = Dense(config['future_steps'], activation='linear')(reshapelayer2)
+        dense1 = Dense(circuit.get_wires(), activation='linear')(inputs)
+        qlayer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=1)(dense1)
+        dense2 = Dense(config['future_steps'], activation='linear')(qlayer)
 
-        model = Model(inputs=inputs, outputs=output)
+        model = Model(inputs=inputs, outputs=dense2)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
