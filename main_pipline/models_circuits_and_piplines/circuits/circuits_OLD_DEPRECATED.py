@@ -28,15 +28,10 @@ class ICircuit(ABC):
         plt.savefig(f"{path}\ICircuit-{file.time_started}.png")  #saves Circuit.png
         plt.show()
 
-    @abstractmethod
     def run_without_shots(self):
-        def _circuit(weights, inputs):
-            pass
         pass
 
     def run_with_shots(self):
-        def _circuit(weights, inputs):
-            pass
         pass
 
 

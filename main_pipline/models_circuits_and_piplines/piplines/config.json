@@ -1,0 +1,21 @@
+{
+  "time_frame_start": -12.5,
+  "time_frame_end": 38,
+  "n_steps": 200,
+  "time_steps": 50,
+  "future_steps": 10,
+  "num_samples": 1000,
+  "noise_level": 0.1,
+  "train_test_ratio": 0.6,
+
+  "model": "Variable_circuit",
+  "custom_circuit": true,
+  "circuit": "new_RYXZ_Circuit",
+  "epochs": 250,
+  "batch_size": 64,
+
+  "learning_rate": 0.004,
+  "loss_function": "mse",
+
+  "steps_to_predict": 300
+}

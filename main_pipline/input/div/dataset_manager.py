@@ -27,10 +27,19 @@ test_config = {
 }
 
 
-# TODO expand list of potential functions
+# TODO should function also be stored so we know which function dataset was used for?
 def function(x):
-    return np.sin(x)
-# NOT USED ATM
+    """
+    Function to get y values for x values. Add function into the dictionary and call it in return statement.
+    :param x: x value
+    :return: y value
+    """
+    function_dictionary = {
+        "sin": np.sin(x),
+        "cos": np.cos(x),
+        "complex_function": np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+    }
+    return function_dictionary.get("sin")
 
 
 def generate_time_series_data(func, config):
@@ -121,17 +130,7 @@ def test_functionality(file_name="test_dataset"):
     print(dataset)
 
 if __name__ == '__main__':
-    generate_and_save_dataset("PAT", {
-        # Example training data parameters
-
-        'time_frame_start': -4 * np.pi,  # start of timeframe
-        'time_frame_end': 12 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
-        'n_steps': 200,  # How many points are in the full timeframe
-        'time_steps': 50,  # How many consecutive points are in train/test sample
-        'future_steps': 10,  # How many points are predicted in train/test sample
-        'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
-        'noise_level': 0.1,  # Noise level on Inputs
-        'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
-    })
+    #generate_and_save_dataset("PAT", test_config)
     test_functionality()
-    test_functionality("WOWXDGHG")
+    #test_functionality("WOWXDGHG")
+
