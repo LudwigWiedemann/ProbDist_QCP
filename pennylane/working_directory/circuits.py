@@ -164,6 +164,9 @@ class Circuits:
         def _circuit(weights, inputs):
             qml.AngleEmbedding(inputs, wires=range(self.num_qubits))
             qml.StronglyEntanglingLayers(weights, wires=range(self.num_qubits))
+            save.circuit="random_circuit.py"
+            save.num_qbits=num_qubits
+            save.num_layers=num_layers
             return qml.expval(qml.PauliZ(wires=0))
         return _circuit
 
@@ -207,9 +210,8 @@ class Circuits:
         # Display the circuit using qml.draw_mpl
         qml.drawer.use_style("black_white")
         fig, ax = qml.draw_mpl(circuit_function)(*args)
-        plt.show()
         plt.savefig("../Logger/"+save.start_time+"-circuit.png")
-
+        plt.show()
 
 if __name__ == '__main__':
     """
