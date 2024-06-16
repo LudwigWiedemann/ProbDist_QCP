@@ -1,28 +1,30 @@
-import circuit as cir
 import matplotlib.pyplot as plt
 from pennylane import numpy as np
 
 
-def plot(param_list, distributions, f):
-
-    x_axis = np.linspace(0, 20, 200)
-
-    for params in param_list:
-        predicted_outputs = [cir.run_circuit(params, x) for x in x_axis]
-        plt.plot(x_axis, predicted_outputs, label="Predicted Sin", alpha=0.1)
-
-    for dist in distributions:
-        training_x = [data[0] for data in dist]
-        training_y = [data[1] for data in dist]
-        plt.scatter(training_x, training_y, s=5, label="data points", alpha=0.1)
-
-    true_outputs = f(x_axis)
-    plt.plot(x_axis, true_outputs, label="Actual f(x)", alpha=0.3)
-
-    plt.ylim(-1, 1)
+def plot(data, x_start, x_end):
+    x_axis = np.linspace(x_start, x_end, len(data))
+    plt.plot(x_axis, data, label="Prediction", alpha=0.5)
+    plt.ylim(-2, 2)
     plt.grid(True)
     plt.legend()
     plt.xlabel("x")
     plt.ylabel("f(x)")
     plt.title("Shots")
     plt.show()
+
+
+def f(x):
+    # return np.sin(x)
+    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+
+
+x_axis = np.linspace(0, 20, 210)
+plt.plot(x_axis, f(x_axis), label="Prediction", alpha=0.5)
+plt.ylim(-2, 2)
+plt.grid(True)
+plt.legend()
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.title("Shots")
+plt.show()
