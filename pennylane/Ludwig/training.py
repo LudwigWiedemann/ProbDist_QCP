@@ -5,8 +5,8 @@ import plotting as plot
 
 optimizer = qml.GradientDescentOptimizer(0.001)
 training_iterations = 10
-time_steps = 3
-future_steps = 1
+time_steps = 5
+future_steps = 4
 num_samples = 100
 steps_to_forecast = 50
 
@@ -33,12 +33,12 @@ def train_from_y_values(dataset):
     params = np.random.rand(time_steps)
     for it in range(training_iterations):
         for sample in samples:
-            params = optimizer.step(cost, params, time_steps=sample[0], expected_prediction=sample[1])
+            params = optimizer.step(cost, params, time_steps=sample[0], expected_predictions=sample[1])
 
         if it % 1 == 0:
             print(f"Iteration {it}:")
-            prediction = cir.multiple_wires(params, extra_sample[0])
-            error = np.abs(prediction - extra_sample[1])
+            # prediction = cir.multiple_wires(params, extra_sample[0])
+            error = cost(params, extra_sample[0], extra_sample[1])
             print("error: " + str(error) + "average: ")
     return params
 
@@ -68,9 +68,13 @@ def train_params(distributions):
     return param_list
 
 
-def cost(params, time_steps, expected_prediction):
+def cost(params, time_steps, expected_predictions):
     predicted_output = cir.multiple_wires(params, time_steps)
-    return ((predicted_output - expected_prediction) ** 2) / 2
+    cost = 0
+    for i in range(len(predicted_output)):
+        cost += ((predicted_output[i] - expected_predictions[i]) ** 2) / 2
+
+    return cost
 
 
 def guess_starting_params(total_num_params):
@@ -100,5 +104,7 @@ def iterative_forecast(params, dataset):
         input = dataset[len(dataset) - time_steps:len(dataset)]
         forecast = cir.multiple_wires(params, input)
         print("forecast: " + str(forecast))
-        dataset.append(forecast)
+        print("dataset: " + str(len(dataset)))
+        for elem in forecast:
+            dataset.append(elem)
     return dataset

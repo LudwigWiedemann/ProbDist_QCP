@@ -45,5 +45,6 @@ if __name__ == "__main__":
     dataset = prepare_data()
     plot.plot(dataset)
     params = tr.train_from_y_values(dataset)
+    # params = np.random.rand(3)
     prediction = tr.iterative_forecast(params, dataset)
     plot.plot(prediction)

@@ -5,6 +5,7 @@ from pennylane import numpy as np
 num_qubits = 1
 num_layers = 9
 device = qml.device("default.qubit", wires=num_qubits)
+num_outputs = 3
 
 
 @qml.qnode(device)
@@ -21,16 +22,29 @@ def run_circuit(params, x):
     return qml.expval(qml.PauliZ(wires=0))
 
 
-dev = qml.device("default.qubit", wires=3)
+dev = qml.device("default.qubit", wires=5)
 
 
 @qml.qnode(dev)
 def multiple_wires(params, inputs):
+    # data encoding
     for i in range(len(inputs)):
         qml.RY(params[i] * inputs[i], wires=i)
-    for e in range(len(inputs) - 1):
-        qml.CNOT(wires=[e, 2])
-    return qml.expval(qml.PauliZ(wires=2))
+
+    # entangle the output wires with all other ones
+    output_wires = range(num_outputs)
+    for wire in output_wires:
+        for i in range(len(inputs) - num_outputs):
+            qml.CNOT(wires=[i + num_outputs, wire])
+
+    # measure the output wires
+    outputs = []
+    for wire in output_wires:
+        outputs.append(qml.expval(qml.PauliZ(wires=wire)))
+
+    # TODO: Add multiple layers ?
+
+    return outputs
 
 
 # p = np.random.rand(10)
