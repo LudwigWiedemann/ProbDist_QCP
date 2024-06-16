@@ -1,50 +1,41 @@
 from pennylane import numpy as np
-import noise as ns
 import training as tr
 import plotting as plot
-
-x_start, x_end = 0, 20
-num_training_points = 21
-training_time_steps = np.linspace(x_start, x_end, num_training_points)
-
+import noise as ns
 
 
 full_config = {
-    # training data parameter
-    'time_frame_start': -4 * np.pi,  # start of timeframe
-    'time_frame_end': 12 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
-    'n_steps': 200,  # How many points are in the full timeframe
-    'time_steps': 50,  # How many consecutive points are in train/test sample
-    'future_steps': 1,  # How many points are predicted in train/test sample
-    'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
+    # data parameter
+    'x_start': 0,
+    'x_end': 100,
+    'total_training_points': 110,
+    # training parameter
+    'time_steps': 10,  # How many consecutive points are in train/test sample
+    'future_steps': 10,  # How many points are predicted in train/test sample
+    'num_weights': 10,
+    'num_samples': 100,  # How many samples of time_steps/future_steps are generated from the timeframe
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
-    # Run parameter
-    'model': 'Variable_circuit',  # PCV is the current main_model others are for baseline
-    'custom_circuit': True,  # For now only relevant for PCVModel
-    'circuit': 'new_RYXZ_Circuit',
-    'epochs': 5,  # Adjusted to start with a reasonable number
-    'batch_size': 64,  # Keep this value for now
-    # Optimization parameter
-    'learning_rate': 0.004,  # Adjusted to a common starting point
-    'loss_function': 'mse',  # currently at 'mse'
+    'epochs': 10,  # Adjusted to start with a reasonable number
+    'learning_rate': 0.001,  # Adjusted to a common starting point
     # Forecasting parameter
-    'steps_to_predict': 300
-
+    'steps_to_forecast': 50
 }
 
 
-def prepare_data():
 
+def prepare_data():
+    training_time_steps = np.linspace(full_config['x_start'], full_config['x_end'],
+                                      full_config['total_training_points'])
     training_dataset = [tr.f(x) for x in training_time_steps]
-    return training_dataset  # + ns.white(num_training_points)
+    return training_dataset  # + ns.white(full_config['noise_level', num_training_points)
 
 
 if __name__ == "__main__":
     print("run")
     dataset = prepare_data()
-    plot.plot(dataset)
+    plot.plot(dataset, full_config['x_start'], full_config['x_end'])
     params = tr.train_from_y_values(dataset)
     # params = np.random.rand(3)
     prediction = tr.iterative_forecast(params, dataset)
-    plot.plot(prediction)
+    plot.plot(prediction, full_config['x_start'], full_config['x_end'])
