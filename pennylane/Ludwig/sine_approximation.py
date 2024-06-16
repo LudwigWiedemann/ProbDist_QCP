@@ -18,8 +18,8 @@ opt = qml.GradientDescentOptimizer(0.001)
 
 
 def f(x):
-    return np.sin(x)
-    #  return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
+    #return np.sin(x)
+    return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
 
 
 def guess_starting_params():

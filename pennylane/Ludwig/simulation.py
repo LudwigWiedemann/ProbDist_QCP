@@ -16,7 +16,7 @@ full_config = {
     'num_samples': 30,  # How many samples of time_steps/future_steps are generated from the timeframe
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
-    'epochs': 10,  # Adjusted to start with a reasonable number
+    'epochs': 20,  # Adjusted to start with a reasonable number
     'learning_rate': 0.001,  # Adjusted to a common starting point
     # Forecasting parameter
     'steps_to_forecast': 20
@@ -34,8 +34,8 @@ def prepare_data():
 if __name__ == "__main__":
     print("run")
     dataset = prepare_data()
-    plot.plot(dataset, full_config['x_start'], full_config['x_end'])
+    plot.plot(dataset, full_config['x_start'], label="dataset")
     params = tr.train_from_y_values(dataset)
     # params = np.random.rand(3)
     prediction = tr.iterative_forecast(params, dataset)
-    plot.plot(prediction, full_config['x_start'], full_config['x_end'])
+    plot.plot(prediction, full_config['x_start'], future_steps=full_config['future_steps'], label="prediction")
