@@ -34,8 +34,8 @@ def prepare_data():
 if __name__ == "__main__":
     print("run")
     dataset = prepare_data()
-    plot.plot(dataset, full_config['x_start'], full_config['x_end'])
+    plot.plot(dataset, full_config['x_start'], full_config['x_end'], label="dataset")
     params = tr.train_from_y_values(dataset)
     # params = np.random.rand(3)
     prediction = tr.iterative_forecast(params, dataset)
-    plot.plot(prediction, full_config['x_start'], full_config['x_end'])
+    plot.plot(prediction, full_config['x_start'], full_config['x_end']+full_config['future_steps'], label="prediction")
