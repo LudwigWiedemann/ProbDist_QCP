@@ -35,7 +35,7 @@ def multiple_wires(params, inputs):
     qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
 
     for i in range(num_wires):
-        qml.RY(params[i] * inputs[i], wires=i)
+        qml.RY(params[i], wires=i)
 
     # entangle the output wires with all other ones
     output_wires = range(num_outputs)
