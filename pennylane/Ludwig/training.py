@@ -4,12 +4,43 @@ import circuit as cir
 import plotting as plot
 
 optimizer = qml.GradientDescentOptimizer(0.001)
-training_iterations = 50
+training_iterations = 10
+time_steps = 3
+future_steps = 1
+num_samples = 100
+steps_to_forecast = 50
 
 
 def f(x):
-    return np.sin(x)
-    # return np.sin(x) + 0.5*np.cos(2*x) + 0.25 * np.sin(3*x)
+    # return np.sin(x)
+    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+
+
+def train_from_y_values(dataset):
+    samples = []
+    extra_sample = ()
+    for s in range(num_samples):
+
+        t_start = np.random.randint(0, len(dataset) - (time_steps + future_steps + 1))
+        f_start = t_start + time_steps
+        ts = dataset[t_start: t_start + time_steps]
+        fs = dataset[f_start: f_start + future_steps]
+        if s != num_samples - 1:
+            samples.append((ts, fs))
+        else:
+            extra_sample = (ts, fs)
+
+    params = np.random.rand(time_steps)
+    for it in range(training_iterations):
+        for sample in samples:
+            params = optimizer.step(cost, params, time_steps=sample[0], expected_prediction=sample[1])
+
+        if it % 1 == 0:
+            print(f"Iteration {it}:")
+            prediction = cir.multiple_wires(params, extra_sample[0])
+            error = np.abs(prediction - extra_sample[1])
+            print("error: " + str(error) + "average: ")
+    return params
 
 
 def train_params(distributions):
@@ -37,9 +68,9 @@ def train_params(distributions):
     return param_list
 
 
-def cost(params, x, target):
-    predicted_output = cir.run_circuit(params, x)
-    return ((predicted_output - target) ** 2) / 2
+def cost(params, time_steps, expected_prediction):
+    predicted_output = cir.multiple_wires(params, time_steps)
+    return ((predicted_output - expected_prediction) ** 2) / 2
 
 
 def guess_starting_params(total_num_params):
@@ -62,3 +93,12 @@ def guess_starting_params(total_num_params):
             best_attempt = i
     print("Best params: " + str(attempts[best_attempt]))
     return attempts[best_attempt]
+
+
+def iterative_forecast(params, dataset):
+    for i in range(steps_to_forecast):
+        input = dataset[len(dataset) - time_steps:len(dataset)]
+        forecast = cir.multiple_wires(params, input)
+        print("forecast: " + str(forecast))
+        dataset.append(forecast)
+    return dataset
