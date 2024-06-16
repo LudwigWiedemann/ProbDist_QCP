@@ -20,30 +20,34 @@ def f(x):
 
 
 def train_from_y_values(dataset):
-    samples = []
-    extra_sample = ()
+    training_samples = []
+    test_samples = []
     for s in range(num_samples):
 
         t_start = np.random.randint(0, len(dataset) - (time_steps + future_steps))
         f_start = t_start + time_steps
         ts = dataset[t_start: t_start + time_steps]
         fs = dataset[f_start: f_start + future_steps]
-        if s != num_samples - 1:  # TODO: generate more test data sets
-            samples.append((ts, fs))
+        if s % 4 == 0:  # TODO: generate more test data sets
+            test_samples.append((ts, fs))
+
         else:
-            extra_sample = (ts, fs)
+            training_samples.append((ts, fs))
+
 
     # params = np.random.rand(time_steps)
-    params = guess_starting_params(samples[0])
+    params = guess_starting_params(training_samples[0])
     for it in range(training_iterations):
-        for sample in samples:
+        for sample in training_samples:
             params = optimizer.step(cost, params, time_steps=sample[0], expected_predictions=sample[1])
 
         if it % 1 == 0:
             print(f"Iteration {it}:")
+            total_error = 0
+            for test_sample in test_samples:
+                total_error += cost(params, test_sample[0], test_sample[1])
             # prediction = cir.multiple_wires(params, extra_sample[0])
-            error = cost(params, extra_sample[0], extra_sample[1])  # TODO: make error evaluation better with more test samples
-            print("error: " + str(error) + "average: ")
+            print("average error of all test samples: " + str(total_error/len(test_samples)))
     return params
 
 #

@@ -8,7 +8,7 @@ from pennylane import numpy as np
 # device = qml.device("default.qubit", wires=num_qubits)
 # num_wires = 5
 # num_outputs = 5
-num_wires = conf['time_steps']
+num_wires = 5
 num_outputs = conf['future_steps']
 
 #
@@ -32,13 +32,15 @@ dev = qml.device("default.qubit", wires=num_wires)
 @qml.qnode(dev)
 def multiple_wires(params, inputs):
     # data encoding
+    qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
+
     for i in range(num_wires):
         qml.RY(params[i] * inputs[i], wires=i)
 
     # entangle the output wires with all other ones
     output_wires = range(num_outputs)
     for wire in output_wires:
-        for i in range(len(inputs) - num_outputs):
+        for i in range(num_wires - num_outputs):
             qml.CNOT(wires=[i + num_outputs, wire])
 
     for i in range(num_wires):

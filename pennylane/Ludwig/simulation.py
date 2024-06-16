@@ -7,19 +7,19 @@ import noise as ns
 full_config = {
     # data parameter
     'x_start': 0,
-    'x_end': 100,
-    'total_training_points': 110,
+    'x_end': 20,
+    'total_training_points': 80,
     # training parameter
-    'time_steps': 10,  # How many consecutive points are in train/test sample
-    'future_steps': 10,  # How many points are predicted in train/test sample
-    'num_weights': 10,
-    'num_samples': 100,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'time_steps': 32,  # How many consecutive points are in train/test sample
+    'future_steps': 5,  # How many points are predicted in train/test sample
+    'num_weights': 32,
+    'num_samples': 30,  # How many samples of time_steps/future_steps are generated from the timeframe
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
     'epochs': 10,  # Adjusted to start with a reasonable number
     'learning_rate': 0.001,  # Adjusted to a common starting point
     # Forecasting parameter
-    'steps_to_forecast': 50
+    'steps_to_forecast': 20
 }
 
 
