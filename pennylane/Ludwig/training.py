@@ -1,8 +1,10 @@
+from datetime import datetime
+
 import pennylane as qml
 from pennylane import numpy as np
 import circuit as cir
+import simulation as sim
 from simulation import full_config as conf
-import plotting as plot
 
 
 training_iterations = conf['epochs']
@@ -23,12 +25,13 @@ def train_from_y_values(dataset):
     training_samples = []
     test_samples = []
     for s in range(num_samples):
-
+        # t_start = 0
         t_start = np.random.randint(0, len(dataset) - (time_steps + future_steps))
+
         f_start = t_start + time_steps
         ts = dataset[t_start: t_start + time_steps]
         fs = dataset[f_start: f_start + future_steps]
-        if s % 4 == 0:  # TODO: generate more test data sets
+        if s % 10 == 0:  # TODO: generate more test data sets
             test_samples.append((ts, fs))
 
         else:
@@ -37,17 +40,25 @@ def train_from_y_values(dataset):
 
     # params = np.random.rand(time_steps)
     params = guess_starting_params(training_samples[0])
+
+    start_time = datetime.now()
     for it in range(training_iterations):
         for sample in training_samples:
+            # gradients = tf.gradients(cost(params,sample[0], sample[1]), params)
+            # params = optimizer.step(gradients, params, time_steps=sample[0], expected_predictions=sample[1])
+
             params = optimizer.step(cost, params, time_steps=sample[0], expected_predictions=sample[1])
 
-        if it % 1 == 0:
-            print(f"Iteration {it}:")
+        if it % 10 == 0:
+            end_time = datetime.now()
+            elapsed_time = end_time - start_time
+            print(f"Iteration {it}: {elapsed_time}")
             total_error = 0
             for test_sample in test_samples:
                 total_error += cost(params, test_sample[0], test_sample[1])
             # prediction = cir.multiple_wires(params, extra_sample[0])
             print("average error of all test samples: " + str(total_error/len(test_samples)))
+            start_time = datetime.now()
     return params
 
 #
@@ -80,27 +91,27 @@ def cost(params, time_steps, expected_predictions):
     predicted_output = cir.multiple_wires(params, time_steps)
     cost = 0
     for i in range(len(predicted_output)):
-        cost += ((predicted_output[i] - expected_predictions[i]) ** 2) / 2
+        # cost += ((predicted_output[i] - expected_predictions[i]) ** 2)
+        cost += np.abs((predicted_output[i] - expected_predictions[i]))
 
     return cost
 
 
 def guess_starting_params(sample):
-    num_weights = conf['num_weights']
     print("guessing best starting parameters ... ")
     num_attempts = 30
     attempts = [None] * num_attempts
     errors = [None] * num_attempts
     for i in range(num_attempts):
-        attempts[i] = np.random.rand(num_weights)
-        cost_x0 = int(cost(attempts[i], sample[0], sample[1]))
+        attempts[i] = np.random.rand(sim.num_weights)
+        cost_x0 = cost(attempts[i], sample[0], sample[1])
         errors[i] = cost_x0
 
     best_attempt = 0
     for i in range(len(errors)):
         if errors[i] < errors[best_attempt]:
             best_attempt = i
-    print("Best params: " + str(attempts[best_attempt]))
+    # print("Best params: " + str(attempts[best_attempt]))
     return attempts[best_attempt]
 
 
@@ -112,5 +123,7 @@ def iterative_forecast(params, dataset):
         print("dataset: " + str(len(dataset)))
         for elem in forecast:
             dataset.append(elem)
-        plot.plot(dataset, conf['x_start'], label= f"training {i+1}")
+
+        # if i % 3 == 0:
+        #     plot.plot(dataset, conf['x_start'], sim.step_size, label= f"training {i+1}")
     return dataset

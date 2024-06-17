@@ -1,5 +1,7 @@
 import pennylane as qml
+import simulation as sim
 from simulation import full_config as conf
+import math
 from pennylane import numpy as np
 
 #
@@ -8,8 +10,12 @@ from pennylane import numpy as np
 # device = qml.device("default.qubit", wires=num_qubits)
 # num_wires = 5
 # num_outputs = 5
-num_wires = 5
+
+# num_wires = conf['time_steps']
+# num_wires = 5
+
 num_outputs = conf['future_steps']
+num_wires = sim.num_wires
 
 #
 # @qml.qnode(device)
@@ -35,16 +41,19 @@ def multiple_wires(params, inputs):
     qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
 
     for i in range(num_wires):
-        qml.RY(params[i], wires=i)
+        qml.RY(params[3 * i] * inputs[i], wires=i)
+        qml.RY(params[3 * i + 1], wires=i)
 
     # entangle the output wires with all other ones
     output_wires = range(num_outputs)
     for wire in output_wires:
-        for i in range(num_wires - num_outputs):
-            qml.CNOT(wires=[i + num_outputs, wire])
+        for i in range(num_wires):
+            # qml.CNOT(wires=[i + num_outputs, wire])
+            if not i == wire:
+                qml.CRY(params[3 * i + 2], wires=[i, wire])
 
-    for i in range(num_wires):
-        qml.RY(params[i] * inputs[i], wires=i)
+    # for i in range(num_wires):
+    #     qml.RY(params[i] * inputs[i], wires=i)
 
     # measure the output wires
     outputs = []
