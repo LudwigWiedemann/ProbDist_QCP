@@ -11,7 +11,7 @@ def plot(data, x_start, step_size, original_data_length):
     plt.legend()
     plt.xlabel("x")
     plt.ylabel("f(x)")
-    plt.title("Shots")
+    plt.title("some inputs double encoded")
     plt.show()
 
 
@@ -20,13 +20,13 @@ def f(x):
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
 
-
-x_axis = np.linspace(-3, 6, 21000)
-plt.plot(x_axis, f(x_axis), label="input", alpha=0.5)
-plt.ylim(-2, 2)
-plt.grid(True)
-plt.legend()
-plt.xlabel("x")
-plt.ylabel("f(x)")
-plt.title("fhots")
-plt.show()
+#
+# x_axis = np.linspace(-3, 6, 21000)
+# plt.plot(x_axis, f(x_axis), label="input", alpha=0.5)
+# plt.ylim(-2, 2)
+# plt.grid(True)
+# plt.legend()
+# plt.xlabel("x")
+# plt.ylabel("f(x)")
+# plt.title("fhots")
+# plt.show()
