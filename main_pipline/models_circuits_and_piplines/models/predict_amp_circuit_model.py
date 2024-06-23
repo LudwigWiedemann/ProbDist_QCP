@@ -11,7 +11,6 @@ class PACModel:
     def __init__(self, variable_circuit, config):
         self.config = config
         self.circuit = variable_circuit(config)
-        self.circuit.draw()
         self.model = self.create_pac_model(self.circuit, config)
 
     def train(self, dataset):

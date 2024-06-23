@@ -1,8 +1,9 @@
 import numpy as np
 import dill
+from random import sample
 
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
-    plot_full_timeframe_data
+    plot_full_timeframe_data, show_sample_preview_plots
 
 # TODO write all relevant settings. Currently only examples
 dataset_settings = {
@@ -66,7 +67,8 @@ def generate_time_series_data(func, config):
     if time_steps + future_steps >= len(x_data):
         raise ValueError("time_steps + future_steps must be less than the length of x_data")
 
-    for _ in range(num_samples):
+    preview_sample = sample(range(num_samples), config['preview_samples'])
+    for i in range(num_samples):
         start_idx = np.random.randint(0, len(x_data) - time_steps - future_steps)
         input_sample = y_data[start_idx:start_idx + time_steps]
         input_noisy_sample = noisy_y_data[start_idx:start_idx + time_steps]
@@ -79,6 +81,8 @@ def generate_time_series_data(func, config):
             input_noisy_test.append(input_noisy_sample)
             input_real_test.append(input_sample)
             output_test.append(output_sample)
+        if i in preview_sample:
+            show_sample_preview_plots(input_sample, output_sample, input_noisy_sample, config)
 
     # Prepare data for foresight
     future_start_idx = len(x_data) - time_steps
@@ -112,6 +116,7 @@ def generate_and_save_dataset(dataset_name, config):
     with open(f"datasets/{dataset_name}.pkl", 'wb') as f:
         dill.dump(dataset_to_save, f)
 
+
 def load_dataset(dataset_name):
     """
     Loads the given pickle file from datasets directory
@@ -129,8 +134,8 @@ def test_functionality(file_name="test_dataset"):
     dataset = load_dataset(file_name)
     print(dataset)
 
-if __name__ == '__main__':
-    #generate_and_save_dataset("PAT", test_config)
-    test_functionality()
-    #test_functionality("WOWXDGHG")
 
+if __name__ == '__main__':
+    # generate_and_save_dataset("PAT", test_config)
+    test_functionality()
+    # test_functionality("WOWXDGHG")

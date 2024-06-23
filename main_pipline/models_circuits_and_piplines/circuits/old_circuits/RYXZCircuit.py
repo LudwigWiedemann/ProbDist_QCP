@@ -1,6 +1,6 @@
 import pennylane as qml
 import main_pipline.input.div.config_manager as config
-from main_pipline.models_circuits_and_piplines.circuits.ICircuit import ICircuit
+from main_pipline.models_circuits_and_piplines.circuits.old_circuits.ICircuit import ICircuit
 
 
 class RYXZCircuit(ICircuit):

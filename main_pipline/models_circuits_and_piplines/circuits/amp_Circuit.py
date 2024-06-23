@@ -1,8 +1,6 @@
 import math
-import sys
+from collections import defaultdict
 from functools import partial
-
-import numpy as np
 import pennylane as qml
 
 
@@ -52,31 +50,36 @@ class layered_Amp_Circuit(AmpCircuit):
     def __init__(self, config):
         super().__init__()
         self.n_wires = int(math.log2(config['time_steps']))
-        self.weight_shapes = {"w_RY": self.n_wires,
-                              "w_RX": self.n_wires,
-                              "w_RZ": self.n_wires,
-                              "w_RY_2": self.n_wires,
-                              "w_RX_2": self.n_wires,
-                              "w_RZ_2": self.n_wires}
+
+        self.layer = 3
+        self.ops = ['RY', 'RX', 'RZ']
+        self.weight_shapes = defaultdict(int)
+        for i in range(self.layer):
+            for name in self.ops:
+                self.weight_shapes[f"{name}_{i}"] = self.n_wires
 
     def run(self):
         training_device = qml.device("default.qubit", wires=self.n_wires)
 
         @partial(qml.batch_input, argnum=0)
         @qml.qnode(training_device, interface='tf')
-        def circuit(inputs, w_RY, w_RX, w_RZ, w_RY_2, w_RX_2, w_RZ_2):
-            qml.broadcast(qml.CNOT, wires=range(self.n_wires), pattern="all_to_all")
-
+        def circuit(inputs, RY_0, RX_0, RZ_0, RY_1, RX_1, RZ_1, RX_2, RY_2, RZ_2):
             qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True)
-            qml.broadcast(qml.RY, wires=range(self.n_wires), pattern="single", parameters=w_RY)
-            qml.broadcast(qml.RX, wires=range(self.n_wires), pattern="single", parameters=w_RX)
-            qml.broadcast(qml.RZ, wires=range(self.n_wires), pattern="single", parameters=w_RZ)
-
+            qml.broadcast(qml.RY, wires=range(self.n_wires), pattern="single", parameters=RY_0)
+            qml.broadcast(qml.RX, wires=range(self.n_wires), pattern="single", parameters=RX_0)
+            qml.broadcast(qml.RZ, wires=range(self.n_wires), pattern="single", parameters=RZ_0)
             qml.broadcast(qml.CNOT, wires=range(self.n_wires), pattern="all_to_all")
 
-            qml.broadcast(qml.RZ, wires=range(self.n_wires), pattern="single", parameters=w_RZ_2)
-            qml.broadcast(qml.RX, wires=range(self.n_wires), pattern="single", parameters=w_RX_2)
-            qml.broadcast(qml.RY, wires=range(self.n_wires), pattern="single", parameters=w_RY_2)
+            qml.broadcast(qml.RZ, wires=range(self.n_wires), pattern="single", parameters=RZ_1)
+            qml.broadcast(qml.RX, wires=range(self.n_wires), pattern="single", parameters=RX_1)
+            qml.broadcast(qml.RY, wires=range(self.n_wires), pattern="single", parameters=RY_1)
+            qml.broadcast(qml.CNOT, wires=range(self.n_wires), pattern="all_to_all")
+
+            qml.broadcast(qml.RY, wires=range(self.n_wires), pattern="single", parameters=RY_2)
+            qml.broadcast(qml.RZ, wires=range(self.n_wires), pattern="single", parameters=RZ_2)
+            qml.broadcast(qml.RX, wires=range(self.n_wires), pattern="single", parameters=RX_2)
+            qml.broadcast(qml.CNOT, wires=range(self.n_wires), pattern="all_to_all")
+
             return [qml.expval(qml.PauliZ(i)) for i in range(self.n_wires)]
 
         return circuit

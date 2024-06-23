@@ -14,8 +14,8 @@ class PHModel:
         n_qubits = 5
         n_layers = 5
 
-        quantum_circuit, weight_shapes = create_ph_quantum_circuit(n_qubits, n_layers, config)
-        self.model = create_ph_model(n_qubits, quantum_circuit, weight_shapes, config)
+        quantum_circuit, weight_shapes = create_ph_quantum_circuit(n_qubits, n_layers)
+        self.model = create_ph_model(n_qubits, quantum_circuit, weight_shapes,config)
 
     def train(self, dataset):
         x_train = dataset['input_train']
@@ -64,7 +64,7 @@ def create_ph_model(n_qubits, quantum_circuit, weight_shapes, config):
 
     # VQC layer, reshape the output to remove the complex part
     quantum_layer = qml.qnn.KerasLayer(quantum_circuit, weight_shapes, output_dim=1)(dense2)
-    quantum_layer = tf.reshape(quantum_layer, (-1, 1))
+    quantum_layer = tf.reshape(quantum_layer, (-1, n_qubits))
 
     dense3 = Dense(n_qubits, activation='relu')(quantum_layer)
     output = Dense(config['future_steps'], activation='linear')(dense3)
@@ -74,14 +74,14 @@ def create_ph_model(n_qubits, quantum_circuit, weight_shapes, config):
     return model
 
 
-def create_ph_quantum_circuit(n_qubits, n_layers, config):
+def create_ph_quantum_circuit(n_qubits, n_layers):
     dev = qml.device("default.qubit", wires=n_qubits)
 
     @qml.qnode(dev, interface='tf')
     def quantum_circuit(inputs, weights):
         qml.AngleEmbedding(inputs, wires=range(n_qubits))
         qml.StronglyEntanglingLayers(weights, wires=range(n_qubits))
-        return qml.expval(qml.PauliZ(range(n_qubits)))
+        return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
 
     weight_shapes = {"weights": (n_layers, n_qubits, 3)}
     return quantum_circuit, weight_shapes
