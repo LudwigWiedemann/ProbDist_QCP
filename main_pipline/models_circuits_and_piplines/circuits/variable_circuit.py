@@ -1,3 +1,5 @@
+from functools import partial
+
 import pennylane as qml
 import main_pipline.input.div.config_manager as config
 
@@ -25,6 +27,7 @@ class new_RYXZ_Circuit(BaseCircuit):
     def run(self):
         training_device = qml.device("default.qubit", wires=self.n_wires)
 
+        @partial(qml.batch_input, argnum=0)
         @qml.qnode(training_device, interface='tf')
         def _circuit(inputs, weights_0, weights_1, weights_2):
             for i in range(5):
@@ -53,6 +56,7 @@ class new_baseline(BaseCircuit):
     def run(self):
         dev = qml.device("default.qubit", wires=self.n_wires)
 
+        @partial(qml.batch_input, argnum=0)
         @qml.qnode(dev, interface='tf')
         def quantum_circuit(inputs, weights):
             qml.AngleEmbedding(inputs, wires=range(self.n_wires))

@@ -7,11 +7,12 @@ import tensorflow as tf
 from tqdm import tqdm
 
 
-class PVCModel:
+class PACModel:
     def __init__(self, variable_circuit, config):
         self.config = config
-        self.circuit = variable_circuit()
-        self.model = self.create_pvc_model(self.circuit, config)
+        self.circuit = variable_circuit(config)
+        self.circuit.draw()
+        self.model = self.create_pac_model(self.circuit, config)
 
     def train(self, dataset):
         x_train = dataset['input_train']
@@ -49,12 +50,10 @@ class PVCModel:
     def predict(self, x_test):
         return self.model.predict(x_test)
 
-    def create_pvc_model(self, circuit, config):
+    def create_pac_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
-        dense1 = Dense(circuit.get_wires(), activation='linear')(inputs)
-        qlayer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=1)(dense1)
-        dense2 = Dense(config['future_steps'], activation='linear')(qlayer)
-
-        model = Model(inputs=inputs, outputs=dense2)
+        reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=1)(reshaped_inputs)
+        model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model

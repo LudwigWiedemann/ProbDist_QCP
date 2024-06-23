@@ -8,8 +8,7 @@ from tqdm import tqdm
 
 
 class PHModel:
-    def __init__(self, config):
-        circuit = None
+    def __init__(self, config, circuit=None):
         self.config = config
 
         n_qubits = 5
