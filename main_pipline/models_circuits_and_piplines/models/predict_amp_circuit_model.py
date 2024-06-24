@@ -1,11 +1,10 @@
 from keras.models import Model
-from tensorflow.keras.layers import Dense, Input, Flatten
+from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
 from main_pipline.input.div.logger import logger
 import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
-
 
 class PACModel:
     def __init__(self, variable_circuit, config):
@@ -59,3 +58,11 @@ class PACModel:
         model = Model(inputs=inputs, outputs=outputs)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
+
+    def save_model(self, path):
+        self.model.save(path)
+        logger.info(f"Model saved to {path}")
+
+    def load_model(self, path):
+        self.model = tf.keras.models.load_model(path, custom_objects={'KerasLayer': qml.qnn.KerasLayer})
+        logger.info(f"Model loaded from {path}")

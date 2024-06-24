@@ -38,7 +38,7 @@ full_config = {
     'num_samples': 200,  # How many samples of time_steps/future_steps are generated from the timeframe
     'noise_level': 0.05,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
-    'preview_samples': 0,  # How many preview samples should be included
+    'preview_samples': 1,  # How many preview samples should be included
     # Run parameter
     'model': 'Amp_circuit',  # PCV is the current main_model others are for baseline
     'circuit': 'Tangle_Amp_Circuit',
@@ -67,10 +67,16 @@ def run_model(dataset, config):
     # Initialised the current model
     circuit = circuits[config['circuit']]
     model = models[config['model']](circuit, config)
+
+    model_save_path = os.path.join(filemanager.path, "fitted_model")
+
     # Fit the model
     logger.info("Starting training")
     loss_progress = model.train(dataset)
     logger.info("Training completed")
+
+    # Save the fitted model
+    model.save_model(model_save_path)
 
     # Evaluate the model based on the test data
     logger.info("Starting evaluation")
@@ -101,6 +107,5 @@ if __name__ == "__main__":
     # filemanager.create_folder()  # Creates Folder
     start_time = time.time()
     silence_tensorflow()
-
     main()
     logger.info(f"Pipline complete in {time.time() - start_time} seconds")
