@@ -6,11 +6,12 @@ import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
 
+
 class PACModel:
     def __init__(self, variable_circuit, config):
         self.config = config
         self.circuit = variable_circuit(config)
-        self.model = self.create_pac_model(self.circuit, config)
+        self.model, self.scaling_factor = self.create_pac_model(self.circuit, config)
 
     def train(self, dataset):
         x_train = dataset['input_train']
@@ -33,8 +34,11 @@ class PACModel:
                 batch_loss = self.model.train_on_batch(x_batch, y_batch)
                 epoch_loss += batch_loss
             history['loss'].append(epoch_loss / steps_per_epoch)
-            logger.info(f"Epoch {epoch + 1}/{epochs} loss: {epoch_loss / steps_per_epoch}")
-            tqdm.write(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / steps_per_epoch}")
+            scaling_value = self.scaling_factor.numpy()
+            logger.info(
+                f"Epoch {epoch + 1}/{epochs} loss: {epoch_loss / steps_per_epoch}, scaling factor: {scaling_value}")
+            tqdm.write(
+                f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / steps_per_epoch}, Scaling Factor: {scaling_value}")
         return history
 
     def evaluate(self, dataset):
@@ -59,7 +63,7 @@ class PACModel:
 
         model = Model(inputs=inputs, outputs=outputs)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
-        return model
+        return model, scaling_factor
 
     def save_model(self, path):
         self.model.save(path)
