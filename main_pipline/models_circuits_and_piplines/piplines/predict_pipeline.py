@@ -42,10 +42,10 @@ full_config = {
     # Run parameter
     'model': 'Amp_circuit',  # PCV is the current main_model others are for baseline
     'circuit': 'Tangle_Amp_Circuit',
-    'epochs': 20,  # Adjusted to start with a reasonable number
+    'epochs': 5,  # Adjusted to start with a reasonable number
     'batch_size': 32,  # Keep this value for now
     # Optimization parameter
-    'learning_rate': 0.03,  # Adjusted to a common starting point
+    'learning_rate': 0.1,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forecasting parameter
     'steps_to_predict': 300

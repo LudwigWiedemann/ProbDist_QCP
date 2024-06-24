@@ -3,10 +3,6 @@ import numpy as np
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_forecasting_plots
 
-
-# Perhaps TODO integrate forecasting into model
-# Perhaps TODO expand on forecasting methods
-
 def iterative_forecast(function, model, dataset, config):
     # Samples used for forecasting
 
