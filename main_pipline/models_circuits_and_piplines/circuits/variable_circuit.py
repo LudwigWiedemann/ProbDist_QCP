@@ -48,8 +48,8 @@ class new_RYXZ_Circuit(BaseCircuit):
 class new_baseline(BaseCircuit):
     def __init__(self):
         super().__init__()
-        self.weight_shapes = {"weights": (1, 2, 3)}
-        self.n_wires = 2
+        self.n_wires = 25
+        self.weight_shapes = {"weights": (2, self.n_wires, 3)}
 
     def run(self):
         dev = qml.device("default.qubit", wires=self.n_wires)

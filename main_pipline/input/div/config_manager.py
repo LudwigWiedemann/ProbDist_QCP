@@ -10,7 +10,7 @@ future_steps = None  # How many points are predicted in train/test sample
 num_samples = None  # How many samples of time_steps/future_steps are generated from the timeframe
 noise_level = None  # Noise level on Inputs
 train_test_ratio = None  # The higher the ratio to more data is used for training
-#run Parameters
+# run Parameters
 model = None  # PCV is the current main_model others are for baseline
 custom_circuit = True  # For now only relevant for PCVModel
 circuit = None
@@ -23,7 +23,7 @@ loss_function = None,  # currently at 'mse'
 steps_to_predict = None
 
 
-#TODO function to load a config file
+# TODO function to load a config file
 def config_load(path):
     global time_frame_start, time_frame_end, n_steps, time_steps, future_steps, num_samples, noise_level, train_test_ratio, model, custom_circuit, circuit, epochs, batch_size, learning_rate, loss_function, steps_to_predict
     with open(path, 'rb') as f:
@@ -67,7 +67,6 @@ def load_from_values(config):
     steps_to_predict = int(config[15])
 
 
-#TODO function to save a config file
 def config_save():
     file.create_folder()
     config = {

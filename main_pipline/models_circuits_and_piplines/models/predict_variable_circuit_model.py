@@ -51,11 +51,8 @@ class PVCModel:
 
     def create_pvc_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
-        dense1 = Dense(circuit.get_wires(), activation='relu')(inputs)
-        qlayer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=1)(dense1)
-        qlayer = tf.reshape(qlayer, (-1, 1))
-        output = Dense(config['future_steps'], activation='linear')(qlayer)
-
-        model = Model(inputs=inputs, outputs=output)
+        reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=1)(reshaped_inputs)
+        model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model

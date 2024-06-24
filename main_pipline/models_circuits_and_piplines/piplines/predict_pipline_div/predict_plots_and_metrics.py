@@ -97,7 +97,7 @@ def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title
     plt.ylabel('Values')
     plt.title(title)
     plt.legend()
-    plt.savefig(file.path + "/plot_predictions.png")
+    plt.savefig(file.path + f"/plot_predictions_{title}.png")
     plt.show()
 
 

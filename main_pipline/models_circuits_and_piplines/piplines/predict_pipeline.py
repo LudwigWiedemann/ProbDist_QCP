@@ -17,7 +17,8 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
 
 # Current list of circuits
 from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit, new_baseline
-from main_pipline.models_circuits_and_piplines.circuits.amp_Circuit import base_Amp_Circuit, layered_Amp_Circuit
+from main_pipline.models_circuits_and_piplines.circuits.amp_Circuit import base_Amp_Circuit, layered_Amp_Circuit, \
+    Tangle_Amp_Circuit
 
 # Current main model ()
 from main_pipline.models_circuits_and_piplines.models.predict_variable_circuit_model import PVCModel
@@ -37,14 +38,14 @@ full_config = {
     'num_samples': 200,  # How many samples of time_steps/future_steps are generated from the timeframe
     'noise_level': 0.05,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
-    'preview_samples': 5,  # How many preview samples should be included
+    'preview_samples': 0,  # How many preview samples should be included
     # Run parameter
     'model': 'Amp_circuit',  # PCV is the current main_model others are for baseline
-    'circuit': 'layered_Amp_Circuit',
-    'epochs': 100,  # Adjusted to start with a reasonable number
+    'circuit': 'Tangle_Amp_Circuit',
+    'epochs': 20,  # Adjusted to start with a reasonable number
     'batch_size': 32,  # Keep this value for now
     # Optimization parameter
-    'learning_rate': 0.02,  # Adjusted to a common starting point
+    'learning_rate': 0.03,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forecasting parameter
     'steps_to_predict': 300
@@ -54,7 +55,8 @@ full_config = {
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel, 'Amp_circuit': PACModel}
 # Perhaps TODO expand on circuits
 circuits = {'new_RYXZ_Circuit': new_RYXZ_Circuit, 'new_baseline': new_baseline,
-            'base_Amp_Circuit': base_Amp_Circuit, 'layered_Amp_Circuit': layered_Amp_Circuit}
+            'base_Amp_Circuit': base_Amp_Circuit, 'layered_Amp_Circuit': layered_Amp_Circuit,
+            'Tangle_Amp_Circuit': Tangle_Amp_Circuit}
 
 
 def function(x):
