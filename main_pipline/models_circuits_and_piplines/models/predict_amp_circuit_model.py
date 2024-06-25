@@ -1,5 +1,5 @@
 from keras.models import Model
-from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
 from main_pipline.input.div.logger import logger
 import pennylane as qml
@@ -7,11 +7,11 @@ import tensorflow as tf
 from tqdm import tqdm
 
 
-class PVCModel:
+class PACModel:
     def __init__(self, variable_circuit, config):
         self.config = config
-        self.circuit = variable_circuit()
-        self.model = self.create_pvc_model(self.circuit, config)
+        self.circuit = variable_circuit(config)
+        self.model, self.scaling_factor = self.create_pac_model(self.circuit, config)
 
     def train(self, dataset):
         x_train = dataset['input_train']
@@ -34,8 +34,11 @@ class PVCModel:
                 batch_loss = self.model.train_on_batch(x_batch, y_batch)
                 epoch_loss += batch_loss
             history['loss'].append(epoch_loss / steps_per_epoch)
-            logger.info(f"Epoch {epoch + 1}/{epochs} loss: {epoch_loss / steps_per_epoch}")
-            tqdm.write(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / steps_per_epoch}")
+            scaling_value = self.scaling_factor.numpy()
+            logger.info(
+                f"Epoch {epoch + 1}/{epochs} loss: {epoch_loss / steps_per_epoch}, scaling factor: {scaling_value}")
+            tqdm.write(
+                f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss / steps_per_epoch}, Scaling Factor: {scaling_value}")
         return history
 
     def evaluate(self, dataset):
@@ -49,10 +52,24 @@ class PVCModel:
     def predict(self, x_test):
         return self.model.predict(x_test)
 
-    def create_pvc_model(self, circuit, config):
+    def create_pac_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
         reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
-        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=1)(reshaped_inputs)
-        model = Model(inputs=inputs, outputs=quantum_layer)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(
+            reshaped_inputs)
+
+        scaling_factor = tf.Variable(initial_value=1.0, trainable=True, dtype=tf.float64, name="scaling_factor")
+
+        outputs = tf.cast(quantum_layer, tf.float64) * scaling_factor
+
+        model = Model(inputs=inputs, outputs=outputs)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
-        return model
+        return model, scaling_factor
+
+    def save_model(self, path):
+        self.model.save(path)
+        logger.info(f"Model saved to {path}")
+
+    def load_model(self, path):
+        self.model = tf.keras.models.load_model(path, custom_objects={'KerasLayer': qml.qnn.KerasLayer})
+        logger.info(f"Model loaded from {path}")

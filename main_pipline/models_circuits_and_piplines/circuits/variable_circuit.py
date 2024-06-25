@@ -1,3 +1,5 @@
+from functools import partial
+
 import pennylane as qml
 import main_pipline.input.div.config_manager as config
 
@@ -19,20 +21,19 @@ class BaseCircuit:
 class new_RYXZ_Circuit(BaseCircuit):
     def __init__(self):
         super().__init__()
-        self.weight_shapes = {"weights_0": 1, "weights_1": 1, "weights_2": 1}
+        self.weight_shapes = {"weights_0": (1,), "weights_1": (1,), "weights_2": (1,)}
         self.n_wires = 1
 
     def run(self):
         training_device = qml.device("default.qubit", wires=self.n_wires)
 
-        @qml.qnode(training_device, interface='tf')
+        @partial(qml.batch_input, argnum=0)
+        @qml.qnode(training_device, interface='tf', diff_method='backprop')
         def _circuit(inputs, weights_0, weights_1, weights_2):
-            for i in range(5):
-                qml.RY(inputs[0], wires=0)
-                qml.RX(weights_0, wires=0)
-                qml.RY(weights_1, wires=0)
-                qml.RZ(weights_2, wires=0)
-                config.circuit_used = "variable-RYXZ-Circuit"
+            qml.RY(inputs[0], wires=0)
+            qml.RX(weights_0, wires=0)
+            qml.RY(weights_1, wires=0)
+            qml.RZ(weights_2, wires=0)
             return qml.expval(qml.PauliZ(wires=0))
 
         return _circuit
@@ -47,12 +48,13 @@ class new_RYXZ_Circuit(BaseCircuit):
 class new_baseline(BaseCircuit):
     def __init__(self):
         super().__init__()
-        self.weight_shapes = {"weights": (1, 2, 3)}
-        self.n_wires = 2
+        self.n_wires = 25
+        self.weight_shapes = {"weights": (2, self.n_wires, 3)}
 
     def run(self):
         dev = qml.device("default.qubit", wires=self.n_wires)
 
+        @partial(qml.batch_input, argnum=0)
         @qml.qnode(dev, interface='tf')
         def quantum_circuit(inputs, weights):
             qml.AngleEmbedding(inputs, wires=range(self.n_wires))
