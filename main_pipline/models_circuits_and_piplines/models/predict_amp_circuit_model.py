@@ -11,7 +11,7 @@ class PACModel:
     def __init__(self, variable_circuit, config):
         self.config = config
         self.circuit = variable_circuit(config)
-        self.model, self.scaling_factor = self.create_pac_model(self.circuit, config)
+        self.model = self.create_pac_model(self.circuit, config)
 
     def train(self, dataset):
         x_train = dataset['input_train']
@@ -34,7 +34,6 @@ class PACModel:
                 batch_loss = self.model.train_on_batch(x_batch, y_batch)
                 epoch_loss += batch_loss
             history['loss'].append(epoch_loss / steps_per_epoch)
-            scaling_value = self.scaling_factor.numpy()
             logger.info(
                 f"Epoch {epoch + 1}/{epochs} loss: {epoch_loss / steps_per_epoch}, scaling factor: {scaling_value}")
             tqdm.write(
@@ -57,14 +56,9 @@ class PACModel:
         reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
         quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(
             reshaped_inputs)
-
-        scaling_factor = tf.Variable(initial_value=1.0, trainable=True, dtype=tf.float64, name="scaling_factor")
-
-        outputs = tf.cast(quantum_layer, tf.float64) * scaling_factor
-
-        model = Model(inputs=inputs, outputs=outputs)
+        model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
-        return model, scaling_factor
+        return model
 
     def save_model(self, path):
         self.model.save(path)

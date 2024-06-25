@@ -109,7 +109,7 @@ class Tangle_Amp_Circuit(AmpCircuit):
     def __init__(self, config):
         super().__init__()
         self.n_wires = int(math.log2(config['time_steps']))
-        self.weight_shapes = {"weights": (30, self.n_wires, 3)}
+        self.weight_shapes = {"weights": (24, self.n_wires, 3)}
 
     def run(self):
         training_device = qml.device("default.qubit", wires=self.n_wires)
@@ -128,6 +128,30 @@ class Tangle_Amp_Circuit(AmpCircuit):
 
     def get_wires(self):
         return self.n_wires
+
+class Test_Circuit(AmpCircuit):
+    def __init__(self, config):
+        super().__init__()
+        self.n_wires = int(math.log2(config['time_steps']))
+        self.weight_shapes = {"weights": 1}
+
+    def run(self):
+        training_device = qml.device("default.qubit", wires=self.n_wires)
+
+        @partial(qml.batch_input, argnum=0)
+        @qml.qnode(training_device, interface='tf')
+        def circuit(inputs, weights):
+            qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True)
+            qml.broadcast(qml.RX,range(self.n_wires), pattern='single', parameters=weights)
+            return [qml.expval(qml.PauliZ(i)) for i in range(self.n_wires)]
+        return circuit
+
+    def get_weights(self):
+        return self.weight_shapes
+
+    def get_wires(self):
+        return self.n_wires
+
 
 
 if __name__ == "__main__":

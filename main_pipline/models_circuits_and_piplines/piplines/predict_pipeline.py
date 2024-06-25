@@ -18,7 +18,7 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
 # Current list of circuits
 from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit, new_baseline
 from main_pipline.models_circuits_and_piplines.circuits.amp_Circuit import base_Amp_Circuit, layered_Amp_Circuit, \
-    Tangle_Amp_Circuit
+    Tangle_Amp_Circuit, Test_Circuit
 
 # Current main model ()
 from main_pipline.models_circuits_and_piplines.models.predict_variable_circuit_model import PVCModel
@@ -55,7 +55,9 @@ full_config = {
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel, 'Amp_circuit': PACModel}
 # Perhaps TODO expand on circuits
 circuits = {'new_RYXZ_Circuit': new_RYXZ_Circuit, 'new_baseline': new_baseline,
-            'base_Amp_Circuit': base_Amp_Circuit, 'layered_Amp_Circuit': layered_Amp_Circuit}
+            'base_Amp_Circuit': base_Amp_Circuit, 'layered_Amp_Circuit': layered_Amp_Circuit,
+            'Test_Circuit': Test_Circuit
+            }
 
 
 def function(x):
