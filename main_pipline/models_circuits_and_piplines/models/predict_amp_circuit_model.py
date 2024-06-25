@@ -58,8 +58,9 @@ class PACModel:
         quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(
             reshaped_inputs)
 
-        scaling_factor = tf.Variable(initial_value=2.0, trainable=True, dtype=tf.float64, name="scaling_factor")
-        outputs = tf.cast(quantum_layer, tf.float64) ** scaling_factor
+        scaling_factor = tf.Variable(initial_value=1.0, trainable=True, dtype=tf.float64, name="scaling_factor")
+
+        outputs = tf.cast(quantum_layer, tf.float64) * scaling_factor
 
         model = Model(inputs=inputs, outputs=outputs)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])

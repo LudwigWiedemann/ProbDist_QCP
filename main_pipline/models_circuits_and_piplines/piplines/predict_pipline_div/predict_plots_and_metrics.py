@@ -12,6 +12,7 @@ def show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config):
     input_noisy_test = dataset['input_noisy_test']
 
     # Plot training metrics
+    print('Plot metric loss')
     plot_metrics(loss_progress)
 
     # Plot predictions vs real values for each test sample

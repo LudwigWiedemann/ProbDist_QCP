@@ -41,11 +41,11 @@ full_config = {
     'preview_samples': 1,  # How many preview samples should be included
     # Run parameter
     'model': 'Amp_circuit',  # PCV is the current main_model others are for baseline
-    'circuit': 'Tangle_Amp_Circuit',
-    'epochs': 5,  # Adjusted to start with a reasonable number
+    'circuit': 'layered_Amp_Circuit',
+    'epochs': 60,  # Adjusted to start with a reasonable number
     'batch_size': 32,  # Keep this value for now
     # Optimization parameter
-    'learning_rate': 0.1,  # Adjusted to a common starting point
+    'learning_rate': 0.05,  # Adjusted to a common starting point
     'loss_function': 'mse',  # currently at 'mse'
     # Forecasting parameter
     'steps_to_predict': 300
@@ -55,8 +55,7 @@ full_config = {
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel, 'Amp_circuit': PACModel}
 # Perhaps TODO expand on circuits
 circuits = {'new_RYXZ_Circuit': new_RYXZ_Circuit, 'new_baseline': new_baseline,
-            'base_Amp_Circuit': base_Amp_Circuit, 'layered_Amp_Circuit': layered_Amp_Circuit,
-            'Tangle_Amp_Circuit': Tangle_Amp_Circuit}
+            'base_Amp_Circuit': base_Amp_Circuit, 'layered_Amp_Circuit': layered_Amp_Circuit}
 
 
 def function(x):
@@ -76,7 +75,7 @@ def run_model(dataset, config):
     logger.info("Training completed")
 
     # Save the fitted model
-    model.save_model(model_save_path)
+    #model.save_model(model_save_path)
 
     # Evaluate the model based on the test data
     logger.info("Starting evaluation")
@@ -109,3 +108,5 @@ if __name__ == "__main__":
     silence_tensorflow()
     main()
     logger.info(f"Pipline complete in {time.time() - start_time} seconds")
+    logger.info(f"Config of this run: {full_config}")
+

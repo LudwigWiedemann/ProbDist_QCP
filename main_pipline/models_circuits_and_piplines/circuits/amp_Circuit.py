@@ -2,6 +2,7 @@ import math
 from collections import defaultdict
 from functools import partial
 import pennylane as qml
+import numpy as np
 
 
 class AmpCircuit:
@@ -16,6 +17,19 @@ class AmpCircuit:
 
     def get_wires(self):
         raise NotImplementedError("This method should be implemented by subclasses.")
+
+    def draw_circuit(self, filename="circuit_diagram.txt"):
+        """Draw the quantum circuit and save it to a file."""
+        # Generate dummy inputs and weights for drawing the circuit
+        inputs = np.random.random(2 ** self.n_wires)  # Correct input length for AmplitudeEmbedding
+        weights = [np.random.random(self.weight_shapes[key]) for key in self.weight_shapes]
+        circuit = self.run()
+        drawer = qml.draw(circuit)
+        diagram = drawer(inputs, *weights)
+        # Save the diagram to a file
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(diagram)
+        print(f"Circuit diagram saved to {filename}")
 
 
 class base_Amp_Circuit(AmpCircuit):
@@ -65,6 +79,7 @@ class layered_Amp_Circuit(AmpCircuit):
         @qml.qnode(training_device, interface='tf')
         def circuit(inputs, RY_0, RX_0, RZ_0, RY_1, RX_1, RZ_1, RX_2, RY_2, RZ_2):
             qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True)
+            qml.broadcast(qml.CNOT, wires=range(self.n_wires), pattern="chain")
             qml.broadcast(qml.RY, wires=range(self.n_wires), pattern="single", parameters=RY_0)
             qml.broadcast(qml.RX, wires=range(self.n_wires), pattern="single", parameters=RX_0)
             qml.broadcast(qml.RZ, wires=range(self.n_wires), pattern="single", parameters=RZ_0)
@@ -90,12 +105,11 @@ class layered_Amp_Circuit(AmpCircuit):
     def get_wires(self):
         return self.n_wires
 
-
 class Tangle_Amp_Circuit(AmpCircuit):
     def __init__(self, config):
         super().__init__()
         self.n_wires = int(math.log2(config['time_steps']))
-        self.weight_shapes = {"weights": (24, self.n_wires, 3)}
+        self.weight_shapes = {"weights": (30, self.n_wires, 3)}
 
     def run(self):
         training_device = qml.device("default.qubit", wires=self.n_wires)
@@ -114,3 +128,17 @@ class Tangle_Amp_Circuit(AmpCircuit):
 
     def get_wires(self):
         return self.n_wires
+
+
+if __name__ == "__main__":
+    config = {
+        'time_steps': 64
+    }
+
+    base_circuit = base_Amp_Circuit(config)
+    print("Base Circuit:")
+    base_circuit.draw_circuit("base_circuit_diagram.txt")
+
+    layered_circuit = layered_Amp_Circuit(config)
+    print("Layered Circuit:")
+    layered_circuit.draw_circuit("layered_circuit_diagram.txt")
