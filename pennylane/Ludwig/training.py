@@ -50,14 +50,14 @@ def train_from_y_values(dataset):
             params = optimizer.step(cost, params, time_steps=sample[0], expected_predictions=sample[1])
 
         if it % 10 == 0:
-            end_time = datetime.now()
-            elapsed_time = end_time - start_time
-            print(f"Iteration {it}: {elapsed_time}")
             total_error = 0
             for test_sample in test_samples:
                 total_error += cost(params, test_sample[0], test_sample[1])
             # prediction = cir.multiple_wires(params, extra_sample[0])
             print("average error of all test samples: " + str(total_error/len(test_samples)))
+            end_time = datetime.now()
+            elapsed_time = end_time - start_time
+            print(f"Iteration {it}: {elapsed_time}")
             start_time = datetime.now()
     return params
 

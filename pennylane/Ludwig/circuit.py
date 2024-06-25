@@ -42,7 +42,7 @@ def multiple_wires(params, inputs):
 
     for i in range(num_wires):
         qml.RY(params[3 * i], wires=i)
-        qml.RY(params[3 * i + 1], wires=i)
+        qml.RZ(params[3 * i + 1], wires=i)
 
     # entangle the output wires with all other ones
     output_wires = range(num_outputs)

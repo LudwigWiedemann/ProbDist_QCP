@@ -41,10 +41,12 @@ def prepare_data():
 
 if __name__ == "__main__":
     print("run")
-    dataset = prepare_data()
-    plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
-    params = tr.train_from_y_values(dataset)
-    # params = np.random.rand(3)
-    # dataset = dataset[0:full_config['time_steps']]
-    prediction = tr.iterative_forecast(params, dataset)
-    plot.plot(prediction, full_config['x_start'], step_size, full_config['total_training_points'])
+    for i in range(5):
+        dataset = prepare_data()
+        # plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
+        plot.plot(dataset, full_config['x_start'], step_size, 1000)
+        params = tr.train_from_y_values(dataset)
+        # params = np.random.rand(3)
+        # dataset = dataset[0:full_config['time_steps']]
+        prediction = tr.iterative_forecast(params, dataset)
+        plot.plot(prediction, full_config['x_start'], step_size, full_config['total_training_points'])
