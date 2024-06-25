@@ -42,7 +42,10 @@ def train_from_y_values(dataset):
     params = guess_starting_params(training_samples[0])
 
     start_time = datetime.now()
+    iteration_start_time = datetime.now()
     for it in range(training_iterations):
+        if it % 10 == 1:
+            iteration_start_time = datetime.now()
         for sample in training_samples:
             # gradients = tf.gradients(cost(params,sample[0], sample[1]), params)
             # params = optimizer.step(gradients, params, time_steps=sample[0], expected_predictions=sample[1])
@@ -57,7 +60,7 @@ def train_from_y_values(dataset):
             print("average error of all test samples: " + str(total_error/len(test_samples)))
             end_time = datetime.now()
             elapsed_time = end_time - start_time
-            print(f"Iteration {it}: {elapsed_time}")
+            print(f"Iteration {it}: {datetime.now() - iteration_start_time}")
             start_time = datetime.now()
     return params
 

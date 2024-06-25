@@ -22,7 +22,7 @@ def plot_evaluation(predictions, x_start, step_size, original_data_length):
     plt.plot(x_axis[0:original_data_length], predictions[0][0:original_data_length], label='known data', alpha=0.5, marker='o',
              color='blue')
     for i in range(len(predictions)):
-        plt.plot(x_axis[original_data_length:len(x_axis)], predictions[i][original_data_length:len(predictions[i])], label='prediction',
+        plt.plot(x_axis[original_data_length:len(x_axis)], predictions[i][original_data_length:len(predictions[i])],
                  alpha=0.01, color='red')
     plt.ylim(-2, 2)
     plt.grid(True)
