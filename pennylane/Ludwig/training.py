@@ -118,9 +118,9 @@ def guess_starting_params(sample):
 def iterative_forecast(params, dataset):
     for i in range(total_steps_to_forecast // future_steps):
         input = dataset[len(dataset) - time_steps:len(dataset)]
-        forecast = cir.multiple_wires(params, input)
-        print("forecast: " + str(forecast))
-        print("dataset: " + str(len(dataset)))
+        forecast = cir.multiple_shots(params, input)
+        # print("forecast: " + str(forecast))
+        # print("dataset: " + str(len(dataset)))
         for elem in forecast:
             dataset.append(elem)
 

@@ -16,6 +16,7 @@ from pennylane import numpy as np
 
 num_outputs = conf['future_steps']
 num_wires = sim.num_wires
+num_shots = conf['num_shots_for_evaluation']
 
 #
 # @qml.qnode(device)
@@ -33,6 +34,7 @@ num_wires = sim.num_wires
 
 
 dev = qml.device("default.qubit", wires=num_wires)
+shot_dev = qml.device("default.qubit", wires=num_wires, shots=num_shots)
 
 
 @qml.qnode(dev)
@@ -64,6 +66,33 @@ def multiple_wires(params, inputs):
 
     return outputs
 
+@qml.qnode(shot_dev)
+def multiple_shots(params, inputs):
+    qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
+
+    for i in range(num_wires):
+        qml.RY(params[3 * i], wires=i)
+        qml.RZ(params[3 * i + 1], wires=i)
+
+    # entangle the output wires with all other ones
+    output_wires = range(num_outputs)
+    for wire in output_wires:
+        for i in range(num_wires):
+            # qml.CNOT(wires=[i + num_outputs, wire])
+            if not i == wire:
+                qml.CRY(params[3 * i + 2], wires=[i, wire])
+
+    # for i in range(num_wires):
+    #     qml.RY(params[i] * inputs[i], wires=i)
+
+    # measure the output wires
+    outputs = []
+    for wire in output_wires:
+        outputs.append(qml.expval(qml.PauliZ(wires=wire)))
+
+    # TODO: Add multiple layers ?
+
+    return outputs
 
 # i = [0,1,2,3,4,5,6,7,8,9]
 # p = np.random.rand(10)

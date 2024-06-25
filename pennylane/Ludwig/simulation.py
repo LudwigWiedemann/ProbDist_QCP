@@ -3,7 +3,7 @@ import math
 from pennylane import numpy as np
 import training as tr
 import plotting as plot
-import noise as ns
+from datetime import datetime
 
 
 full_config = {
@@ -21,11 +21,13 @@ full_config = {
     # training parameter
     'time_steps': 8,  # How many consecutive points are in train/test sample
     'future_steps': 2,  # How many points are predicted in train/test sample
-    'num_samples': 100,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'epochs': 50,  # Adjusted to start with a reasonable number
+    'num_samples': 80,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'epochs': 80,  # Adjusted to start with a reasonable number
     'learning_rate': 0.01,  # Adjusted to a common starting point
     # Forecasting parameter
-    'steps_to_forecast': 50
+    'steps_to_forecast': 50,
+    'num_shots_for_evaluation': 200,
+    'predictions_for_distribution': 50
 
 }
 step_size = ((full_config['x_end'] - full_config['x_start']) / (full_config['total_training_points'] - 1))
@@ -44,9 +46,17 @@ if __name__ == "__main__":
     for i in range(5):
         dataset = prepare_data()
         # plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
-        plot.plot(dataset, full_config['x_start'], step_size, 1000)
+        plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
         params = tr.train_from_y_values(dataset)
         # params = np.random.rand(3)
         # dataset = dataset[0:full_config['time_steps']]
-        prediction = tr.iterative_forecast(params, dataset)
-        plot.plot(prediction, full_config['x_start'], step_size, full_config['total_training_points'])
+        predictions = []
+        prediction_start_time = datetime.now()
+
+        for i in range(full_config['predictions_for_distribution']):
+            prediction_dataset = list(dataset)
+            prediction = tr.iterative_forecast(params, prediction_dataset)
+            predictions.append(prediction)
+        prediction_end_time = datetime.now()
+        print("prediction took", prediction_end_time - prediction_start_time)
+        plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'])
