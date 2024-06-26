@@ -26,6 +26,12 @@ class PACModel:
 
         history = {'loss': []}
 
+        # Early stopping parameters
+        patience = self.config['patience']
+        min_delta = self.config['min_delta']
+        best_loss = float('inf')
+        wait = 0
+
         for epoch in tqdm(range(epochs), desc="Training Progress"):
             epoch_loss = 0
             for step in range(steps_per_epoch):
@@ -47,6 +53,16 @@ class PACModel:
             logger.info(log_message)  # Log using the logger
             tqdm.write(f"Epoch {epoch + 1}/{epochs}, Loss: {normalized_loss}")  # Print using tqdm
 
+            # Early stopping check
+            if normalized_loss < best_loss - min_delta:
+                best_loss = normalized_loss
+                wait = 0
+            else:
+                wait += 1
+                if wait >= patience:
+                    logger.info(f"Early stopping at epoch {epoch + 1}")
+                    break
+
         return history
 
     def evaluate(self, dataset):
@@ -59,13 +75,12 @@ class PACModel:
         return pred_y_test_data, normalized_loss
 
     def predict(self, x_test):
-        return self.model.predict(x_test/['compress_factor']) * ['compress_factor']
+        return self.model.predict((x_test/ self.config['compress_factor'])) *  self.config['compress_factor']
 
     def create_pac_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
         reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
-        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(
-            reshaped_inputs)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(reshaped_inputs)
         model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model

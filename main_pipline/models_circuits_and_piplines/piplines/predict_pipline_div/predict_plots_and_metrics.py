@@ -12,7 +12,7 @@ def show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config):
     input_noisy_test = dataset['input_noisy_test']
 
     # Plot training metrics
-    plot_metrics(loss_progress)
+    plot_metrics(loss_progress, show=config['show_model_plots'])
 
     # Plot predictions vs real values for each test sample
     n_sample_plots = int(config['num_samples'] * 0.05)
@@ -23,11 +23,12 @@ def show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config):
             y_pred_combined = np.concatenate((input_test[i].flatten(), pred_y_test_data[i].flatten()))
             plot_predictions(x_indices, input_test[i].flatten(), input_noisy_test[i].flatten(), y_real_combined,
                              y_pred_combined,
-                             title=f'Test_Data_Sample_{i + 1}')
+                             title=f'Test_Data_Sample_{i + 1}', show=config['show_model_plots'])
             sleep(1.5)
 
     # Plot residuals for test data
-    plot_residuals(output_test.flatten(), pred_y_test_data.flatten(), title='Residuals on Test Data')
+    plot_residuals(output_test.flatten(), pred_y_test_data.flatten(), title='Residuals on Test Data',
+                   show=config['show_model_plots'])
 
 
 def show_all_forecasting_plots(target_function, pred_y_forecast_data, dataset, config):
@@ -45,17 +46,17 @@ def show_all_forecasting_plots(target_function, pred_y_forecast_data, dataset, c
     y_iter_combined = np.concatenate((input_forecast.flatten(), real_future_values))
     plot_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
                      np.concatenate((input_forecast.flatten(), pred_y_forecast_data)),
-                     title='Iterative_Forecast', )
+                     title='Iterative_Forecast', show=config['show_forecast_plots'])
 
 
 def show_sample_preview_plots(input_test, output_test, input_noisy_test, config):
     x_indices = np.arange(config['time_steps'] + config['future_steps'])
     y_real_combined = np.concatenate((input_test.flatten(), output_test.flatten()))
     plot_predictions(x_indices, input_test.flatten(), input_noisy_test.flatten(), y_real_combined, None,
-                     title=f'Random_Sample_Preview')
+                     title=f'Random_Sample_Preview', show=config['show_dataset_plots'])
 
 
-def plot_metrics(loss_progress):
+def plot_metrics(loss_progress, show=False):
     # Check if history is a dictionary and contains 'loss' key
     if isinstance(loss_progress, dict) and 'loss' in loss_progress:
         plt.figure()
@@ -65,12 +66,13 @@ def plot_metrics(loss_progress):
         plt.title('Training Loss')
         plt.legend()
         plt.savefig(file.path + "/plot_metrics.png")
-        plt.show()
+        if show:
+            plt.show()
     else:
         logger.info("History object does not contain 'loss'.")
 
 
-def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title='Real vs Predicted'):
+def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title='Real vs Predicted', show=False):
     plt.figure(figsize=(max(10, len(x_data) / 10), 10))
 
     # Plot the known time steps with line and markers
@@ -81,7 +83,7 @@ def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title
 
     # Connect the last known point to the first predicted point
     plt.plot([x_data[len(input_real) - 1], x_data[len(input_real)]], [input_real[-1], y_real[len(input_real)]],
-                 color='blue', linestyle='-')
+             color='blue', linestyle='-')
 
     # Plot the real future steps with line and markers
     if len(y_real) > len(input_real):  # Check if y_real has more points than y_known
@@ -97,11 +99,13 @@ def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title
     plt.ylabel('Values')
     plt.title(title)
     plt.legend()
+    if show:
+        plt.show()
     plt.savefig(file.path + f"/{title}_plot_predictions.png")
-    plt.show()
+    plt.close()
 
 
-def plot_residuals(y_real, y_pred, title='Residuals'):
+def plot_residuals(y_real, y_pred, title='Residuals', show=False):
     residuals = y_real - y_pred
     plt.figure()
     plt.plot(residuals, label='Residuals', color='purple')
@@ -111,18 +115,22 @@ def plot_residuals(y_real, y_pred, title='Residuals'):
     plt.title(title)
     plt.legend()
     plt.savefig(file.path + "/plot_residuals.png")
-    plt.show()
+    if show:
+        plt.show()
+    plt.close()
 
 
-def plot_full_timeframe_data(x_data, y_data, y_noisy_data, title='Full Timeframe Data'):
-    plt.figure(figsize=(20, 10))
+def plot_full_timeframe_data(x_data, y_data, y_noisy_data, title='Full Timeframe Data', show=False):
+    plt.figure(figsize=(max(10, len(x_data) / 10), 10))
 
-    plt.plot(x_data, y_noisy_data, label='Noisy', color='red', marker='x', linestyle='--')
-    plt.plot(x_data, y_data, label='Real', color='green', marker='o', linestyle='-')
+    plt.plot(x_data, y_noisy_data, label='Noisy', color='blue', marker='x', linestyle='--')
+    plt.plot(x_data, y_data, label='Real', color='cyan', marker='o', linestyle='-')
 
     plt.xlabel('Time Steps')
     plt.ylabel('Values')
     plt.title(title)
     plt.legend()
     plt.savefig(file.path + "/plot_full_timeframe_data.png")
+    if show:
+        plt.show()
     plt.close()

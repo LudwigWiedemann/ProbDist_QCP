@@ -64,7 +64,6 @@ class layered_Amp_Circuit(AmpCircuit):
     def __init__(self, config):
         super().__init__()
         self.n_wires = int(math.log2(config['time_steps']))
-
         self.layer = 3
         self.ops = ['RY', 'RX', 'RZ']
         self.weight_shapes = defaultdict(int)
@@ -78,7 +77,7 @@ class layered_Amp_Circuit(AmpCircuit):
         @partial(qml.batch_input, argnum=0)
         @qml.qnode(training_device, interface='tf')
         def circuit(inputs, RY_0, RX_0, RZ_0, RY_1, RX_1, RZ_1, RX_2, RY_2, RZ_2):
-            qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True)
+            qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True, pad_with=0.)
             qml.broadcast(qml.CNOT, wires=range(self.n_wires), pattern="chain")
             qml.broadcast(qml.RY, wires=range(self.n_wires), pattern="single", parameters=RY_0)
             qml.broadcast(qml.RX, wires=range(self.n_wires), pattern="single", parameters=RX_0)
@@ -109,7 +108,7 @@ class Tangle_Amp_Circuit(AmpCircuit):
     def __init__(self, config):
         super().__init__()
         self.n_wires = int(math.log2(config['time_steps']))
-        self.weight_shapes = {"weights": (30, self.n_wires, 3)}
+        self.weight_shapes = {"weights": (config['layers'], self.n_wires, 3)}
 
     def run(self):
         training_device = qml.device("default.qubit", wires=self.n_wires)
@@ -132,7 +131,7 @@ class Tangle_Amp_Circuit(AmpCircuit):
 class Test_Circuit(AmpCircuit):
     def __init__(self, config):
         super().__init__()
-        self.n_wires = int(math.log2(config['time_steps']))
+        self.n_wires = 10
         self.weight_shapes = {"weights": 1}
 
     def run(self):

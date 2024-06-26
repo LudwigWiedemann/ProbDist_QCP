@@ -97,9 +97,7 @@ def generate_time_series_data(func, config):
     output_test = np.array(output_test).reshape(-1, future_steps)
     input_foresight = np.array(input_foresight).reshape(1, time_steps, 1)
     input_noisy_foresight = np.array(input_noisy_foresight).reshape(1, time_steps, 1)
-
-    plot_full_timeframe_data(x_data, y_data, noisy_y_data, title='Full Timeframe Data')
-
+    plot_full_timeframe_data(x_data, y_data, noisy_y_data, title='Full Timeframe Data', show=config['show_dataset_plots'])
     dataset = {'input_train': input_train, 'output_train': output_train, 'input_noisy_test': input_noisy_test,
                'input_test': input_real_test, 'output_test': output_test,
                'input_forecast': input_foresight, 'input_noisy_forecast': input_noisy_foresight, 'step_size': step_size}

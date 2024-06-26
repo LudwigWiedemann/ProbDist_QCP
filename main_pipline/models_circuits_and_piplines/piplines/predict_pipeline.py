@@ -28,15 +28,20 @@ full_config = {
     'num_samples': 256,
     'noise_level': 0.05,
     'train_test_ratio': 0.6,
-    'preview_samples': 1,
+    'preview_samples': 3,
+    'show_dataset_plots': False,
+    'show_model_plots': False,
+    'show_forecast_plots': True,
     'model': 'Amp_circuit',
     'circuit': 'layered_Amp_Circuit',
-    'epochs': 20,
+    'epochs': 1,
     'batch_size': 32,
     'learning_rate': 0.08,
     'loss_function': 'mse',
     'steps_to_predict': 300,
-    'compress_factor': 1.5
+    'compress_factor': 1.5,
+    'layers': 24,
+    'wires': 10
 }
 
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel, 'Amp_circuit': PACModel}
@@ -62,7 +67,7 @@ def run_model(dataset, config):
 
     show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config)
 
-    return model
+    return model, loss
 
 def main():
     logger.info("Generating training data")
