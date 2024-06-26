@@ -17,6 +17,7 @@ class Logger(object):
     fileHandler.setFormatter(logFormatter)
     rootLogger.addHandler(fileHandler)
 
-    consoleHandler = logger.StreamHandler()
-    consoleHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(consoleHandler)
+    # Comment out or remove the console handler to avoid duplicate logs
+    # consoleHandler = logger.StreamHandler()
+    # consoleHandler.setFormatter(logFormatter)
+    # rootLogger.addHandler(consoleHandler)

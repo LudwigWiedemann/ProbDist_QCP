@@ -12,7 +12,6 @@ def show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config):
     input_noisy_test = dataset['input_noisy_test']
 
     # Plot training metrics
-    print('Plot metric loss')
     plot_metrics(loss_progress)
 
     # Plot predictions vs real values for each test sample
@@ -24,7 +23,7 @@ def show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config):
             y_pred_combined = np.concatenate((input_test[i].flatten(), pred_y_test_data[i].flatten()))
             plot_predictions(x_indices, input_test[i].flatten(), input_noisy_test[i].flatten(), y_real_combined,
                              y_pred_combined,
-                             title=f'Test Data Sample {i + 1}: Real vs Predicted')
+                             title=f'Test_Data_Sample_{i + 1}')
             sleep(1.5)
 
     # Plot residuals for test data
@@ -46,7 +45,7 @@ def show_all_forecasting_plots(target_function, pred_y_forecast_data, dataset, c
     y_iter_combined = np.concatenate((input_forecast.flatten(), real_future_values))
     plot_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
                      np.concatenate((input_forecast.flatten(), pred_y_forecast_data)),
-                     title='Iterative_Forecast: Real vs Predicted', )
+                     title='Iterative_Forecast', )
 
 
 def show_sample_preview_plots(input_test, output_test, input_noisy_test, config):
@@ -126,4 +125,4 @@ def plot_full_timeframe_data(x_data, y_data, y_noisy_data, title='Full Timeframe
     plt.title(title)
     plt.legend()
     plt.savefig(file.path + "/plot_full_timeframe_data.png")
-    plt.show()
+    plt.close()

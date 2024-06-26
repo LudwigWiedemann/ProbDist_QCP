@@ -109,7 +109,7 @@ class Tangle_Amp_Circuit(AmpCircuit):
     def __init__(self, config):
         super().__init__()
         self.n_wires = int(math.log2(config['time_steps']))
-        self.weight_shapes = {"weights": (24, self.n_wires, 3)}
+        self.weight_shapes = {"weights": (30, self.n_wires, 3)}
 
     def run(self):
         training_device = qml.device("default.qubit", wires=self.n_wires)
