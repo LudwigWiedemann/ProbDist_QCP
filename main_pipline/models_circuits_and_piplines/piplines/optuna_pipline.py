@@ -18,31 +18,38 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 saved_progress_file = os.path.join(CURRENT_DIR, "optuna_study_01.pkl")
 
 # Save the study every n trials
-SAVE_INTERVAL = 5
+SAVE_INTERVAL = 1
 
 full_config = {
-    'time_frame_start': -4 * np.pi,
-    'time_frame_end': 8 * np.pi,
+    # Dataset parameter
+    'time_frame_start': -2 * np.pi,
+    'time_frame_end': 5 * np.pi,
     'n_steps': 256,
     'time_steps': 64,
     'future_steps': 6,
     'num_samples': 256,
     'noise_level': 0.05,
     'train_test_ratio': 0.6,
+    #  Plotting parameter
     'preview_samples': 3,
     'show_dataset_plots': False,
     'show_model_plots': False,
     'show_forecast_plots': True,
-    'model': 'Amp_circuit',
-    'circuit': 'layered_Amp_Circuit',
-    'epochs': 100,
-    'batch_size': 32,
-    'learning_rate': 0.08,
-    'loss_function': 'mse',
     'steps_to_predict': 300,
+    # Model parameter
+    'model': 'Amp_circuit',
+    'circuit': 'Tangle_Amp_Circuit',
+    # Run parameter
+    'epochs': 40,
+    'batch_size': 32,
+    'learning_rate': 0.5,
+    'loss_function': 'mse',
     'compress_factor': 1.5,
     'patience': 10,
-    'min_delta': 0.001
+    'min_delta': 0.001,
+    # Circuit parameter
+    'layers': 5,  # Only Optuna/Tangle circuit
+    'shots': None
 }
 
 def function(x):
@@ -51,7 +58,7 @@ def function(x):
 full_dataset = generate_time_series_data(function, full_config)
 
 def optimize(trial):
-    layers = trial.suggest_int('layers', 10, 50)
+    layers = trial.suggest_int('layers', 10, 25)
     learning_rate = trial.suggest_float('learning_rate', 0.0001, 0.1)
     compress_factor = trial.suggest_float('compress_factor', 1, 10)
     batch_size = trial.suggest_int('batch_size', 1, 128)

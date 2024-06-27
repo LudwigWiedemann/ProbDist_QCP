@@ -22,17 +22,17 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 
 full_config = {
     # Dataset parameter
-    'time_frame_start': -2 * np.pi,
-    'time_frame_end': 5 * np.pi,
-    'n_steps': 256,
-    'time_steps': 64,
-    'future_steps': 10,
-    'num_samples': 256,
-    'noise_level': 0.05,
+    'time_frame_start': -4 * np.pi,
+    'time_frame_end': 12 * np.pi,
+    'n_steps': 80,
+    'time_steps': 8,
+    'future_steps': 4,
+    'num_samples': 80,
+    'noise_level': 0.1,
     'train_test_ratio': 0.6,
     #  Plotting parameter
     'preview_samples': 3,
-    'show_dataset_plots': False,
+    'show_dataset_plots': True,
     'show_model_plots': False,
     'show_forecast_plots': True,
     'steps_to_predict': 300,
@@ -40,7 +40,7 @@ full_config = {
     'model': 'Amp_circuit',
     'circuit': 'Tangle_Amp_Circuit',
     # Run parameter
-    'epochs': 2,
+    'epochs': 50,
     'batch_size': 32,
     'learning_rate': 0.5,
     'loss_function': 'mse',
@@ -49,7 +49,7 @@ full_config = {
     'min_delta': 0.001,
     # Circuit parameter
     'layers': 5,  # Only Optuna/Tangle circuit
-    'shots': 2
+    'shots': None
 }
 
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel, 'Amp_circuit': PACModel}
@@ -72,6 +72,8 @@ def run_model(dataset, config):
     logger.info("Starting training")
     loss_progress = model.train(dataset)
     logger.info("Training completed")
+
+    model.save_weights(model_save_path, overwrite=True)
 
     logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
