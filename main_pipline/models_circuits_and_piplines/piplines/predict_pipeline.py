@@ -12,7 +12,8 @@ from main_pipline.input.div.dataset_manager import generate_time_series_data
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import iterative_forecast
 
 from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit, new_baseline
-from main_pipline.models_circuits_and_piplines.circuits.amp_Circuit import base_Amp_Circuit, layered_Amp_Circuit, Tangle_Amp_Circuit, Test_Circuit
+from main_pipline.models_circuits_and_piplines.circuits.amp_Circuit import base_Amp_Circuit, layered_Amp_Circuit, \
+    tangle_Amp_Circuit, test_Amp_Circuit, double_Amp_Circuit
 
 from main_pipline.models_circuits_and_piplines.models.predict_variable_circuit_model import PVCModel
 from main_pipline.models_circuits_and_piplines.models.predict_amp_circuit_model import PACModel
@@ -20,33 +21,41 @@ from main_pipline.models_circuits_and_piplines.models.predict_amp_circuit_model 
 from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hybrid_model import PHModel
 
 full_config = {
-    'time_frame_start': -4 * np.pi,
-    'time_frame_end': 8 * np.pi,
+    # Dataset parameter
+    'time_frame_start': -2 * np.pi,
+    'time_frame_end': 5 * np.pi,
     'n_steps': 256,
     'time_steps': 64,
-    'future_steps': 6,
+    'future_steps': 10,
     'num_samples': 256,
     'noise_level': 0.05,
     'train_test_ratio': 0.6,
+    #  Plotting parameter
     'preview_samples': 3,
     'show_dataset_plots': False,
     'show_model_plots': False,
     'show_forecast_plots': True,
-    'model': 'Amp_circuit',
-    'circuit': 'layered_Amp_Circuit',
-    'epochs': 1,
-    'batch_size': 32,
-    'learning_rate': 0.08,
-    'loss_function': 'mse',
     'steps_to_predict': 300,
+    # Model parameter
+    'model': 'Amp_circuit',
+    'circuit': 'Tangle_Amp_Circuit',
+    # Run parameter
+    'epochs': 2,
+    'batch_size': 32,
+    'learning_rate': 0.5,
+    'loss_function': 'mse',
     'compress_factor': 1.5,
-    'layers': 24,
-    'wires': 10
+    'patience': 10,
+    'min_delta': 0.001,
+    # Circuit parameter
+    'layers': 5,  # Only Optuna/Tangle circuit
+    'shots': 2
 }
 
 models = {'Hybrid': PHModel, 'Variable_circuit': PVCModel, 'Amp_circuit': PACModel}
 circuits = {'new_RYXZ_Circuit': new_RYXZ_Circuit, 'new_baseline': new_baseline, 'base_Amp_Circuit': base_Amp_Circuit,
-            'layered_Amp_Circuit': layered_Amp_Circuit, 'Test_Circuit': Test_Circuit}
+            'layered_Amp_Circuit': layered_Amp_Circuit,'Tangle_Amp_Circuit':tangle_Amp_Circuit, 'Test_Circuit': test_Amp_Circuit,
+            'Double_Amp_Circuit': double_Amp_Circuit}
 
 def function(x):
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
@@ -54,7 +63,10 @@ def function(x):
 def run_model(dataset, config):
     circuit = circuits[config['circuit']]
     model = models[config['model']](circuit, config)
-
+    logger.info(f"Model: {config['model']}, Circuit: {config['circuit']}")
+    logger.info("Config of this run:")
+    for key in config.keys():
+        logger.info(f"{key} : {config[key]}")
     model_save_path = os.path.join(filemanager.path, "fitted_model")
 
     logger.info("Starting training")
@@ -74,7 +86,7 @@ def main():
     dataset = generate_time_series_data(function, full_config)
     logger.info("Training data generated")
 
-    model = run_model(dataset, full_config)
+    model, loss = run_model(dataset, full_config)
 
     iterative_forecast(function, model, dataset, full_config)
 
@@ -83,4 +95,3 @@ if __name__ == "__main__":
     silence_tensorflow()
     main()
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
-    logger.info(f"Config of this run: {full_config}")

@@ -14,8 +14,7 @@ class PACModel:
         self.model = self.create_pac_model(self.circuit, config)
         self.optimizer = Adam(learning_rate=config['learning_rate'])
         self.loss_fn = tf.keras.losses.get(config['loss_function'])
-        self.normalization_factor = None  # To be set based on initial loss
-
+        self.normalization_factor = None
     def train(self, dataset):
         x_train = dataset['input_train']/self.config['compress_factor']
         y_train = dataset['output_train']/self.config['compress_factor']
@@ -66,13 +65,14 @@ class PACModel:
         return history
 
     def evaluate(self, dataset):
-        x_test = dataset['input_test']/self.config['compress_factor']
-        y_test = dataset['output_test']/self.config['compress_factor']
+        x_test = dataset['input_test'] / self.config['compress_factor']
+        y_test = dataset['output_test'] / self.config['compress_factor']
 
-        pred_y_test_data = self.model.predict(x_test) * self.config['compress_factor']
-        loss = self.model.evaluate(x_test, y_test)
-        normalized_loss = loss / self.normalization_factor  # Normalize the loss
-        return pred_y_test_data, normalized_loss
+        evaluation_results = self.model.evaluate(x_test, y_test, return_dict=True)
+        predictions = self.model.predict(x_test) * self.config['compress_factor']
+
+        normalized_loss = evaluation_results['loss'] / self.normalization_factor  # Normalize the loss
+        return predictions, normalized_loss
 
     def predict(self, x_test):
         return self.model.predict((x_test/ self.config['compress_factor'])) *  self.config['compress_factor']
