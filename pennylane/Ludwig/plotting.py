@@ -37,6 +37,17 @@ def f(x):
     #return np.sin(x)
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
+def plot_kl_divergence(distributions):
+    # Create an array of indices for the x-coordinates of the bars
+    x_coords = np.arange(distributions.size)
+    print("COORDINATES:")
+    print(distributions)
+    # Create a bar plot
+    plt.bar(x_coords, distributions)
+    plt.xlabel('Distribution Pair')
+    plt.ylabel('Average KL Divergence')
+    plt.title('Average KL Divergence for Each Pair of Distributions')
+    plt.show()
 
 #
 # x_axis = np.linspace(-3, 6, 21000)

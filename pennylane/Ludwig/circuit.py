@@ -19,6 +19,8 @@ num_wires = sim.num_wires
 num_shots = conf['num_shots_for_evaluation']
 num_layers = conf['num_layers']
 
+proberbilities =[]
+
 #
 # @qml.qnode(device)
 # def run_circuit(params, x):
@@ -69,7 +71,7 @@ def multiple_wires(params, inputs):
     return outputs
 
 @qml.qnode(shot_dev)
-def multiple_shots(params, inputs):
+def multiple_shots_outputs(params, inputs):
     qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
 
     for i in range(num_wires):
@@ -80,21 +82,55 @@ def multiple_shots(params, inputs):
     output_wires = range(num_outputs)
     for wire in output_wires:
         for i in range(num_wires):
-            # qml.CNOT(wires=[i + num_outputs, wire])
             if not i == wire:
                 qml.CRY(params[3 * i + 2], wires=[i, wire])
 
-    # for i in range(num_wires):
-    #     qml.RY(params[i] * inputs[i], wires=i)
-
     # measure the output wires
-    outputs = []
-    for wire in output_wires:
-        outputs.append(qml.expval(qml.PauliZ(wires=wire)))
-
-    # TODO: Add multiple layers ?
+    outputs = [qml.expval(qml.PauliZ(wires=wire)) for wire in output_wires]
 
     return outputs
+
+@qml.qnode(shot_dev)
+def multiple_shots_probs(params, inputs):
+    qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
+    for i in range(num_wires):
+        qml.RY(params[3 * i], wires=i)
+        qml.RZ(params[3 * i + 1], wires=i)
+
+    # entangle the output wires with all other ones
+    output_wires = range(num_outputs)
+    for wire in output_wires:
+        for i in range(num_wires):
+            if not i == wire:
+                qml.CRY(params[3 * i + 2], wires=[i, wire])
+
+    # calculate the probabilities of the quantum states
+    probabilities = qml.probs(wires=range(num_wires))
+
+    return probabilities
+
+
+@qml.qnode(shot_dev)
+def multiple_shots_outputs(params, inputs):
+    qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
+    for i in range(num_wires):
+        qml.RY(params[3 * i], wires=i)
+        qml.RZ(params[3 * i + 1], wires=i)
+
+    # entangle the output wires with all other ones
+    output_wires = range(num_outputs)
+    for wire in output_wires:
+        for i in range(num_wires):
+            if not i == wire:
+                qml.CRY(params[3 * i + 2], wires=[i, wire])
+
+    # measure the output wires
+    outputs = [qml.expval(qml.PauliZ(wires=wire)) for wire in output_wires]
+
+    return outputs
+#https://mathoverflow.net/questions/244293/generalisations-of-the-kullback-leibler-divergence-for-more-than-two-distributio
+
+
 
 # i = [0,1,2,3,4,5,6,7,8,9]
 # p = np.random.rand(10)
