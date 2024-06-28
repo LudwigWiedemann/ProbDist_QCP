@@ -86,7 +86,7 @@ class PACModel:
         return model
 
     def save_model(self, path):
-        self.model.save(path)
+        self.model.save_weights(path, overwrite=True)
         logger.info(f"Model saved to {path}")
 
     def load_model(self, path):

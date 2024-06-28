@@ -8,6 +8,8 @@ from silence_tensorflow import silence_tensorflow
 
 from main_pipline.input.div.dataset_manager import generate_time_series_data
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipeline import run_model
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
+    iterative_forecast
 
 n_trials = 100
 
@@ -48,7 +50,7 @@ full_config = {
     'patience': 10,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 5,  # Only Optuna/Tangle circuit
+    'layers': 1,  # Only Optuna/Tangle circuit
     'shots': None
 }
 
@@ -58,7 +60,7 @@ def function(x):
 full_dataset = generate_time_series_data(function, full_config)
 
 def optimize(trial):
-    layers = trial.suggest_int('layers', 10, 25)
+    layers = trial.suggest_int('layers', 1, 25)
     learning_rate = trial.suggest_float('learning_rate', 0.0001, 0.1)
     compress_factor = trial.suggest_float('compress_factor', 1, 10)
     batch_size = trial.suggest_int('batch_size', 1, 128)
@@ -68,12 +70,17 @@ def optimize(trial):
     config = full_config
     config.update([('layers', layers), ('learning_rate', learning_rate), ('compress_factor', compress_factor), ('batch_size', batch_size)])
     model, loss = run_model(dataset, config)
-
+    iterative_forecast(function, model, dataset, config)
     print(f"Trial {trial.number}: Finished with parameters: layers={layers}, learning_rate={learning_rate}, compress_factor={compress_factor}, batch_size={batch_size}")
     return evaluate_dataset_results(loss)
 
 def evaluate_dataset_results(loss):
     return loss
+
+def save_study(study, file_path):
+    with open(file_path, 'wb') as f:
+        dill.dump(study, f)
+    print(f"Study saved to {file_path}", flush=True)
 
 def run_optimisation():
     start_time = time.time()
@@ -93,16 +100,19 @@ def run_optimisation():
     else:
         print(f"No previous study found at {saved_progress_file}. Starting a new one.", flush=True)
 
-    study.optimize(optimize, n_trials=n_trials)  # Use all available CPU cores
+    # Define a callback function to save the study after each trial
+    def save_study_callback(study, trial):
+        if trial.number % SAVE_INTERVAL == 0:
+            save_study(study, saved_progress_file)
+
+    study.optimize(optimize, n_trials=n_trials, callbacks=[save_study_callback])
 
     print(f"Time needed for config optimisation {time.time() - start_time}", flush=True)
     print(f"Best trial: {study.best_trial}", flush=True)
     print(f"Best parameters: {study.best_trial.params}", flush=True)
 
     # Save the final study
-    with open(saved_progress_file, 'wb') as f:
-        dill.dump(study, f)
-    print(f"Final study saved to {saved_progress_file}", flush=True)
+    save_study(study, saved_progress_file)
 
 def main():
     silence_tensorflow()

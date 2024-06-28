@@ -40,7 +40,7 @@ full_config = {
     'model': 'Amp_circuit',
     'circuit': 'Tangle_Amp_Circuit',
     # Run parameter
-    'epochs': 50,
+    'epochs': 1,
     'batch_size': 32,
     'learning_rate': 0.5,
     'loss_function': 'mse',
@@ -48,7 +48,7 @@ full_config = {
     'patience': 10,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 5,  # Only Optuna/Tangle circuit
+    'layers': 2,  # Only Optuna/Tangle circuit
     'shots': None
 }
 
@@ -73,7 +73,7 @@ def run_model(dataset, config):
     loss_progress = model.train(dataset)
     logger.info("Training completed")
 
-    model.save_weights(model_save_path, overwrite=True)
+    model.save_model(model_save_path)
 
     logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
