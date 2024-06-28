@@ -1,23 +1,25 @@
+# logger.py
 import logging
-import main_pipline.input.div.filemanager as file
+from pathlib import Path
 
-logger = logging
+class Logger:
+    def __init__(self, folder_path):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        self.folder_path = folder_path
+        self._initialize_logger()
 
+    def _initialize_logger(self):
+        logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+        fileHandler = logging.FileHandler(Path(self.folder_path) / "logger.log")
+        fileHandler.setFormatter(logFormatter)
+        self.logger.addHandler(fileHandler)
 
-class Logger(object):
-    logger.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-    )
-    file.create_folder()  # creates Folder to save all data
-    filename = "logger"
-    logFormatter = logger.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-    rootLogger = logger.getLogger()
-    fileHandler = logger.FileHandler("{0}/{1}.log".format(file.path, filename))
-    fileHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(fileHandler)
+    def info(self, message):
+        self.logger.info(message)
 
-    # Comment out or remove the console handler to avoid duplicate logs
-    # consoleHandler = logger.StreamHandler()
-    # consoleHandler.setFormatter(logFormatter)
-    # rootLogger.addHandler(consoleHandler)
+    def error(self, message):
+        self.logger.error(message)
+
+    def warning(self, message):
+        self.logger.warning(message)

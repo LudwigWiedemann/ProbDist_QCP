@@ -1,7 +1,6 @@
 from keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
-from main_pipline.input.div.logger import logger
 import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
@@ -15,9 +14,10 @@ class PACModel:
         self.optimizer = Adam(learning_rate=config['learning_rate'])
         self.loss_fn = tf.keras.losses.get(config['loss_function'])
         self.normalization_factor = None
-    def train(self, dataset):
-        x_train = dataset['input_train']/self.config['compress_factor']
-        y_train = dataset['output_train']/self.config['compress_factor']
+
+    def train(self, dataset, logger):
+        x_train = dataset['input_train'] / self.config['compress_factor']
+        y_train = dataset['output_train'] / self.config['compress_factor']
 
         epochs = self.config['epochs']
         batch_size = self.config['batch_size']
@@ -75,7 +75,7 @@ class PACModel:
         return predictions, normalized_loss
 
     def predict(self, x_test):
-        return self.model.predict((x_test/ self.config['compress_factor'])) *  self.config['compress_factor']
+        return self.model.predict((x_test / self.config['compress_factor'])) * self.config['compress_factor']
 
     def create_pac_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
@@ -85,10 +85,10 @@ class PACModel:
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
 
-    def save_model(self, path):
+    def save_model(self, path, logger):
         self.model.save_weights(path, overwrite=True)
         logger.info(f"Model saved to {path}")
 
-    def load_model(self, path):
+    def load_model(self, path, logger):
         self.model = tf.keras.models.load_model(path, custom_objects={'KerasLayer': qml.qnn.KerasLayer})
         logger.info(f"Model loaded from {path}")

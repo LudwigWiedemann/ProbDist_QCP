@@ -1,7 +1,6 @@
 from keras.models import Model
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.optimizers import Adam
-from main_pipline.input.div.logger import logger
 import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm

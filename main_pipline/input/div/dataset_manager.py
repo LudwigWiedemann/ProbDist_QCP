@@ -43,7 +43,7 @@ def function(x):
     return function_dictionary.get("sin")
 
 
-def generate_time_series_data(func, config):
+def generate_time_series_data(func, config, logger):
     time_steps = config['time_steps']
     num_samples = config['num_samples']
     future_steps = config['future_steps']
@@ -82,7 +82,7 @@ def generate_time_series_data(func, config):
             input_real_test.append(input_sample)
             output_test.append(output_sample)
         if i in preview_sample:
-            show_sample_preview_plots(input_sample, output_sample, input_noisy_sample, config)
+            show_sample_preview_plots(input_sample, output_sample, input_noisy_sample, config, logger)
 
     # Prepare data for foresight
     future_start_idx = len(x_data) - time_steps
@@ -97,7 +97,7 @@ def generate_time_series_data(func, config):
     output_test = np.array(output_test).reshape(-1, future_steps)
     input_foresight = np.array(input_foresight).reshape(1, time_steps, 1)
     input_noisy_foresight = np.array(input_noisy_foresight).reshape(1, time_steps, 1)
-    plot_full_timeframe_data(x_data, y_data, noisy_y_data, title='Full Timeframe Data', show=config['show_dataset_plots'])
+    plot_full_timeframe_data(x_data, y_data, noisy_y_data, title='Full Timeframe Data', show=config['show_dataset_plots'],logger=logger)
     dataset = {'input_train': input_train, 'output_train': output_train, 'input_noisy_test': input_noisy_test,
                'input_test': input_real_test, 'output_test': output_test,
                'input_forecast': input_foresight, 'input_noisy_forecast': input_noisy_foresight, 'step_size': step_size}
