@@ -1,4 +1,4 @@
-import training as tr
+import training as tr  # Assuming 'training' module is correctly imported
 import numpy as np
 
 full_config = {
@@ -23,18 +23,18 @@ full_config = {
     'steps_to_forecast': 50,
     'num_shots_for_evaluation': 200,
     'predictions_for_distribution': 10
-
 }
 
 
 def generate_wide_dataset(n_y_points, config):
     training_time_steps = np.linspace(config['x_start'], config['x_end'],
                                       config['total_training_points'])
-    wide_dataset = []
+    wide_dataset = [[] for _ in range(len(training_time_steps))]  # Initialize wide_dataset with empty lists
+
     for i, x in enumerate(training_time_steps):
-        wide_dataset[i] = [] * n_y_points
         for j in range(n_y_points):
-            wide_dataset[i][j] = tr.f(x) * config['noise_level']
+            wide_dataset[i].append(tr.f(x) * np.random.normal(0, config['noise_level']))  # Append to the inner lists
+
     return wide_dataset
 
 
@@ -44,13 +44,25 @@ def generate_wide_samples_set(wide_dataset, config):
 
     wide_Inputs = []
     wide_Outputs = []
-    for _ in config['num_samples']:
+
+    for _ in range(config['num_samples']):
         start_idx = np.random.randint(0, len(wide_dataset) - time_steps - future_steps)
         wide_Inputs.append(wide_dataset[start_idx:start_idx + time_steps])
         wide_Outputs.append(wide_dataset[start_idx + time_steps:start_idx + time_steps + future_steps])
-    return {'input_samples': wide_Inputs, 'output_samples': wide_Outputs}
+    dataset = {'input_samples': wide_Inputs, 'output_samples': wide_Outputs}
+    return dataset
 
 
 if __name__ == '__main__':
-    dataset = generate_wide_dataset(5, full_config)
+    n_y_points = 5
+    dataset = generate_wide_dataset(n_y_points, full_config)
     sample_set = generate_wide_samples_set(dataset, full_config)
+    for i in range(full_config['num_samples']):
+        print(f'Sample {i}:')
+        input_samples = sample_set['input_samples'][i]
+
+        output_samples = sample_set['output_samples'][i]
+        for inputs in input_samples:  # Ensure you loop only till the length of the samples
+            print(f'Input_sample: {inputs}')
+        for outputs in output_samples:
+            print(f'Output_sample: {outputs}')
