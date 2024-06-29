@@ -11,7 +11,7 @@ full_config = {
     # data parameter
     'x_start': 0,
     'x_end': 10,
-    'total_training_points': 50,
+    'total_training_points': 20,
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
 
@@ -22,11 +22,11 @@ full_config = {
     # training parameter
     'time_steps': 8,  # How many consecutive points are in train/test sample
     'future_steps': 2,  # How many points are predicted in train/test sample
-    'num_samples': 80,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'epochs': 50,  # Adjusted to start with a reasonable number
+    'num_samples': 20,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'epochs': 20,  # Adjusted to start with a reasonable number
     'learning_rate': 0.01,  # Adjusted to a common starting point
     # Forecasting parameter
-    'steps_to_forecast': 100,
+    'steps_to_forecast': 50,
     'num_shots_for_evaluation': 200,
     'predictions_for_distribution': 10
 
@@ -75,4 +75,4 @@ if __name__ == "__main__":
         #plot.plot_kl_divergence(average_divergent)
         prediction_end_time = datetime.now()
         print("prediction took", prediction_end_time - prediction_start_time)
-        plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'])
+        plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'],optionalplot=extended_dataset)

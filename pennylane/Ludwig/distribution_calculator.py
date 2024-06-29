@@ -59,12 +59,6 @@ def calculate_kl_divergence(list1, list2):
 def kl_div(p, q):
     # Ensure the inputs are numpy arrays
 
-
-
-
-
-
-
     p = np.asarray(p, dtype=np.float)
     q = np.asarray(q, dtype=np.float)
 
@@ -88,7 +82,7 @@ def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
     num_inputs=len(datasets)
     lenght_x_prediction=len(predictions[0])
     lenght_x_input=len(datasets[0])
-    num_bins = 2            #number of bins the data is divided into
+    num_bins = 10            #number of bins the data is divided into
     # Define the bin edges
     bin_edges = np.arange(minimum-1, maximum + 1, (maximum - minimum) / num_bins)
     counts_prediction=[]        #initialize the counts array
