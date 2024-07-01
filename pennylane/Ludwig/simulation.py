@@ -3,7 +3,6 @@ import math
 from pennylane import numpy as np
 import training as tr
 import plotting as plot
-import distribution_calculator as dc
 from datetime import datetime
 
 
@@ -11,7 +10,7 @@ full_config = {
     # data parameter
     'x_start': 0,
     'x_end': 10,
-    'total_training_points': 100,
+    'total_training_points': 20,
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
 
@@ -53,18 +52,11 @@ if __name__ == "__main__":
         # dataset = dataset[0:full_config['time_steps']]
         predictions = []
         prediction_start_time = datetime.now()
-        probabilities=[]
-        #shots
+
         for i in range(full_config['predictions_for_distribution']):
             prediction_dataset = list(dataset)
-            prediction, prob = tr.iterative_forecast(params, prediction_dataset)
+            prediction = tr.iterative_forecast(params, prediction_dataset)
             predictions.append(prediction)
-            probabilities.extend(prob)
-        #dc.calculate_distribution_with_KLD(prediction)
-        print("PREDICTIONS:!!!")
-        print(predictions)
-        average_divergent=dc.average_kl_divergence(probabilities)
-        plot.plot_kl_divergence(average_divergent)
         prediction_end_time = datetime.now()
         print("prediction took", prediction_end_time - prediction_start_time)
         plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'])
