@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from pennylane import numpy as np
+import matplotlib.ticker as mtick
 
 
 def plot(data, x_start, step_size, original_data_length):

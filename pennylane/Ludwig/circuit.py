@@ -19,6 +19,8 @@ num_wires = sim.num_wires
 num_shots = conf['num_shots_for_evaluation']
 num_layers = conf['num_layers']
 
+proberbilities =[]
+
 #
 # @qml.qnode(device)
 # def run_circuit(params, x):
@@ -95,6 +97,9 @@ def multiple_shots(params, inputs):
     # TODO: Add multiple layers ?
 
     return outputs
+#https://mathoverflow.net/questions/244293/generalisations-of-the-kullback-leibler-divergence-for-more-than-two-distributio
+
+
 
 # i = [0,1,2,3,4,5,6,7,8,9]
 # p = np.random.rand(10)
