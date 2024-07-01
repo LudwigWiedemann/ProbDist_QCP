@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from pennylane import numpy as np
-import matplotlib.ticker as mtick
 
 
 def plot(data, x_start, step_size, original_data_length):
@@ -39,29 +38,6 @@ def f(x):
     #return np.sin(x)
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
-
-
-def plot_kl_divergence(kl_divergence_list,x_start, step_size, end):
-    # Calculate the KL divergence
-    x_axis = np.linspace(x_start, end * step_size, len(kl_divergence_list))
-
-    # Create a new figure
-    plt.figure()
-
-    # Plot the KL divergence
-    plt.plot(x_axis, kl_divergence_list, label='KL Divergence')
-    # Set the title and labels
-    plt.title('Kullback-Leibler Divergence')
-    plt.xlabel('Index')
-    plt.ylabel('KL Divergence')
-
-    # Change y-axis to percentage format
-    fmt = '%.0f%%' # Format you want the ticks, e.g. '40%'
-    yticks = mtick.FormatStrFormatter(fmt)
-    plt.gca().yaxis.set_major_formatter(yticks)
-
-    # Show the plot
-    plt.show()
 
 #
 # x_axis = np.linspace(-3, 6, 21000)
