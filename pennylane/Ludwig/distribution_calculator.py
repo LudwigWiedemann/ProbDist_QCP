@@ -112,7 +112,7 @@ def calculate_kl_divergence_manually(p, q):
 
 
 def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
-    predictions=datasets
+    #predictions=datasets
     flat_predictions = np.array(predictions).flatten()
     flat_datasets = np.array(datasets).flatten()
     maximum = max(max(flat_predictions), max(flat_datasets))
@@ -164,9 +164,9 @@ def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
     #print("end:"+str(end))
     #print("END:"+str(lenght_x_input*stepsize))
     for i in range(lenght_x_input):
-        bits,dits=kl_divergence(counts_input[i],counts_input_manuell[i])
-        print(f"auto:    {counts_input[i]}")
-        print(f"manuell: {counts_input_manuell[i]}")
+        bits,dits=kl_divergence(counts_input[i],counts_prediction[i])
+        #print(f"auto:    {counts_input[i]}")
+        #print(f"manuell: {counts_input_manuell[i]}")
         kl_divergence_bits_list.append(bits)
         kl_divergence_dits_list.append(dits)
         #print(f"bits at x={i*stepsize}: {kl_divergence_bits_list[i]}")

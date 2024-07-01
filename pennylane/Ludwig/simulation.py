@@ -26,7 +26,7 @@ full_config = {
     'epochs': 50,  # Adjusted to start with a reasonable number
     'learning_rate': 0.01,  # Adjusted to a common starting point
     # Forecasting parameter
-    'steps_to_forecast': 50,
+    'steps_to_forecast': 100,
     'num_shots_for_evaluation': 200,
     'predictions_for_distribution': 50
 
@@ -74,4 +74,4 @@ if __name__ == "__main__":
         #plot.plot_kl_divergence(average_divergent)
         prediction_end_time = datetime.now()
         print("prediction took", prediction_end_time - prediction_start_time)
-        plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'],optionalplot=extended_dataset)
+        plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'])

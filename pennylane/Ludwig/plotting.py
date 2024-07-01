@@ -18,11 +18,10 @@ def plot(data, x_start, step_size, original_data_length):
     plt.show()
 
 
-def plot_evaluation(predictions, x_start, step_size, original_data_length, optionalplot=None):
+def plot_evaluation(predictions, x_start, step_size, original_data_length):
     x_axis = np.linspace(x_start, x_start + (step_size * len(predictions[0])), len(predictions[0]))
     plt.plot(x_axis[0:original_data_length], predictions[0][0:original_data_length], label='known data', alpha=0.5, marker='o',
              color='blue')
-    plt.plot([], [], color='red', label='Prediction')
     for i in range(len(predictions)):
         plt.plot(x_axis[original_data_length:len(x_axis)], predictions[i][original_data_length:len(predictions[i])],
                  alpha=0.01, color='red')
