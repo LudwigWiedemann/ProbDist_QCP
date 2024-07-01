@@ -22,7 +22,7 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_evaluation_plots
 
-trial_name = 'Classic_Model'
+trial_name = 'Quantum_Model_test'
 
 full_config = {
     # Dataset parameter
@@ -44,15 +44,15 @@ full_config = {
     'model': 'PCCModel',
     'circuit': 'Tangle_Amp_Circuit',
     # Run parameter
-    'epochs': 600,
+    'epochs': 1,
     'batch_size': 55,
-    'learning_rate': 0.0005,
+    'learning_rate': 0.03,
     'loss_function': 'mse',
     'compress_factor': 8.61,
     'patience': 10,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 2,  # Only Optuna/Tangle circuit
+    'layers': 5,  # Only Optuna/Tangle circuit
     'shots': None
 }
 
