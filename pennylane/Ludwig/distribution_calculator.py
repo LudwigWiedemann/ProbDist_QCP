@@ -18,6 +18,8 @@ def average_kl_divergence(distributions, smoothing_constant=1e-10):
     print(total_kl_div/(n*(n-1)/2))
     return total_kl_div / (n * (n-1) / 2)
 
+
+
 def information_radius(distributions):
     n = len(distributions)
     total_kl_div = 0
@@ -42,36 +44,75 @@ def dissimilarity(distributions):
     # Return the average dissimilarity
     return total_dissimilarity / (n * (n-1) / 2)
 
-def calculate_kl_divergence(list1, list2):
-    # Convert the lists to numpy arrays
-    arr1 = np.array(list1)
-    arr2 = np.array(list2)
-
-    # Calculate the KL divergence
-    kl_divergence = kl_div(arr1, arr2)
-
-    # Format the result
-    result = "KLD: " + str(kl_divergence)
-
-    return result
 
 
-def kl_div(p, q):
-    # Ensure the inputs are numpy arrays
+def jensen_shannon_divergence(p, q):
+    """
+    Method to calculate the Jensen-Shannon Divergence between two probability distributions
+    """
+    # First, we need to calculate the M distribution
+    m = 0.5 * (p + q)
 
-    p = np.asarray(p, dtype=np.float)
-    q = np.asarray(q, dtype=np.float)
+    # Then, we calculate the KL divergence between p and m, and q and m
+    _,kl_pm = kl_divergence(p, m)           #onlyb log2 needed
+    _,kl_qm = kl_divergence(q, m)           #only log2 needed
+
+    # Finally, we calculate the Jensen-Shannon Divergence
+    js_divergence = 0.5 * (kl_pm + kl_qm)
+
+    return js_divergence
+
+def jensen_shannon_distance(p, q):
+    """
+    Method to calculate the Jensen-Shannon Distance between two probability distributions
+    """
+    # Calculate the Jensen-Shannon Divergence
+    js_divergence = jensen_shannon_divergence(p, q)
+
+    # The Jensen-Shannon Distance is the square root of the Jensen-Shannon Divergence
+    js_distance = np.sqrt(js_divergence)
+
+    return js_distance
+
+def kl_divergence(p, q):
+    round_precision=6             #rounding to x decimal places
+
+    # Ensures the inputs are numpy arrays
+    p = np.asarray(p, dtype=float)
+    q = np.asarray(q, dtype=float)
 
     # Add a small constant to avoid division by zero
     p = p + 1e-10
     q = q + 1e-10
 
-    # Calculate KL divergence
-    divergence = np.sum(rel_entr(p, q))
+    log = round(calculate_kl_divergence_log(p,q),round_precision)     #calculate the KL divergence with log base e in dits(decimal digit)
+    log2= round(calculate_kl_divergence_log2(p,q),round_precision)    #calculate the KL divergence with log base 2 in bits(binary digit)
 
+    return log, log2
+#https://machinelearningmastery.com/divergence-between-probability-distributions/ to test
+
+
+def calculate_kl_divergence_log2(p, q):
+    return np.sum(p * np.log2(p / q))
+
+def calculate_kl_divergence_log(p, q):
+    return np.sum(p * np.log(p / q))
+def calculate_kl_divergence_manually(p, q):
+    divergence=0
+    # Calculate KL divergence
+    for i in range(len(p)):
+        #print(f"p: {p[i]}")
+        #print(f"q: {q[i]}")
+        calc=p[i] * np.log2(p[i] / q[i])
+        #print(f"calc: {calc}")
+        divergence+=calc
+        #print(f"div: {divergence}")
     return divergence
 
+
+
 def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
+    predictions=datasets
     flat_predictions = np.array(predictions).flatten()
     flat_datasets = np.array(datasets).flatten()
     maximum = max(max(flat_predictions), max(flat_datasets))
@@ -82,37 +123,96 @@ def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
     num_inputs=len(datasets)
     lenght_x_prediction=len(predictions[0])
     lenght_x_input=len(datasets[0])
-    num_bins = 10            #number of bins the data is divided into
+    num_bins = 11          #number of bins the data is divided into
     # Define the bin edges
-    bin_edges = np.arange(minimum-1, maximum + 1, (maximum - minimum) / num_bins)
+    bin_edges = np.linspace(minimum-1, maximum+1, num_bins)
     counts_prediction=[]        #initialize the counts array
     counts_input=[]             #initialize the counts array
+    counts_input_manuell=[]
     for i in range(lenght_x_prediction):
         data=[]
         for prediction in predictions:
             #print("Prediction: "+str(prediction))
             data.append(prediction[i])
-        count, bins = np.histogram(data, bins=bin_edges)
-        counts_prediction.append(count/num_predictions)
+        #count, bins = np.histogram(data, bins=bin_edges)
+        #count=cluster_manually(data,minimum,maximum)
+        count=count_values(data,minimum,maximum,num_bins)
+        count=count/np.sum(count)       #normalizes the count
+        counts_prediction.append(count)
     #print("COUNTS:"+str(counts))
     for i in range(lenght_x_input):
-        if i>=end:
-            data=[]
-            for dataset in datasets:
-                #print("Prediction: "+str(prediction))
-                data.append(dataset[i])
-            count, bins = np.histogram(data, bins=bin_edges)
-            counts_input.append(count/num_inputs)
-    kl_divergence_list=[]
-    print("KL_length:"+str(len(counts_prediction)))
-    print("inputs_length:"+str(len(counts_input)))
-    print("start:"+str(start))
-    print("end:"+str(end))
-    print("END:"+str(lenght_x_input*stepsize))
-    for i in range(lenght_x_input-end-15):
-        print(i+10)
-        kl_divergence_list.append(kl_div(counts_input[i+end-1],counts_prediction[i+end-1]))
-        print(f"at x={(i+end)*stepsize}: {kl_divergence_list[i]}")
-    plt.plot_kl_divergence(kl_divergence_list, start+end, stepsize, lenght_x_input*stepsize)
+        data=[]
+        for dataset in datasets:
+            #print("Prediction: "+str(prediction))
+            data.append(dataset[i])
+        #count, bins = np.histogram(data, bins=bin_edges)
+        count=count_values(data,minimum,maximum,num_bins)
+        #count=count/np.sum(count)
+        count=count/np.sum(count)       #normalizes the count
+        #counts_input.append(count)
+        counts_input.append(count)
+    #counts_input=counts_input/np.sum(counts_input)   #normalize the counts
+    #counts_input_manuell=counts_input_manuell/np.sum(counts_input_manuell)   #normalize the counts
+    kl_divergence_bits_list=[]
+    kl_divergence_dits_list=[]
+    js_divergence_list=[]
+    js_distance_list=[]
+    kl_distribution_manuell_list=[]
+    #print("KL_length:"+str(len(counts_prediction)))
+    #print("inputs_length:"+str(len(counts_input)))
+    #print("start:"+str(start))
+    #print("end:"+str(end))
+    #print("END:"+str(lenght_x_input*stepsize))
+    for i in range(lenght_x_input):
+        bits,dits=kl_divergence(counts_input[i],counts_input_manuell[i])
+        print(f"auto:    {counts_input[i]}")
+        print(f"manuell: {counts_input_manuell[i]}")
+        kl_divergence_bits_list.append(bits)
+        kl_divergence_dits_list.append(dits)
+        #print(f"bits at x={i*stepsize}: {kl_divergence_bits_list[i]}")
+        #print(f"dits at x={i*stepsize}: {kl_divergence_dits_list[i]}")
+        js_distance_list.append(jensen_shannon_distance(counts_input[i],counts_prediction[i]))
+        js_divergence_list.append(jensen_shannon_divergence(counts_input[i],counts_prediction[i]))
+        #print(f"js_distance at x={i*stepsize}: {js_distance_list[i]}")
+        #print(f"js_divergence at x={i*stepsize}: {js_divergence_list[i]}")
+        #print(counts_input[i])
+        #print(counts_prediction[i])
+    plt.plot_kl_divergence(value_list=kl_divergence_bits_list, x_start=start, step_size=stepsize, y_label="Kuback-Leibler-divergence in bits", color="orange")
+    plt.plot_kl_divergence(kl_divergence_dits_list, start, stepsize, "Kuback-Leibler-divergence in dits", color="red")
+    plt.plot_kl_divergence(js_distance_list, start, stepsize, "Jensen-Shannon distance", color="yellow")
+    plt.plot_kl_divergence(js_divergence_list, start, stepsize, "Jensen-Shannon divergence", color="green")
+
+def count_values(value_list, minimum_value, maximum_value, bins):
+    value_range = maximum_value - minimum_value
+    step_size = value_range / bins
+    count_list = [0] * bins
+
+    for value in value_list:
+        index = int((value - minimum_value) // step_size)
+        # Ensure the maximum value is counted in the last bin
+        index = min(index, bins-1)
+        count_list[index] += 1
+    return count_list
+
+#x=[9.5,11,29.5]
+#minimum_value=1
+#max_value=100
+#print(x)
+#count=count_values(x,minimum_value,max_value)
+#print(count)
+#count_manually=count/np.sum(count)
+#print(count_manually)
+
+
+
+
+
+
+
+#dis1= np.array([0.10, 0.40, 0.50])
+#dis2= np.array([0.80, 0.15, 0.05])
+#print(f"1||2: {kl_divergence(dis1,dis2)}")
+#print(f"reverse: {kl_divergence(dis2,dis1)}")
+#print(f"proof: {kl_divergence(dis1,dis1)}")
 
 

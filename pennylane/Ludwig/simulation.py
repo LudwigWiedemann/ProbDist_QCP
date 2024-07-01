@@ -11,7 +11,7 @@ full_config = {
     # data parameter
     'x_start': 0,
     'x_end': 10,
-    'total_training_points': 20,
+    'total_training_points': 50,
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
 
@@ -22,13 +22,13 @@ full_config = {
     # training parameter
     'time_steps': 8,  # How many consecutive points are in train/test sample
     'future_steps': 2,  # How many points are predicted in train/test sample
-    'num_samples': 20,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'epochs': 20,  # Adjusted to start with a reasonable number
+    'num_samples': 80,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'epochs': 50,  # Adjusted to start with a reasonable number
     'learning_rate': 0.01,  # Adjusted to a common starting point
     # Forecasting parameter
     'steps_to_forecast': 50,
     'num_shots_for_evaluation': 200,
-    'predictions_for_distribution': 10
+    'predictions_for_distribution': 50
 
 }
 step_size = ((full_config['x_end'] - full_config['x_start']) / (full_config['total_training_points'] - 1))
@@ -48,7 +48,6 @@ def prepare_extended_data():
                                       )
     training_dataset = [tr.f(x) for x in training_time_steps]
     return training_dataset  # + ns.white(full_config['noise_level', num_training_points)
-
 
 if __name__ == "__main__":
     print("run")

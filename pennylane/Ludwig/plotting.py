@@ -52,24 +52,24 @@ def plot_kl_divergence(distributions):
     plt.show()
 
 
-def plot_kl_divergence(kl_divergence_list,x_start, step_size, end):
+def plot_kl_divergence(value_list, x_start, step_size, y_label, color="red"):
     # Calculate the KL divergence
-    x_axis = np.linspace(x_start, end * step_size, len(kl_divergence_list))
+    x_axis = np.linspace(x_start, x_start + (step_size * len(value_list)), len(value_list))
 
     # Create a new figure
     plt.figure()
 
     # Plot the KL divergence
-    plt.plot(x_axis, kl_divergence_list, label='KL Divergence')
+    plt.plot(x_axis, value_list, label='KL Divergence', color=color)
+    plt.scatter(x_axis, value_list, color=color)
+
     # Set the title and labels
     plt.title('Kullback-Leibler Divergence')
     plt.xlabel('Index')
-    plt.ylabel('KL Divergence')
+    plt.ylabel(y_label)
 
-    # Change y-axis to percentage format
-    fmt = '%.0f%%' # Format you want the ticks, e.g. '40%'
-    yticks = mtick.FormatStrFormatter(fmt)
-    plt.gca().yaxis.set_major_formatter(yticks)
+    # Adjust y-axis limits to fit the range of KL divergence values
+    plt.ylim(0.95 * min(value_list), 1.05 * max(value_list))
 
     # Show the plot
     plt.show()
