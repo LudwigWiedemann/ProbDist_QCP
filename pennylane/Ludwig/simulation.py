@@ -3,6 +3,7 @@ import math
 from pennylane import numpy as np
 import training as tr
 import plotting as plot
+import distribution_calculator as dc
 from datetime import datetime
 
 
@@ -21,13 +22,13 @@ full_config = {
     # training parameter
     'time_steps': 8,  # How many consecutive points are in train/test sample
     'future_steps': 2,  # How many points are predicted in train/test sample
-    'num_samples': 80,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'epochs': 80,  # Adjusted to start with a reasonable number
+    'num_samples': 20,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'epochs': 20,  # Adjusted to start with a reasonable number
     'learning_rate': 0.01,  # Adjusted to a common starting point
     # Forecasting parameter
     'steps_to_forecast': 50,
     'num_shots_for_evaluation': 200,
-    'predictions_for_distribution': 50
+    'predictions_for_distribution': 10
 
 }
 step_size = ((full_config['x_end'] - full_config['x_start']) / (full_config['total_training_points'] - 1))
@@ -51,7 +52,7 @@ def prepare_extended_data():
 
 if __name__ == "__main__":
     print("run")
-    for i in range(5):
+    for i in range(1):
         dataset = prepare_data()
         # plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
         plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
@@ -60,7 +61,8 @@ if __name__ == "__main__":
         # dataset = dataset[0:full_config['time_steps']]
         predictions = []
         prediction_start_time = datetime.now()
-
+        probabilities=[]
+        #shots
         for i in range(full_config['predictions_for_distribution']):
             prediction_dataset = list(dataset)
             prediction, prob = tr.iterative_forecast(params, prediction_dataset)
