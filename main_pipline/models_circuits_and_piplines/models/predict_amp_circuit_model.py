@@ -1,3 +1,4 @@
+import json
 from keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
@@ -80,11 +81,23 @@ class PACModel:
     def create_pac_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
         reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
-        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(reshaped_inputs)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(
+            reshaped_inputs)
         model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
 
     def save_model(self, path, logger):
-        self.model.save(path, overwrite=True, save_format='tf')
-        logger.info(f"Model saved to {path}")
+        try:
+            self.model.save(path, overwrite=True, save_format='tf')
+            logger.info(f"Model saved to {path}")
+        except Exception as e:
+            logger.error(f"Error saving model: {e}. Saving weights instead.")
+            self.model.save_weights(path + "_weights")
+            logger.info(f"Weights saved to {path}_weights")
+
+            # Save model configuration
+            config_path = path + "_config.json"
+            with open(config_path, 'w') as f:
+                json.dump(self.config, f)
+            logger.info(f"Configuration saved to {config_path}")

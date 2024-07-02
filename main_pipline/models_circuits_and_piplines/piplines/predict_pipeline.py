@@ -41,10 +41,10 @@ full_config = {
     'show_forecast_plots': True,
     'steps_to_predict': 300,
     # Model parameter
-    'model': 'PCCModel',
+    'model': 'PACModel',
     'circuit': 'Tangle_Amp_Circuit',
     # Run parameter
-    'epochs': 1,
+    'epochs': 2,
     'batch_size': 55,
     'learning_rate': 0.03,
     'loss_function': 'mse',
@@ -52,7 +52,7 @@ full_config = {
     'patience': 10,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 5,  # Only Optuna/Tangle circuit
+    'layers': 1,  # Only Optuna/Tangle circuit
     'shots': None
 }
 
@@ -91,14 +91,14 @@ def run_model(dataset, config, logger):
     loss_progress = model.train(dataset, logger)
     logger.info("Training completed")
 
-    model.save_model(model_save_path, logger)
-
     logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
     logger.info(f"Test Loss: {loss}")
 
     show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger)
 
+    logger.info("Save Model")
+    model.save_model(model_save_path, logger)
     return model, loss
 
 
