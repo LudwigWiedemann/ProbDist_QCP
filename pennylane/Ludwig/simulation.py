@@ -3,7 +3,6 @@ import math
 from pennylane import numpy as np
 import training as tr
 import plotting as plot
-import distribution_calculator as dc
 from datetime import datetime
 
 
@@ -22,13 +21,13 @@ full_config = {
     # training parameter
     'time_steps': 8,  # How many consecutive points are in train/test sample
     'future_steps': 2,  # How many points are predicted in train/test sample
-    'num_samples': 20,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'epochs': 20,  # Adjusted to start with a reasonable number
+    'num_samples': 80,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'epochs': 80,  # Adjusted to start with a reasonable number
     'learning_rate': 0.01,  # Adjusted to a common starting point
     # Forecasting parameter
     'steps_to_forecast': 50,
     'num_shots_for_evaluation': 200,
-    'predictions_for_distribution': 10
+    'predictions_for_distribution': 50
 
 }
 step_size = ((full_config['x_end'] - full_config['x_start']) / (full_config['total_training_points'] - 1))
@@ -41,18 +40,10 @@ def prepare_data():
     training_dataset = [tr.f(x) for x in training_time_steps]
     return training_dataset  # + ns.white(full_config['noise_level', num_training_points)
 
-def prepare_extended_data():
-    training_time_steps = np.linspace(full_config['x_start'],
-                                      full_config['x_end']+full_config['steps_to_forecast'],
-                                      full_config['total_training_points']+full_config['steps_to_forecast']
-                                      )
-    training_dataset = [tr.f(x) for x in training_time_steps]
-    return training_dataset  # + ns.white(full_config['noise_level', num_training_points)
-
 
 if __name__ == "__main__":
     print("run")
-    for i in range(1):
+    for i in range(5):
         dataset = prepare_data()
         # plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
         plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
@@ -61,18 +52,11 @@ if __name__ == "__main__":
         # dataset = dataset[0:full_config['time_steps']]
         predictions = []
         prediction_start_time = datetime.now()
-        probabilities=[]
-        #shots
+
         for i in range(full_config['predictions_for_distribution']):
             prediction_dataset = list(dataset)
-            prediction, prob = tr.iterative_forecast(params, prediction_dataset)
+            prediction = tr.iterative_forecast(params, prediction_dataset)
             predictions.append(prediction)
-        extended_dataset= prepare_extended_data()
-        dc.calculate_distribution_with_KLD(predictions, [extended_dataset], step_size, full_config['x_start'], full_config['x_end'])
-        print("PREDICTIONS:!!!")
-        print(predictions)
-        #average_divergent=dc.average_kl_divergence(probabilities)
-        #plot.plot_kl_divergence(average_divergent)
         prediction_end_time = datetime.now()
         print("prediction took", prediction_end_time - prediction_start_time)
-        plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'],optionalplot=extended_dataset)
+        plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'])

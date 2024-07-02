@@ -119,12 +119,9 @@ def guess_starting_params(sample):
 
 
 def iterative_forecast(params, dataset):
-    probabilities=[]
     for i in range(total_steps_to_forecast // future_steps):
         input = dataset[len(dataset) - time_steps:len(dataset)]
-        forecast = cir.multiple_shots_outputs(params, input)
-        probabilities.append(cir.multiple_shots_probs(params, input))
-        #print("EXCECUTED")
+        forecast = cir.multiple_shots(params, input)
         # print("forecast: " + str(forecast))
         # print("dataset: " + str(len(dataset)))
         for elem in forecast:
@@ -132,5 +129,4 @@ def iterative_forecast(params, dataset):
 
         # if i % 3 == 0:
         #     plot.plot(dataset, conf['x_start'], sim.step_size, label= f"training {i+1}")
-    #print("finished")
-    return dataset, probabilities
+    return dataset

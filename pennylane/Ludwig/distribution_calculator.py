@@ -1,6 +1,5 @@
 from scipy.special import rel_entr
 import numpy as np
-import plotting as plt
 
 def average_kl_divergence(distributions, smoothing_constant=1e-10):
     # Add the smoothing constant to the distributions
@@ -42,77 +41,20 @@ def dissimilarity(distributions):
     # Return the average dissimilarity
     return total_dissimilarity / (n * (n-1) / 2)
 
-def calculate_kl_divergence(list1, list2):
-    # Convert the lists to numpy arrays
-    arr1 = np.array(list1)
-    arr2 = np.array(list2)
-
-    # Calculate the KL divergence
-    kl_divergence = kl_div(arr1, arr2)
-
-    # Format the result
-    result = "KLD: " + str(kl_divergence)
-
-    return result
-
-
 def kl_div(p, q):
+
     # Ensure the inputs are numpy arrays
+    p = np.array(p).astype(float)
+    q = np.array(q).astype(float)
+    #print(type(p))
+    #print(p)
+    #print(q)
+    # Check if inputs are non-negative
+    if np.any(p < 0) or np.any(q < 0):
+        raise ValueError("Inputs must be non-negative")
 
-    p = np.asarray(p, dtype=np.float)
-    q = np.asarray(q, dtype=np.float)
+    # Check if inputs have the same shape
+    if p.shape != q.shape:
+        raise ValueError("Inputs must have the same shape")
 
-    # Add a small constant to avoid division by zero
-    p = p + 1e-10
-    q = q + 1e-10
-
-    # Calculate KL divergence
-    divergence = np.sum(rel_entr(p, q))
-
-    return divergence
-
-def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
-    flat_predictions = np.array(predictions).flatten()
-    flat_datasets = np.array(datasets).flatten()
-    maximum = max(max(flat_predictions), max(flat_datasets))
-    minimum = min(min(flat_predictions), min(flat_datasets))
-    #print("MAXIMUM:"+str(maximum))
-    #print("MINIMUM:"+str(minimum))
-    num_predictions=len(predictions)
-    num_inputs=len(datasets)
-    lenght_x_prediction=len(predictions[0])
-    lenght_x_input=len(datasets[0])
-    num_bins = 10            #number of bins the data is divided into
-    # Define the bin edges
-    bin_edges = np.arange(minimum-1, maximum + 1, (maximum - minimum) / num_bins)
-    counts_prediction=[]        #initialize the counts array
-    counts_input=[]             #initialize the counts array
-    for i in range(lenght_x_prediction):
-        data=[]
-        for prediction in predictions:
-            #print("Prediction: "+str(prediction))
-            data.append(prediction[i])
-        count, bins = np.histogram(data, bins=bin_edges)
-        counts_prediction.append(count/num_predictions)
-    #print("COUNTS:"+str(counts))
-    for i in range(lenght_x_input):
-        if i>=end:
-            data=[]
-            for dataset in datasets:
-                #print("Prediction: "+str(prediction))
-                data.append(dataset[i])
-            count, bins = np.histogram(data, bins=bin_edges)
-            counts_input.append(count/num_inputs)
-    kl_divergence_list=[]
-    print("KL_length:"+str(len(counts_prediction)))
-    print("inputs_length:"+str(len(counts_input)))
-    print("start:"+str(start))
-    print("end:"+str(end))
-    print("END:"+str(lenght_x_input*stepsize))
-    for i in range(lenght_x_input-end-15):
-        print(i+10)
-        kl_divergence_list.append(kl_div(counts_input[i+end-1],counts_prediction[i+end-1]))
-        print(f"at x={(i+end)*stepsize}: {kl_divergence_list[i]}")
-    plt.plot_kl_divergence(kl_divergence_list, start+end, stepsize, lenght_x_input*stepsize)
-
-
+    return rel_entr(p, q)
