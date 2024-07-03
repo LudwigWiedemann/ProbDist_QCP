@@ -7,10 +7,10 @@ import tensorflow as tf
 from tqdm import tqdm
 
 
-class PCCModel:
+class PCModel:
     def __init__(self, dummy_circuit, config):
         self.config = config
-        self.model = self.create_pcc_model(config)
+        self.model = self.create_pc_model(config)
         self.optimizer = Adam(learning_rate=config['learning_rate'])
         self.loss_fn = tf.keras.losses.get(config['loss_function'])
         self.normalization_factor = None
@@ -77,7 +77,7 @@ class PCCModel:
     def predict(self, x_test):
         return self.model.predict((x_test / self.config['compress_factor'])) * self.config['compress_factor']
 
-    def create_pcc_model(self, config):
+    def create_pc_model(self, config):
         inputs = Input(shape=(config['time_steps'], 1))
         lstm1 = LSTM(100, return_sequences=True)(inputs)
         lstm2 = LSTM(100)(lstm1)

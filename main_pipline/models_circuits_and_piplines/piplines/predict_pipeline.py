@@ -13,7 +13,7 @@ from main_pipline.input.div.dataset_manager import generate_time_series_data
 from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit, new_baseline
 from main_pipline.models_circuits_and_piplines.circuits.amp_Circuit import base_Amp_Circuit, layered_Amp_Circuit, \
     tangle_Amp_Circuit, test_Amp_Circuit, double_Amp_Circuit
-from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_classic_circuit_model import PCCModel
+from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_classic_model import PCModel
 from main_pipline.models_circuits_and_piplines.models.predict_variable_circuit_model import PVCModel
 from main_pipline.models_circuits_and_piplines.models.predict_amp_circuit_model import PACModel
 from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hybrid_model import PHModel
@@ -41,10 +41,10 @@ full_config = {
     'show_forecast_plots': True,
     'steps_to_predict': 300,
     # Model parameter
-    'model': 'PCCModel',
+    'model': 'PACModel',
     'circuit': 'Tangle_Amp_Circuit',
     # Run parameter
-    'epochs': 1,
+    'epochs': 3,
     'batch_size': 55,
     'learning_rate': 0.03,
     'loss_function': 'mse',
@@ -60,7 +60,7 @@ models = {
     'PHModel': PHModel,
     'PVCModel': PVCModel,
     'PACModel': PACModel,
-    'PCCModel': PCCModel
+    'PCModel': PCModel
 }
 
 circuits = {
@@ -91,14 +91,14 @@ def run_model(dataset, config, logger):
     loss_progress = model.train(dataset, logger)
     logger.info("Training completed")
 
-    model.save_model(model_save_path, logger)
+
 
     logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
     logger.info(f"Test Loss: {loss}")
 
     show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger)
-
+    # model.save_model(model_save_path, logger)
     return model, loss
 
 
