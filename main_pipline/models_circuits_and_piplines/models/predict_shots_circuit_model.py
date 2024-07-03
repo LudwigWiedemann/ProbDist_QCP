@@ -6,11 +6,12 @@ import tensorflow as tf
 from tqdm import tqdm
 
 
-class PACModel:
+class PSCModel:
     def __init__(self, variable_circuit, config):
         self.config = config
         self.circuit = variable_circuit(config)
-        self.model = self.create_pac_model(self.circuit, config)
+        self.model = self.create_psc_model(self.circuit, config)
+        self.shot_model = self.create_psc_model(self.circuit,config, shots=True)
         self.optimizer = Adam(learning_rate=config['learning_rate'])
         self.loss_fn = tf.keras.losses.get(config['loss_function'])
         self.normalization_factor = None
@@ -61,30 +62,38 @@ class PACModel:
                 if wait >= patience:
                     logger.info(f"Early stopping at epoch {epoch + 1}")
                     break
-
+        self.shot_model.set_weights(self.model.get_weights())
         return history
 
     def evaluate(self, dataset):
         x_test = dataset['input_test'] / self.config['compress_factor']
         y_test = dataset['output_test'] / self.config['compress_factor']
 
-        evaluation_results = self.model.evaluate(x_test, y_test, return_dict=True)
-        predictions = self.model.predict(x_test) * self.config['compress_factor']
+        evaluation_results = self.shot_model.evaluate(x_test, y_test, return_dict=True)
+        predictions = self.shot_model.predict(x_test) * self.config['compress_factor']
+        print(predictions)
+
 
         normalized_loss = evaluation_results['loss'] / self.normalization_factor  # Normalize the loss
         return predictions, normalized_loss
 
     def predict(self, x_test):
-        return self.model.predict((x_test / self.config['compress_factor'])) * self.config['compress_factor']
+        return self.shot_model.predict((x_test / self.config['compress_factor'])) * self.config['compress_factor']
 
-    def create_pac_model(self, circuit, config):
+    def create_psc_model(self, circuit, config, shots=False):
         inputs = Input(shape=(config['time_steps'], 1))
         reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
-        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(reshaped_inputs)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(shots), circuit.get_weights(), output_dim=config['time_steps'])(reshaped_inputs)
         model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
 
     def save_model(self, path, logger):
-        self.model.save(path, overwrite=True, save_format='tf')
-        logger.info(f"Model saved to {path}")
+        try:
+            self.model.save(path, overwrite=True, save_format='tf')
+            logger.info(f"Model saved to {path}")
+        except Exception as e:
+            logger.error(f"Failed to save model using model.save: {e}")
+            # Save model weights as a fallback
+            self.model.save_weights(path + '_weights.h5', overwrite=True)
+            logger.info(f"Model weights saved to {path}_weights.h5")

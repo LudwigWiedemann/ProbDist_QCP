@@ -1,16 +1,16 @@
 from keras.models import Model
-from tensorflow.keras.layers import Input
+from keras.src.layers import LSTM
+from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.optimizers import Adam
 import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
 
 
-class PACModel:
-    def __init__(self, variable_circuit, config):
+class PCModel:
+    def __init__(self, dummy_circuit, config):
         self.config = config
-        self.circuit = variable_circuit(config)
-        self.model = self.create_pac_model(self.circuit, config)
+        self.model = self.create_pc_model(config)
         self.optimizer = Adam(learning_rate=config['learning_rate'])
         self.loss_fn = tf.keras.losses.get(config['loss_function'])
         self.normalization_factor = None
@@ -77,14 +77,21 @@ class PACModel:
     def predict(self, x_test):
         return self.model.predict((x_test / self.config['compress_factor'])) * self.config['compress_factor']
 
-    def create_pac_model(self, circuit, config):
+    def create_pc_model(self, config):
         inputs = Input(shape=(config['time_steps'], 1))
-        reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
-        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(reshaped_inputs)
-        model = Model(inputs=inputs, outputs=quantum_layer)
+        lstm1 = LSTM(100, return_sequences=True)(inputs)
+        lstm2 = LSTM(100)(lstm1)
+        dense1 = Dense(20, activation='relu')(lstm2)
+        output = Dense(config['future_steps'], activation='linear')(dense1)
+
+        model = Model(inputs=inputs, outputs=output)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
 
     def save_model(self, path, logger):
-        self.model.save(path, overwrite=True, save_format='tf')
+        self.model.save(path, overwrite=True)
         logger.info(f"Model saved to {path}")
+
+    def load_model(self, path, logger):
+        self.model = tf.keras.models.load_model(path, custom_objects={'KerasLayer': qml.qnn.KerasLayer})
+        logger.info(f"Model loaded from {path}")

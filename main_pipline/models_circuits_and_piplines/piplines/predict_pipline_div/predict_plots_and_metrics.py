@@ -80,12 +80,12 @@ def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title
     plt.ylabel('Values')
     plt.title(title)
     plt.legend()
-    if show:
-        plt.show()
     if logger.folder_path:
         plt.savefig(Path(logger.folder_path) / f"{title}_plot_predictions.png")
     else:
         print(f"Warning: Logger folder path is None. Plot {title} not saved.")
+    if show:
+        plt.show()
     plt.close()
 
 
