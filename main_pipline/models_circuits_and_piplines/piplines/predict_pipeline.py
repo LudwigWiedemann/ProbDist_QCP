@@ -1,6 +1,8 @@
 import os
-
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+from main_pipline.models_circuits_and_piplines.circuits.shots_Circuit import test_Shot_Circuit
+from main_pipline.models_circuits_and_piplines.models.predict_shots_circuit_model import PSCModel
 
 import time
 from silence_tensorflow import silence_tensorflow
@@ -41,8 +43,8 @@ full_config = {
     'show_forecast_plots': True,
     'steps_to_predict': 300,
     # Model parameter
-    'model': 'PACModel',
-    'circuit': 'Tangle_Amp_Circuit',
+    'model': 'PSCModel',
+    'circuit': 'test_Shot_Circuit',
     # Run parameter
     'epochs': 3,
     'batch_size': 55,
@@ -53,14 +55,15 @@ full_config = {
     'min_delta': 0.001,
     # Circuit parameter
     'layers': 5,  # Only Optuna/Tangle circuit
-    'shots': None
+    'shots': 2
 }
 
 models = {
     'PHModel': PHModel,
     'PVCModel': PVCModel,
     'PACModel': PACModel,
-    'PCModel': PCModel
+    'PCModel': PCModel,
+    'PSCModel': PSCModel
 }
 
 circuits = {
@@ -70,7 +73,8 @@ circuits = {
     'layered_Amp_Circuit': layered_Amp_Circuit,
     'Tangle_Amp_Circuit': tangle_Amp_Circuit,
     'Test_Circuit': test_Amp_Circuit,
-    'Double_Amp_Circuit': double_Amp_Circuit
+    'Double_Amp_Circuit': double_Amp_Circuit,
+    'test_Shot_Circuit': test_Shot_Circuit
 }
 
 
