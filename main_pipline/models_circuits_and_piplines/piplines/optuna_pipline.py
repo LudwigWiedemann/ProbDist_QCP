@@ -46,7 +46,8 @@ full_config = {
     'patience': 10,
     'min_delta': 0.001,
     'layers': 5,
-    'shots': None
+    'shots': 10,
+    'shot_predictions': 10
 }
 
 def function(x):

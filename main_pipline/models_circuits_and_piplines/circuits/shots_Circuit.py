@@ -35,14 +35,19 @@ class test_Shot_Circuit(Shot_Circuit):
         self.n_wires = config['future_steps']
         self.weight_shapes = {"weights": self.n_wires}
 
-    def run(self, shots=False):
-        if not shots:
-            dev = qml.device("default.qubit", wires=self.n_wires)
-        else:
-            dev = qml.device("default.qubit", wires=self.n_wires, shots=self.shots)
-
+    def run(self):
         @partial(qml.batch_input, argnum=0)
-        @qml.qnode(dev, interface='tf')
+        @qml.qnode(qml.device("default.qubit", wires=self.n_wires), interface='tf')
+        def circuit(inputs, weights):
+            qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True, pad_with=0.)
+            qml.broadcast(qml.RX, range(self.n_wires), pattern='single', parameters=weights)
+            #qml.RX(weights, wires=0)
+            return [qml.expval(qml.PauliZ(i)) for i in range(self.n_wires)]
+
+        return circuit
+
+    def shot_circuit(self):
+        @qml.qnode(qml.device("default.qubit", wires=self.n_wires, shots=self.shots), interface=None)
         def circuit(inputs, weights):
             qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True, pad_with=0.)
             qml.broadcast(qml.RX, range(self.n_wires), pattern='single', parameters=weights)

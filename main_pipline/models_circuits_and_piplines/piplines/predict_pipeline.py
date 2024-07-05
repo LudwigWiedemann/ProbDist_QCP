@@ -40,13 +40,14 @@ full_config = {
     'preview_samples': 3,
     'show_dataset_plots': False,
     'show_model_plots': False,
-    'show_forecast_plots': True,
+    'show_forecast_plots': False,
+    'show_approx_plots': True,
     'steps_to_predict': 300,
     # Model parameter
     'model': 'PSCModel',
     'circuit': 'test_Shot_Circuit',
     # Run parameter
-    'epochs': 3,
+    'epochs': 1,
     'batch_size': 55,
     'learning_rate': 0.03,
     'loss_function': 'mse',
@@ -55,7 +56,10 @@ full_config = {
     'min_delta': 0.001,
     # Circuit parameter
     'layers': 5,  # Only Optuna/Tangle circuit
-    'shots': 2
+    # Shot prediction
+    'approx_samples': 5,
+    'shots': 10,
+    'shot_predictions': 10,
 }
 
 models = {
@@ -95,7 +99,7 @@ def run_model(dataset, config, logger):
     loss_progress = model.train(dataset, logger)
     logger.info("Training completed")
 
-
+    model.evaluate_kl_div(dataset, logger)
 
     logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
@@ -116,7 +120,7 @@ def main():
 
     model, loss = run_model(dataset, full_config, logger)
 
-    iterative_forecast(function, model, dataset, full_config, logger=logger)
+    #iterative_forecast(function, model, dataset, full_config, logger=logger)
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
 
 

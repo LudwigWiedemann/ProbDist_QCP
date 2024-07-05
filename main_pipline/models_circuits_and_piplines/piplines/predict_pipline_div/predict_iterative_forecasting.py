@@ -1,9 +1,4 @@
 import numpy as np
-from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
-    show_all_forecasting_plots
-
-
-import numpy as np
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import show_all_forecasting_plots
 
 def iterative_forecast(function, model, dataset, config, logger=None):
