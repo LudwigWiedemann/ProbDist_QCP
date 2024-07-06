@@ -7,7 +7,7 @@ shots = 10000
 
 dev = qml.device('default.qubit', wires=num_qubits, shots=shots)
 
-# vcq
+# Vqc
 def circuit(weights):
     for i in range(num_qubits):
         qml.Rot(*weights[i], wires=i)
@@ -24,7 +24,7 @@ def quantum_circuit(weights):
 target_probs = np.array([1/36, 2/36, 3/36, 4/36, 5/36, 6/36, 5/36, 4/36, 3/36, 2/36, 1/36])
 
 # Indexe der relevanten zustaende fuer die zielwahrscheinlichkeiten
-# eig haben wir 16 ergebnisse im vqc aber nur 11 sind relevant bei zwei Wuerfeln
+# Eig haben wir 16 ergebnisse im vqc aber nur 11 sind relevant bei zwei Wuerfeln
 relevant_indices = np.arange(11) + 1
 
 # Optimierung
@@ -33,11 +33,11 @@ def cost(weights):
     relevant_probs = probs[relevant_indices]
     return np.sum((relevant_probs - target_probs) ** 2)
 
-opt = qml.AdamOptimizer(stepsize=0.1)
+opt = qml.AdamOptimizer(stepsize=0.1)  # Krasser unterschied zu GradientDescentOptimizer
 weights = np.random.rand(num_qubits, 3)
 
 # Training
-num_steps = 100
+num_steps = 1000
 for step in range(num_steps):
     weights = opt.step(cost, weights)
     if (step + 1) % 10 == 0:
@@ -49,7 +49,7 @@ probs = quantum_circuit(weights)
 relevant_probs = probs[relevant_indices]
 print("Ziel-Wahrscheinlichkeiten: ", target_probs)
 print("Erlernte Wahrscheinlichkeiten: ", relevant_probs)
-# interessant zu wissen da normalerweise ja 1
+# Interessant zu wissen da normalerweise ja 1
 print("Summe der erlernten Wahrscheinlichkeiten: ", np.sum(relevant_probs))
 
 # Plotting
