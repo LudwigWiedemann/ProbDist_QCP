@@ -1,16 +1,20 @@
+import random
+
 from keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
 import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import show_approx_sample_plots
 
 
-class PACModel:
+class PSCModel:
     def __init__(self, variable_circuit, config):
         self.config = config
         self.circuit = variable_circuit(config)
-        self.model = self.create_pac_model(self.circuit, config)
+        self.model = self.create_psc_model(self.circuit, config)
+        self.weights = self.model.get_weights()
         self.optimizer = Adam(learning_rate=config['learning_rate'])
         self.loss_fn = tf.keras.losses.get(config['loss_function'])
         self.normalization_factor = None
@@ -62,6 +66,7 @@ class PACModel:
                     logger.info(f"Early stopping at epoch {epoch + 1}")
                     break
 
+        self.weights = self.model.get_weights()
         return history
 
     def evaluate(self, dataset):
@@ -77,14 +82,35 @@ class PACModel:
     def predict(self, x_test):
         return self.model.predict((x_test / self.config['compress_factor'])) * self.config['compress_factor']
 
-    def create_pac_model(self, circuit, config):
+    def create_psc_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
         reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
-        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(reshaped_inputs)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=None)(reshaped_inputs)
         model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
 
+    def evaluate_kl_div(self, dataset, logger):
+        shot_circuit = self.circuit.shot_circuit()
+        flat_weights = [w.flatten() for w in self.weights]
+
+        sample_index = random.sample(range(len(dataset['input_test'])), self.config['approx_samples'])
+        samples = dataset['input_test'][sample_index] / self.config['compress_factor']
+
+        approx_sets = []
+        for sample in samples:
+            predictions = []
+            for _ in range(self.config['shot_predictions']):
+                predictions.append(shot_circuit(sample.reshape(64, ), *flat_weights))
+            approx_sets.append(predictions)
+        show_approx_sample_plots(approx_sets, sample_index, dataset, self.config, logger)
+
     def save_model(self, path, logger):
-        self.model.save(path, overwrite=True, save_format='tf')
-        logger.info(f"Model saved to {path}")
+        try:
+            self.model.save(path, overwrite=True, save_format='tf')
+            logger.info(f"Model saved to {path}")
+        except Exception as e:
+            logger.error(f"Failed to save model using model.save: {e}")
+            # Save model weights as a fallback
+            self.model.save_weights(path, overwrite=True, save_format='tf')
+            logger.info(f"Model weights saved to {path}")

@@ -48,6 +48,20 @@ def show_sample_preview_plots(input_test, output_test, input_noisy_test, config,
                      title=f'Random_Sample_Preview', show=config['show_dataset_plots'], logger=logger)
 
 
+def show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger):
+    for i, s in enumerate(sample_index):
+        input_sample = dataset['input_test'][s]
+        input_noisy_sample = dataset['input_noisy_test'][s]
+        output_sample = dataset['output_test'][s]
+        approx_outputs = approx_sets[i]
+
+        x_indices = np.arange(config['time_steps'] + config['future_steps'])
+        y_real_combined = np.concatenate((input_sample.flatten(), output_sample.flatten()))
+        plot_approx_predictions(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
+                                approx_outputs,
+                                title=f'Approx_sample_{i}', show=config['show_approx_plots'], logger=logger)
+
+
 def plot_metrics(loss_progress, show=False, logger=None):
     if isinstance(loss_progress, dict) and 'loss' in loss_progress:
         plt.figure()
@@ -59,8 +73,40 @@ def plot_metrics(loss_progress, show=False, logger=None):
         plt.savefig(Path(logger.folder_path) / "plot_metrics.png")
         if show:
             plt.show()
+        plt.close()
     else:
         logger.info("History object does not contain 'loss'.")
+
+
+def plot_approx_predictions(x_data, input_real, input_noisy, y_real, approx_outputs, title='Real vs Predicted',
+                            show=False,
+                            logger=None):
+    plt.figure(figsize=(max(10, len(x_data) / 10), 10))
+    plt.plot(x_data[:len(input_real)], input_real, label='Known', color='blue', marker='o', linestyle='-')
+    plt.plot(x_data[:len(input_real)], input_noisy, label='Known (Noisy)', color='cyan', marker='o', linestyle='--')
+    plt.plot([x_data[len(input_real) - 1], x_data[len(input_real)]], [input_real[-1], y_real[len(input_real)]],
+             color='blue', linestyle='-')
+
+    if len(y_real) > len(input_real):
+        plt.plot(x_data[len(input_real):len(input_real) + len(y_real) - len(input_real)], y_real[len(input_real):],
+                 label='Real Future', color='green', marker='o', linestyle='-')
+
+    for i, output in enumerate(approx_outputs):
+        y_pred_combined = np.concatenate((input_real.flatten(), np.array(output).flatten()))
+        plt.plot(x_data[len(input_real):len(input_real) + len(y_pred_combined) - len(input_real)],
+                 y_pred_combined[len(input_real):],
+                 label=f'Prediction {i}', marker='x', linestyle='-')
+    plt.xlabel('Time Steps')
+    plt.ylabel('Values')
+    plt.title(title)
+    plt.legend()
+    if logger.folder_path:
+        plt.savefig(Path(logger.folder_path) / f"{title}_approx_prediction_.png")
+    else:
+        print(f"Warning: Logger folder path is None. Plot {title} not saved.")
+    if show:
+        plt.show()
+    plt.close()
 
 
 def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title='Real vs Predicted', show=False,
@@ -80,12 +126,12 @@ def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title
     plt.ylabel('Values')
     plt.title(title)
     plt.legend()
-    if show:
-        plt.show()
     if logger.folder_path:
         plt.savefig(Path(logger.folder_path) / f"{title}_plot_predictions.png")
     else:
         print(f"Warning: Logger folder path is None. Plot {title} not saved.")
+    if show:
+        plt.show()
     plt.close()
 
 
