@@ -1,17 +1,13 @@
-# -*- coding: utf-8 -*-
-
 import pennylane as qml
 from pennylane import numpy as np
 import matplotlib.pyplot as plt
 
-# Anzahl der Qubits und Shots (Messungen)
 num_qubits = 4
 shots = 10000
 
-# Definieren des devices
 dev = qml.device('default.qubit', wires=num_qubits, shots=shots)
 
-# Variational Quantum Circuit (VQC)
+# Vqc
 def circuit(weights):
     for i in range(num_qubits):
         qml.Rot(*weights[i], wires=i)
@@ -27,17 +23,17 @@ def quantum_circuit(weights):
 # Zielwahrscheinlichkeiten
 target_probs = np.array([1/36, 2/36, 3/36, 4/36, 5/36, 6/36, 5/36, 4/36, 3/36, 2/36, 1/36])
 
-# Indexe der relevanten Zustaende fuer die Zielwahrscheinlichkeiten
+# Indexe der relevanten zustaende fuer die zielwahrscheinlichkeiten
+# Eig haben wir 16 ergebnisse im vqc aber nur 12 sind relevant bei zwei Wuerfeln
 relevant_indices = np.arange(11) + 2  # Augensummen 2 bis 12
 
-# Verlustfunktion
+# Optimierung
 def cost(weights):
     probs = quantum_circuit(weights)
     relevant_probs = probs[relevant_indices]
     return np.sum((relevant_probs - target_probs) ** 2)
 
-# Optimierung
-opt = qml.AdamOptimizer(stepsize=0.1)
+opt = qml.AdamOptimizer(stepsize=0.1)  # Krasser unterschied zu GradientDescentOptimizer
 weights = np.random.rand(num_qubits, 3)
 
 # Training
@@ -51,20 +47,16 @@ for step in range(num_steps):
 # Ergebnis
 probs = quantum_circuit(weights)
 relevant_probs = probs[relevant_indices]
-
 print("Ziel-Wahrscheinlichkeiten: ", target_probs)
 print("Erlernte Wahrscheinlichkeiten: ", relevant_probs)
-print("Summe der quanten Wahrscheinlichkeiten: ", np.sum(probs))
+# Interessant zu wissen da normalerweise ja 1
 print("Summe der erlernten Wahrscheinlichkeiten: ", np.sum(relevant_probs))
 
-# Boxplot erstellen
-x_labels = np.arange(2, 13)
-data_for_boxplot = [probs[i] for i in relevant_indices]
-
+# Plotting
 plt.figure(figsize=(8, 6))
-plt.boxplot(data_for_boxplot, labels=x_labels[1:])
+plt.boxplot(relevant_probs)
+plt.xticks(np.arange(1, len(relevant_indices) + 1), np.arange(2, 13))
 plt.xlabel('Summe der Augenzahlen')
 plt.ylabel('Wahrscheinlichkeit')
 plt.title(f'Boxplot der Wahrscheinlichkeitsverteilung der Augensummen mit {shots} Shots')
-plt.grid(True)
 plt.show()
