@@ -2,6 +2,7 @@ import pennylane as qml
 from pennylane import numpy as np
 import matplotlib.pyplot as plt
 
+np.random.seed(404)
 num_qubits = 4
 shots = 10000
 
