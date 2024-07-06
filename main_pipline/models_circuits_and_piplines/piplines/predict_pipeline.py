@@ -1,7 +1,11 @@
 import os
+
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
+    iterative_forecast
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-from main_pipline.models_circuits_and_piplines.circuits.shots_Circuit import test_Shot_Circuit
+from main_pipline.models_circuits_and_piplines.circuits.shots_Circuit import test_Shot_Circuit, Tangle_Shot_Circuit
 from main_pipline.models_circuits_and_piplines.models.predict_shots_circuit_model import PSCModel
 
 import time
@@ -19,12 +23,10 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_cl
 from main_pipline.models_circuits_and_piplines.models.predict_variable_circuit_model import PVCModel
 from main_pipline.models_circuits_and_piplines.models.predict_amp_circuit_model import PACModel
 from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hybrid_model import PHModel
-from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
-    iterative_forecast
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_evaluation_plots
 
-trial_name = 'Quantum_Model_test'
+trial_name = 'Quantum_Model_Shot_test'
 
 full_config = {
     # Dataset parameter
@@ -47,7 +49,7 @@ full_config = {
     'model': 'PSCModel',
     'circuit': 'test_Shot_Circuit',
     # Run parameter
-    'epochs': 1,
+    'epochs': 2,
     'batch_size': 55,
     'learning_rate': 0.03,
     'loss_function': 'mse',
@@ -55,7 +57,7 @@ full_config = {
     'patience': 10,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 5,  # Only Optuna/Tangle circuit
+    'layers': 1,  # Only Optuna/Tangle circuit
     # Shot prediction
     'approx_samples': 5,
     'shots': 10,
@@ -78,7 +80,8 @@ circuits = {
     'Tangle_Amp_Circuit': tangle_Amp_Circuit,
     'Test_Circuit': test_Amp_Circuit,
     'Double_Amp_Circuit': double_Amp_Circuit,
-    'test_Shot_Circuit': test_Shot_Circuit
+    'test_Shot_Circuit': test_Shot_Circuit,
+    'Tangle_Shot_Circuit':Tangle_Shot_Circuit
 }
 
 
@@ -106,7 +109,7 @@ def run_model(dataset, config, logger):
     logger.info(f"Test Loss: {loss}")
 
     show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger)
-    # model.save_model(model_save_path, logger)
+    #model.save_model(model_save_path, logger)
     return model, loss
 
 
@@ -120,7 +123,7 @@ def main():
 
     model, loss = run_model(dataset, full_config, logger)
 
-    #iterative_forecast(function, model, dataset, full_config, logger=logger)
+    iterative_forecast(function, model, dataset, full_config, logger=logger)
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
 
 

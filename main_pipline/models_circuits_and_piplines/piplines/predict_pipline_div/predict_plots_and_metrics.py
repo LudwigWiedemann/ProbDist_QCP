@@ -92,7 +92,7 @@ def plot_approx_predictions(x_data, input_real, input_noisy, y_real, approx_outp
                  label='Real Future', color='green', marker='o', linestyle='-')
 
     for i, output in enumerate(approx_outputs):
-        y_pred_combined = np.concatenate((input_real.flatten(), np.array(output).flatten()))
+        y_pred_combined = np.concatenate((input_real.flatten(), output.flatten()))
         plt.plot(x_data[len(input_real):len(input_real) + len(y_pred_combined) - len(input_real)],
                  y_pred_combined[len(input_real):],
                  label=f'Prediction {i}', marker='x', linestyle='-')
@@ -102,6 +102,47 @@ def plot_approx_predictions(x_data, input_real, input_noisy, y_real, approx_outp
     plt.legend()
     if logger.folder_path:
         plt.savefig(Path(logger.folder_path) / f"{title}_approx_prediction_.png")
+    else:
+        print(f"Warning: Logger folder path is None. Plot {title} not saved.")
+    if show:
+        plt.show()
+    plt.close()
+
+
+
+def plot_approx_predictions_mean(x_data, input_real, input_noisy, y_real, approx_outputs, title='Real vs Predicted',
+                            show=False, logger=None):
+    plt.figure(figsize=(max(10, len(x_data) / 10), 10))
+
+    # Plot the known and noisy data
+    plt.plot(x_data[:len(input_real)], input_real, label='Known', color='blue', marker='o', linestyle='-')
+    plt.plot(x_data[:len(input_real)], input_noisy, label='Known (Noisy)', color='cyan', marker='o', linestyle='--')
+    plt.plot([x_data[len(input_real) - 1], x_data[len(input_real)]], [input_real[-1], y_real[len(input_real)]],
+             color='blue', linestyle='-')
+
+    if len(y_real) > len(input_real):
+        plt.plot(x_data[len(input_real):len(input_real) + len(y_real) - len(input_real)], y_real[len(input_real):],
+                 label='Real Future', color='green', marker='o', linestyle='-')
+
+    # Calculate mean and standard deviation of predictions
+    approx_outputs = np.array(approx_outputs)
+    mean_pred = np.mean(approx_outputs, axis=0)
+    std_pred = np.std(approx_outputs, axis=0)
+
+    # Plot mean prediction with confidence interval
+    y_pred_combined = np.concatenate((input_real.flatten(), mean_pred.flatten()))
+    plt.plot(x_data[len(input_real):len(input_real) + len(y_pred_combined) - len(input_real)],
+             y_pred_combined[len(input_real):], label='Mean Prediction', color='red', linestyle='-')
+
+    plt.fill_between(x_data[len(input_real):len(input_real) + len(mean_pred)],
+                     mean_pred - std_pred, mean_pred + std_pred, color='red', alpha=0.3, label='Std Dev')
+
+    plt.xlabel('Time Steps')
+    plt.ylabel('Values')
+    plt.title(title)
+    plt.legend()
+    if logger.folder_path:
+        plt.savefig(Path(logger.folder_path) / f"{title}_approx_prediction.png")
     else:
         print(f"Warning: Logger folder path is None. Plot {title} not saved.")
     if show:
@@ -128,6 +169,82 @@ def plot_predictions(x_data, input_real, input_noisy, y_real, y_pred=None, title
     plt.legend()
     if logger.folder_path:
         plt.savefig(Path(logger.folder_path) / f"{title}_plot_predictions.png")
+    else:
+        print(f"Warning: Logger folder path is None. Plot {title} not saved.")
+    if show:
+        plt.show()
+    plt.close()
+
+def plot_approx_predictions_transp(approx_sets, sample_index, dataset, config, logger):
+    x_data = np.arange(config['time_steps'] + config['future_steps'])
+    input_real = dataset['input_test'][sample_index]
+    input_noisy = dataset['input_noisy_test'][sample_index]
+    y_real = dataset['output_test'][sample_index]
+
+    plt.figure(figsize=(max(10, len(x_data) / 10), 10))
+
+    # Plot known and noisy data
+    plt.plot(x_data[:len(input_real)], input_real.flatten(), label='Known', color='blue', marker='o', linestyle='-')
+    plt.plot(x_data[:len(input_real)], input_noisy.flatten(), label='Known (Noisy)', color='cyan', marker='o',
+             linestyle='--')
+    plt.plot([x_data[len(input_real) - 1], x_data[len(input_real)]], [input_real[-1], y_real[0]],
+             color='blue', linestyle='-')
+
+    if len(y_real) > len(input_real):
+        plt.plot(x_data[len(input_real):len(input_real) + len(y_real)], y_real.flatten(),
+                 label='Real Future', color='green', marker='o', linestyle='-')
+
+    # Plot predictions with transparency
+    for i, output in enumerate(approx_sets):
+        y_pred_combined = np.concatenate((input_real.flatten(), output.flatten()))
+        plt.plot(x_data[len(input_real):len(input_real) + len(y_pred_combined) - len(input_real)],
+                 y_pred_combined[len(input_real):],
+                 label=f'Prediction {i}', marker='x', linestyle='-', alpha=0.3)
+
+    plt.xlabel('Time Steps')
+    plt.ylabel('Values')
+    plt.title('Real vs Predicted')
+    plt.legend()
+
+    if logger.folder_path:
+        plt.savefig(Path(logger.folder_path) / f"Sample_{sample_index}_approx_prediction_transp.png")
+    else:
+        print(f"Warning: Logger folder path is None. Plot not saved.")
+
+    if config['show_approx_plots']:
+        plt.show()
+    plt.close()
+
+def plot_approx_predictions_box(x_data, input_real, input_noisy, y_real, approx_outputs, title='Real vs Predicted',
+                            show=False, logger=None):
+    plt.figure(figsize=(max(10, len(x_data) / 10), 10))
+
+    # Plot the known and noisy data
+    plt.plot(x_data[:len(input_real)], input_real, label='Known', color='blue', marker='o', linestyle='-')
+    plt.plot(x_data[:len(input_real)], input_noisy, label='Known (Noisy)', color='cyan', marker='o', linestyle='--')
+    plt.plot([x_data[len(input_real) - 1], x_data[len(input_real)]], [input_real[-1], y_real[len(input_real)]],
+             color='blue', linestyle='-')
+
+    if len(y_real) > len(input_real):
+        plt.plot(x_data[len(input_real):len(input_real) + len(y_real) - len(input_real)], y_real[len(input_real):],
+                 label='Real Future', color='green', marker='o', linestyle='-')
+
+    # Prepare the data for boxplots
+    prediction_steps = len(approx_outputs[0])
+    predictions_at_steps = np.array([output.flatten() for output in approx_outputs]).T
+
+    # Plot boxplots for each prediction step
+    boxplot_positions = x_data[len(input_real):len(input_real) + prediction_steps]
+    plt.boxplot(predictions_at_steps, positions=boxplot_positions, widths=0.5, patch_artist=True,
+                boxprops=dict(facecolor='orange', color='orange', alpha=0.6),
+                medianprops=dict(color='red'))
+
+    plt.xlabel('Time Steps')
+    plt.ylabel('Values')
+    plt.title(title)
+    plt.legend()
+    if logger.folder_path:
+        plt.savefig(Path(logger.folder_path) / f"{title}_approx_prediction_boxplot.png")
     else:
         print(f"Warning: Logger folder path is None. Plot {title} not saved.")
     if show:
