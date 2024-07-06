@@ -2,6 +2,8 @@ import os
 
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
     iterative_forecast
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_shot_forecaste import \
+    evaluate_sample_with_shot, iterative_shot_forecast
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
@@ -26,7 +28,7 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_evaluation_plots
 
-trial_name = 'Quantum_Model_Shot_test'
+trial_name = 'Quantum_Model_Shot'
 
 full_config = {
     # Dataset parameter
@@ -36,7 +38,7 @@ full_config = {
     'time_steps': 64,
     'future_steps': 6,
     'num_samples': 256,
-    'noise_level': 0.2,
+    'noise_level': 0.1,
     'train_test_ratio': 0.6,
     # Plotting parameter
     'preview_samples': 3,
@@ -47,21 +49,21 @@ full_config = {
     'steps_to_predict': 300,
     # Model parameter
     'model': 'PSCModel',
-    'circuit': 'test_Shot_Circuit',
+    'circuit': 'Tangle_Shot_Circuit',
     # Run parameter
-    'epochs': 2,
+    'epochs': 1,
     'batch_size': 55,
     'learning_rate': 0.03,
     'loss_function': 'mse',
     'compress_factor': 8.61,
-    'patience': 10,
+    'patience': 40,
     'min_delta': 0.001,
     # Circuit parameter
     'layers': 1,  # Only Optuna/Tangle circuit
     # Shot prediction
-    'approx_samples': 5,
-    'shots': 10,
-    'shot_predictions': 10,
+    'approx_samples': 1,
+    'shots': 500,
+    'shot_predictions': 20,
 }
 
 models = {
@@ -102,7 +104,7 @@ def run_model(dataset, config, logger):
     loss_progress = model.train(dataset, logger)
     logger.info("Training completed")
 
-    model.evaluate_kl_div(dataset, logger)
+    evaluate_sample_with_shot(model, dataset, config, logger)
 
     logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
@@ -124,6 +126,7 @@ def main():
     model, loss = run_model(dataset, full_config, logger)
 
     iterative_forecast(function, model, dataset, full_config, logger=logger)
+    iterative_shot_forecast(function, model, dataset, full_config, logger=logger)
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
 
 

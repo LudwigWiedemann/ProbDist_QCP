@@ -1,5 +1,7 @@
 import numpy as np
-from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import show_all_forecasting_plots
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
+    show_all_forecasting_plots
+
 
 def iterative_forecast(function, model, dataset, config, logger=None):
     steps = config['steps_to_predict']
@@ -21,7 +23,6 @@ def iterative_forecast(function, model, dataset, config, logger=None):
         all_pred_predictions.append(pred_pred.flatten())
         pred_input = np.concatenate((pred_input.flatten(), pred_pred.flatten()))[-time_steps:].reshape(1, -1, 1)
 
-
         if real_input.shape[1] < time_steps:
             padding = np.zeros((real_input.shape[0], time_steps - real_input.shape[1], real_input.shape[2]))
             real_input = np.concatenate((padding, real_input), axis=1)
@@ -38,5 +39,7 @@ def iterative_forecast(function, model, dataset, config, logger=None):
 
         real_input = np.concatenate((real_input.flatten(), real_data.flatten()))[-time_steps:].reshape(1, -1, 1)
 
-    show_all_forecasting_plots(function, np.concatenate(all_pred_predictions), dataset, config, logger=logger)
-    show_all_forecasting_plots(function, np.concatenate(all_real_predictions), dataset, config, logger=logger)
+    show_all_forecasting_plots(function, np.concatenate(all_pred_predictions), dataset, config, 'Fully_Predicted',
+                               logger)
+    show_all_forecasting_plots(function, np.concatenate(all_real_predictions), dataset, config, 'Partial_Predicted',
+                               logger)

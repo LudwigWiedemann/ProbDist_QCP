@@ -94,19 +94,19 @@ class Tangle_Shot_Circuit(Shot_Circuit):
         return self.n_wires
 
 
-class Custome_Shot_Circuit(Shot_Circuit):
+class Custom_Shot_Circuit(Shot_Circuit):
     def __init__(self, config):
         super().__init__()
         self.shots = config["shots"]
         self.n_wires = config['future_steps']
-        self.weight_shapes = {"weights": (config['layers'], self.n_wires, 3)}
+        self.weight_shapes = {"weights": 1, "weights2": 1}
 
     def run(self):
         @partial(qml.batch_input, argnum=0)
         @qml.qnode(qml.device("default.qubit", wires=self.n_wires), interface='tf')
         def circuit(inputs, weights):
             qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True, pad_with=0.)
-            qml.Rot()
+            qml.RX(weights,0)
             return [qml.expval(qml.PauliZ(i)) for i in range(self.n_wires)]
 
         return circuit
@@ -115,7 +115,6 @@ class Custome_Shot_Circuit(Shot_Circuit):
         @qml.qnode(qml.device("default.qubit", wires=self.n_wires, shots=self.shots), interface=None)
         def circuit(inputs, weights):
             qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True, pad_with=0.)
-            qml.StronglyEntanglingLayers(weights, wires=range(self.n_wires))
             return [qml.expval(qml.PauliZ(i)) for i in range(self.n_wires)]
 
         return circuit
