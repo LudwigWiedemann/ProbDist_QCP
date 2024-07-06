@@ -21,7 +21,7 @@ full_config = {
     # training parameter
     'time_steps': 8,  # How many consecutive points are in train/test sample
     'future_steps': 2,  # How many points are predicted in train/test sample
-    'num_samples': 80,  # How many samples of time_steps/future_steps are generated from the timeframe
+    'num_samples': 400,  # How many samples of time_steps/future_steps are generated from the timeframe
     'epochs': 80,  # Adjusted to start with a reasonable number
     'learning_rate': 0.01,  # Adjusted to a common starting point
     # Forecasting parameter
