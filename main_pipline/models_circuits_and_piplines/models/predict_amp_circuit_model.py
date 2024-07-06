@@ -80,7 +80,8 @@ class PACModel:
     def create_pac_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
         reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
-        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(reshaped_inputs)
+        quantum_layer = qml.qnn.KerasLayer(circuit.run(), circuit.get_weights(), output_dim=config['time_steps'])(
+            reshaped_inputs)
         model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model

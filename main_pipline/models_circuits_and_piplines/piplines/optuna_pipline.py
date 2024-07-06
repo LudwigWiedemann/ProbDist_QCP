@@ -10,9 +10,10 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipeline import 
 
 import main_pipline.input.div.filemanager as filemanager
 from main_pipline.input.div.logger import Logger
-from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import iterative_forecast
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
+    iterative_forecast
 
-trial_name = 'optuna_compress_testing'
+trial_name = 'test'#'optuna_compress_testing'
 n_trials = 100
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,35 +24,41 @@ db_url = f"sqlite:///{os.path.join(CURRENT_DIR, f'{trial_name}.db')}"
 SAVE_INTERVAL = 1
 
 full_config = {
-    'time_frame_start': -2 * np.pi,
-    'time_frame_end': 5 * np.pi,
+    # Dataset parameter
+    'time_frame_start': -4 * np.pi,
+    'time_frame_end': 12 * np.pi,
     'n_steps': 256,
     'time_steps': 64,
     'future_steps': 6,
     'num_samples': 256,
-    'noise_level': 0.05,
+    'noise_level': 0.2,
     'train_test_ratio': 0.6,
+    # Plotting parameter
     'preview_samples': 3,
     'show_dataset_plots': False,
     'show_model_plots': False,
     'show_forecast_plots': True,
     'steps_to_predict': 300,
-    'model': 'Amp_circuit',
+    # Model parameter
+    'model': 'PACModel',
     'circuit': 'Tangle_Amp_Circuit',
-    'epochs': 40,
-    'batch_size': 32,
-    'learning_rate': 0.5,
+    # Run parameter
+    'epochs': 2,
+    'batch_size': 55,
+    'learning_rate': 0.03,
     'loss_function': 'mse',
-    'compress_factor': 1.5,
+    'compress_factor': 8.61,
     'patience': 10,
     'min_delta': 0.001,
-    'layers': 5,
+    # Circuit parameter
+    'layers': 5,  # Only Optuna/Tangle circuit
     'shots': 10,
     'shot_predictions': 10
 }
 
 def function(x):
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+
 
 def generate_dataset(logger):
     try:
@@ -62,13 +69,14 @@ def generate_dataset(logger):
         logger.error(f"Error generating dataset: {e}")
         raise
 
+
 def optimize(trial):
     silence_tensorflow()
     layers = trial.suggest_int('layers', 10, 25)
     learning_rate = trial.suggest_float('learning_rate', 0.0001, 0.1)
     compress_factor = trial.suggest_float('compress_factor', 1, 10)
     batch_size = trial.suggest_int('batch_size', 1, 128)
-
+    layers = 2
     trial_folder = filemanager.create_folder(
         f"{trial_name}_{trial.number}_la{layers}_lr{np.round(learning_rate, 4)}_cf{np.round(compress_factor, 2)}_bs{batch_size}")
     logger = Logger(trial_folder)
@@ -90,16 +98,20 @@ def optimize(trial):
     iterative_forecast(function, model, dataset, config, logger=logger)
 
     logger.info(
-        f"Trial {trial.number}: Finished with parameters: layers={layers}, learning_rate={learning_rate}, compress_factor={compress_factor}, batch_size={batch_size}")
+        f"Trial {trial.number}: Finished with parameters: layers={layers}, learning_rate={learning_rate},"
+        f" compress_factor={compress_factor}, batch_size={batch_size}")
     return evaluate_dataset_results(loss)
+
 
 def evaluate_dataset_results(loss):
     return loss
+
 
 def save_study(study, file_path):
     with open(file_path, 'wb') as f:
         dill.dump(study, f)
     print(f"Study saved to {file_path}", flush=True)
+
 
 def run_optimisation():
     start_time = time.time()
@@ -109,16 +121,15 @@ def run_optimisation():
     sampler = optuna.samplers.RandomSampler()
 
     storage = optuna.storages.RDBStorage(url=db_url)
-    study = optuna.create_study(storage=storage, sampler=sampler, pruner=pruner, direction="maximize")
 
     print(f"Trying to load study file from: {saved_progress_file}", flush=True)
-    if os.path.exists(saved_progress_file):
-        print(f"Study file found at: {saved_progress_file}", flush=True)
-        with open(saved_progress_file, 'rb') as f:
-            study = dill.load(f)
+    try:
+        study = optuna.load_study(study_name=trial_name, storage=storage)
         print("Study loaded.", flush=True)
-    else:
-        print(f"No previous study found at {saved_progress_file}. Starting a new one.", flush=True)
+    except KeyError:
+        print(f"No previous study found under the name {trial_name}. Starting a new one.", flush=True)
+        study = optuna.create_study(study_name=trial_name, storage=storage, sampler=sampler, pruner=pruner,
+                                    direction="minimize")
 
     def save_study_callback(study, trial):
         if trial.number % SAVE_INTERVAL == 0:
@@ -132,6 +143,7 @@ def run_optimisation():
 
     save_study(study, saved_progress_file)
 
+
 def run_parallel_optimisation():
     num_workers = multiprocessing.cpu_count()
 
@@ -144,9 +156,11 @@ def run_parallel_optimisation():
     for p in processes:
         p.join()
 
+
 def main():
     silence_tensorflow()
     run_parallel_optimisation()
+
 
 if __name__ == "__main__":
     main()

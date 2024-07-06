@@ -93,6 +93,7 @@ class Tangle_Shot_Circuit(Shot_Circuit):
     def get_wires(self):
         return self.n_wires
 
+
 class Custome_Shot_Circuit(Shot_Circuit):
     def __init__(self, config):
         super().__init__()

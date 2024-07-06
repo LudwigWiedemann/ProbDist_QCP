@@ -9,8 +9,7 @@ import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
-    show_approx_sample_plots, plot_approx_predictions_mean, plot_approx_predictions_transp, plot_approx_predictions_box
-
+    show_approx_sample_plots
 
 class PSCModel:
     def __init__(self, variable_circuit, config):
@@ -119,9 +118,6 @@ class PSCModel:
 
             approx_sets.append(predictions)
         show_approx_sample_plots(approx_sets, sample_index, dataset, self.config, logger)
-        #plot_approx_predictions_mean(approx_sets, sample_index, dataset, self.config, logger)
-        plot_approx_predictions_transp(approx_sets, sample_index, dataset, self.config, logger)
-        plot_approx_predictions_box(approx_sets, sample_index, dataset, self.config, logger)
 
     def save_model(self, path, logger):
         try:
