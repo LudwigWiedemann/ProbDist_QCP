@@ -39,23 +39,28 @@ def train_from_y_values(dataset):
 
 
     # params = np.random.rand(time_steps)
-    params = guess_starting_params(training_samples[0])
-
+    first_sample = training_samples[0]
+    middle_sample = training_samples[len(training_samples) // 2]
+    last_sample = training_samples[len(training_samples)-1]
+    # params = guess_starting_params(first_sample, middle_sample, last_sample)
+    params = np.random.rand(sim.num_weights)
     start_time = datetime.now()
     iteration_start_time = datetime.now()
     for it in range(training_iterations):
         if it % 10 == 1:
             iteration_start_time = datetime.now()
-        for sample in training_samples:
+        batch_size = 50
+        for start in range(int(len(training_samples)/batch_size)):
+            cost_samples = training_samples[start*batch_size:(start+1)*batch_size]
             # gradients = tf.gradients(cost(params,sample[0], sample[1]), params)
             # params = optimizer.step(gradients, params, time_steps=sample[0], expected_predictions=sample[1])
 
-            params = optimizer.step(cost, params, time_steps=sample[0], expected_predictions=sample[1])
+            params = optimizer.step(cost, params, samples=cost_samples)
 
         if it % 10 == 0:
             total_error = 0
-            for test_sample in test_samples:
-                total_error += cost(params, test_sample[0], test_sample[1])
+            # for test_sample in test_samples:
+            #     total_error += cost(params, test_sample)
             # prediction = cir.multiple_wires(params, extra_sample[0])
             print("average error of all test samples: " + str(total_error/len(test_samples)))
             end_time = datetime.now()
@@ -90,24 +95,29 @@ def train_from_y_values(dataset):
 #     return param_list
 
 
-def cost(params, time_steps, expected_predictions):
-    predicted_output = cir.multiple_wires(params, time_steps)
-    cost = 0
-    for i in range(len(predicted_output)):
-        # cost += ((predicted_output[i] - expected_predictions[i]) ** 2)
-        cost += np.abs((predicted_output[i] - expected_predictions[i]))
+def cost(params, samples):
+    total_cost = 0
+    for sample in samples:
+        inputs = sample[0]
+        compare_outputs = sample[1]
+        predicted_output = cir.multiple_wires(params, inputs)
+        sample_cost = 0
+        for i in range(len(predicted_output)):
+            sample_cost += ((predicted_output[i] - compare_outputs[i]) ** 2)
+            # cost += np.abs((predicted_output[i] - compare_outputs[i]))
+        total_cost += sample_cost
+    return total_cost
 
-    return cost
 
-
-def guess_starting_params(sample):
+def guess_starting_params(first, middle, last):
+    samples = [first, middle, last]
     print("guessing best starting parameters ... ")
     num_attempts = 30
     attempts = [None] * num_attempts
     errors = [None] * num_attempts
     for i in range(num_attempts):
         attempts[i] = np.random.rand(sim.num_weights)
-        cost_x0 = cost(attempts[i], sample[0], sample[1])
+        cost_x0 = cost(attempts[i], samples)
         errors[i] = cost_x0
 
     best_attempt = 0
