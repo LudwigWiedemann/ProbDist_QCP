@@ -1,11 +1,11 @@
 import os
-
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
     iterative_forecast
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_shot_forecaste import \
     evaluate_sample_with_shot, iterative_shot_forecast
 
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 
 from main_pipline.models_circuits_and_piplines.circuits.shots_Circuit import test_Shot_Circuit, Tangle_Shot_Circuit
 from main_pipline.models_circuits_and_piplines.models.predict_shots_circuit_model import PSCModel
@@ -28,42 +28,42 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_evaluation_plots
 
-trial_name = 'Quantum_Model_Shot'
+trial_name = 'classic_output'
 
 full_config = {
     # Dataset parameter
     'time_frame_start': -4 * np.pi,
     'time_frame_end': 12 * np.pi,
-    'n_steps': 256,
+    'n_steps': 171,
     'time_steps': 64,
     'future_steps': 6,
     'num_samples': 256,
-    'noise_level': 0.1,
+    'noise_level': 0.05,
     'train_test_ratio': 0.6,
     # Plotting parameter
     'preview_samples': 3,
     'show_dataset_plots': False,
     'show_model_plots': False,
-    'show_forecast_plots': False,
+    'show_forecast_plots': True,
     'show_approx_plots': True,
     'steps_to_predict': 300,
     # Model parameter
-    'model': 'PSCModel',
+    'model': 'PCModel',
     'circuit': 'Tangle_Shot_Circuit',
     # Run parameter
-    'epochs': 1,
-    'batch_size': 55,
-    'learning_rate': 0.03,
+    'epochs': 300,
+    'batch_size': 37,
+    'learning_rate': 0.0094,
     'loss_function': 'mse',
-    'compress_factor': 8.61,
+    'compress_factor':  4.116,
     'patience': 40,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 1,  # Only Optuna/Tangle circuit
+    'layers': 3,  # Only Optuna/Tangle circuit
     # Shot prediction
-    'approx_samples': 1,
+    'approx_samples': 2,
     'shots': 500,
-    'shot_predictions': 20,
+    'shot_predictions': 100,
 }
 
 models = {
@@ -104,8 +104,6 @@ def run_model(dataset, config, logger):
     loss_progress = model.train(dataset, logger)
     logger.info("Training completed")
 
-    evaluate_sample_with_shot(model, dataset, config, logger)
-
     logger.info("Starting evaluation")
     pred_y_test_data, loss = model.evaluate(dataset)
     logger.info(f"Test Loss: {loss}")
@@ -126,7 +124,18 @@ def main():
     model, loss = run_model(dataset, full_config, logger)
 
     iterative_forecast(function, model, dataset, full_config, logger=logger)
-    iterative_shot_forecast(function, model, dataset, full_config, logger=logger)
+
+
+    n_shots = [1000, 10000, 100000, 1000000]
+    for shots in n_shots:
+        evaluate_sample_with_shot(model, dataset, full_config, logger, title=shots, custome_shots=shots)
+    for shots in n_shots:
+        logger.info(f'Evaluating with {shots} shots')
+        shots_start = time.time()
+        iterative_shot_forecast(function, model, dataset, full_config, logger=logger, title=shots, custome_shots=shots)
+        logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
+
+
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
 
 

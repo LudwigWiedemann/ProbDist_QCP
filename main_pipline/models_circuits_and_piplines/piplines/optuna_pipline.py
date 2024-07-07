@@ -12,9 +12,12 @@ import main_pipline.input.div.filemanager as filemanager
 from main_pipline.input.div.logger import Logger
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
     iterative_forecast
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_shot_forecaste import \
+    iterative_shot_forecast
 
-trial_name = 'test'#'optuna_compress_testing'
-n_trials = 100
+trial_name = 'Major_Test_v3'
+n_trials = 200
+num_workers = 5  # Set the number of workers here
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -31,30 +34,34 @@ full_config = {
     'time_steps': 64,
     'future_steps': 6,
     'num_samples': 256,
-    'noise_level': 0.2,
+    'noise_level': 0.05,
     'train_test_ratio': 0.6,
     # Plotting parameter
     'preview_samples': 3,
     'show_dataset_plots': False,
     'show_model_plots': False,
     'show_forecast_plots': True,
+    'show_approx_plots': True,
     'steps_to_predict': 300,
     # Model parameter
-    'model': 'PACModel',
-    'circuit': 'Tangle_Amp_Circuit',
+    'model': 'PSCModel',
+    'circuit': 'Tangle_Shot_Circuit',
     # Run parameter
-    'epochs': 2,
+    'epochs': 50,
     'batch_size': 55,
     'learning_rate': 0.03,
     'loss_function': 'mse',
     'compress_factor': 8.61,
-    'patience': 10,
+    'patience': 40,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 5,  # Only Optuna/Tangle circuit
-    'shots': 10,
-    'shot_predictions': 10
+    'layers': 22,  # Only Optuna/Tangle circuit
+    # Shot prediction
+    'approx_samples': 2,
+    'shots': 10000,
+    'shot_predictions': 100,
 }
+
 
 def function(x):
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
@@ -75,8 +82,9 @@ def optimize(trial):
     layers = trial.suggest_int('layers', 10, 25)
     learning_rate = trial.suggest_float('learning_rate', 0.0001, 0.1)
     compress_factor = trial.suggest_float('compress_factor', 1, 10)
-    batch_size = trial.suggest_int('batch_size', 1, 128)
-    layers = 2
+    batch_size = trial.suggest_int('batch_size', 1, 64)
+    n_steps = trial.suggest_int('n_steps', 70, 256)
+
     trial_folder = filemanager.create_folder(
         f"{trial_name}_{trial.number}_la{layers}_lr{np.round(learning_rate, 4)}_cf{np.round(compress_factor, 2)}_bs{batch_size}")
     logger = Logger(trial_folder)
@@ -91,11 +99,14 @@ def optimize(trial):
         'layers': layers,
         'learning_rate': learning_rate,
         'compress_factor': compress_factor,
-        'batch_size': batch_size
+        'batch_size': batch_size,
+        'n_steps': n_steps
     })
 
     model, loss = run_model(dataset, config, logger)
+
     iterative_forecast(function, model, dataset, config, logger=logger)
+    iterative_shot_forecast(function, model, dataset, full_config, logger=logger)
 
     logger.info(
         f"Trial {trial.number}: Finished with parameters: layers={layers}, learning_rate={learning_rate},"
@@ -117,8 +128,8 @@ def run_optimisation():
     start_time = time.time()
     print("Start config optimisation", flush=True)
 
-    pruner = optuna.pruners.MedianPruner()
-    sampler = optuna.samplers.RandomSampler()
+    # pruner = optuna.pruners.MedianPruner()
+    sampler = optuna.samplers.TPESampler()
 
     storage = optuna.storages.RDBStorage(url=db_url)
 
@@ -128,7 +139,7 @@ def run_optimisation():
         print("Study loaded.", flush=True)
     except KeyError:
         print(f"No previous study found under the name {trial_name}. Starting a new one.", flush=True)
-        study = optuna.create_study(study_name=trial_name, storage=storage, sampler=sampler, pruner=pruner,
+        study = optuna.create_study(study_name=trial_name, storage=storage, sampler=sampler,
                                     direction="minimize")
 
     def save_study_callback(study, trial):
@@ -145,8 +156,6 @@ def run_optimisation():
 
 
 def run_parallel_optimisation():
-    num_workers = multiprocessing.cpu_count()
-
     processes = []
     for _ in range(num_workers):
         p = multiprocessing.Process(target=run_optimisation)

@@ -47,7 +47,7 @@ def show_sample_preview_plots(input_test, output_test, input_noisy_test, config,
                      title=f'Random_Sample_Preview', show=config['show_dataset_plots'], logger=logger)
 
 
-def show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger):
+def show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger, title='Approx_sample'):
     for i, s in enumerate(sample_index):
         approx_outputs = approx_sets[i]
         input_sample = dataset['input_test'][s]
@@ -58,18 +58,18 @@ def show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger)
         y_real_combined = np.concatenate((input_sample.flatten(), output_sample.flatten()))
         plot_approx_predictions(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                 approx_outputs,
-                                title=f'Approx_sample_{i}', show=config['show_approx_plots'], logger=logger)
+                                title=f'{title}_{i}', show=config['show_approx_plots'], logger=logger)
         plot_approx_predictions_mean(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                      np.array(approx_outputs).reshape(config['future_steps'],
                                                                       config['shot_predictions']),
-                                     title=f'Approx_mean_sample_{i}', show=config['show_approx_plots'], logger=logger)
+                                     title=f'{title}_mean_{i}', show=config['show_approx_plots'], logger=logger)
         plot_approx_predictions_box(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                     np.array(approx_outputs).reshape(config['future_steps'],
                                                                      config['shot_predictions']),
-                                    title=f'Approx_box_sample_{i}', show=config['show_approx_plots'], logger=logger)
+                                    title=f'{title}_box_{i}', show=config['show_approx_plots'], logger=logger)
 
 
-def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, dataset, config, logger):
+def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, dataset, config, logger, title='Iterative_Forecast'):
     input_forecast = dataset['input_forecast']
     input_noisy_forecast = dataset['input_noisy_forecast']
     step_size = dataset['step_size']
@@ -83,15 +83,15 @@ def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, datas
 
     plot_approx_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
                             pred_y_forecast_data,
-                            title=f'Iterative_Forecast', show=config['show_approx_plots'], logger=logger)
+                            title=f'{title}', show=config['show_approx_plots'], logger=logger)
     plot_approx_predictions_mean(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
                                  y_iter_combined,
                                  np.array(pred_y_forecast_data).reshape(config['steps_to_predict'], config['shot_predictions']),
-                                 title=f'Iterative_Forecast_mean', show=config['show_approx_plots'], logger=logger)
+                                 title=f'{title}_mean', show=config['show_approx_plots'], logger=logger)
     plot_approx_predictions_box(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
                                 y_iter_combined,
                                 np.array(pred_y_forecast_data).reshape(config['steps_to_predict'], config['shot_predictions']),
-                                title=f'Iterative_Forecast_box', show=config['show_approx_plots'], logger=logger)
+                                title=f'{title}_box', show=config['show_approx_plots'], logger=logger)
 
 
 def plot_metrics(loss_progress, show=False, logger=None):

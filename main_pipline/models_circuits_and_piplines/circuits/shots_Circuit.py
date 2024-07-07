@@ -45,8 +45,13 @@ class test_Shot_Circuit(Shot_Circuit):
 
         return circuit
 
-    def run_shot(self):
-        @qml.qnode(qml.device("default.qubit", wires=self.n_wires, shots=self.shots), interface=None)
+    def run_shot(self, custome_shots=None):
+        if custome_shots is None:
+            shots = self.shots
+        else:
+            shots = custome_shots
+
+        @qml.qnode(qml.device("default.qubit", wires=self.n_wires, shots=shots), interface=None)
         def circuit(inputs, weights):
             qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True, pad_with=0.)
             qml.broadcast(qml.RX, range(self.n_wires), pattern='single', parameters=weights)
@@ -69,6 +74,7 @@ class Tangle_Shot_Circuit(Shot_Circuit):
         self.weight_shapes = {"weights": (config['layers'], self.n_wires, 3)}
 
     def run(self):
+
         @partial(qml.batch_input, argnum=0)
         @qml.qnode(qml.device("default.qubit", wires=self.n_wires), interface='tf')
         def circuit(inputs, weights):
@@ -78,8 +84,12 @@ class Tangle_Shot_Circuit(Shot_Circuit):
 
         return circuit
 
-    def run_shot(self):
-        @qml.qnode(qml.device("default.qubit", wires=self.n_wires, shots=self.shots), interface=None)
+    def run_shot(self, custom_shots=None):
+        if custom_shots is None:
+            shots = self.shots
+        else:
+            shots = custom_shots
+        @qml.qnode(qml.device("default.qubit", wires=self.n_wires, shots=shots), interface=None)
         def circuit(inputs, weights):
             qml.AmplitudeEmbedding(features=inputs, wires=range(self.n_wires), normalize=True, pad_with=0.)
             qml.StronglyEntanglingLayers(weights, wires=range(self.n_wires))

@@ -88,8 +88,8 @@ class PSCModel:
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
 
-    def predict_shots(self, x_test):
-        shot_circuit = self.circuit.run_shot()
+    def predict_shots(self, x_test, shots=None):
+        shot_circuit = self.circuit.run_shot(shots)
         return shot_circuit(x_test, self.weights)
 
     def save_model(self, path, logger):
