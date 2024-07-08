@@ -1,3 +1,5 @@
+import time
+
 import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
@@ -57,25 +59,24 @@ def show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger,
         x_indices = np.arange(config['time_steps'] + config['future_steps'])
         y_real_combined = np.concatenate((input_sample.flatten(), output_sample.flatten()))
 
-        print(approx_outputs)
-
-
         reshaped_predictions = []
         for i in range(config['future_steps']):
             step_predictions = []
             for j in range(config['shot_predictions']):
                 step_predictions.append(approx_outputs[j][i])
             reshaped_predictions.append(step_predictions)
-        print(reshaped_predictions)
         plot_approx_predictions(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                 approx_outputs,
                                 title=f'{title}_{i}', show=config['show_approx_plots'], logger=logger)
+        time.sleep(1.5)
         plot_approx_predictions_mean(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                      np.array(reshaped_predictions),
                                      title=f'{title}_mean_{i}', show=config['show_approx_plots'], logger=logger)
+        time.sleep(1.5)
         plot_approx_predictions_box(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                     np.array(reshaped_predictions),
                                     title=f'{title}_box_{i}', show=config['show_approx_plots'], logger=logger)
+        time.sleep(1.5)
 
 
 def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, dataset, config, logger,
@@ -90,24 +91,24 @@ def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, datas
 
     x_iter_indices = np.arange(config['time_steps'] + config['steps_to_predict'])
     y_iter_combined = np.concatenate((input_forecast.flatten(), real_future_values))
-    print(pred_y_forecast_data)
     reshaped_predictions = []
     for i in range(config['steps_to_predict']):
         step_predictions = []
         for j in range(config['shot_predictions']):
             step_predictions.append(pred_y_forecast_data[j][i])
         reshaped_predictions.append(step_predictions)
-    print(reshaped_predictions)
     plot_approx_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
                             pred_y_forecast_data,
                             title=f'{title}', show=config['show_approx_plots'], logger=logger)
+    time.sleep(1.5)
     plot_approx_predictions_mean(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
                                  y_iter_combined, reshaped_predictions,
                                  title=f'{title}_mean', show=config['show_approx_plots'], logger=logger)
+    time.sleep(1.5)
     plot_approx_predictions_box(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
                                 y_iter_combined, reshaped_predictions,
                                 title=f'{title}_box', show=config['show_approx_plots'], logger=logger)
-
+    time.sleep(1.5)
 
 def plot_metrics(loss_progress, show=False, logger=None):
     if isinstance(loss_progress, dict) and 'loss' in loss_progress:
@@ -202,7 +203,7 @@ def plot_approx_predictions(x_data, input_real, input_noisy, y_real, approx_outp
     plt.plot(x_data[len(input_real):len(y_real)], y_real[len(input_real):],
              label='Real Future', color='green', marker='o', linestyle='-')
 
-    for i, output in enumerate(approx_outputs):
+    for output in approx_outputs:
         y_pred_combined = np.concatenate((input_real.flatten(), np.array(output).flatten()))
         plt.plot(x_data[len(input_real):len(y_pred_combined)],
                  y_pred_combined[len(input_real):],
@@ -275,7 +276,7 @@ def plot_approx_predictions_box(x_data, input_real, input_noisy, y_real, approx_
                  label='Real Future', color='green', marker='o', linestyle='-')
 
     # Prepare boxplot data
-    predictions_at_steps = [output.flatten() for output in approx_outputs]
+    predictions_at_steps = [np.array(output).flatten() for output in approx_outputs]
     boxplot_positions = np.arange(len(input_real), len(input_real) + len(predictions_at_steps))
 
     # Truncate if necessary to match lengths

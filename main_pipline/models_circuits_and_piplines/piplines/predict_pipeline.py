@@ -51,7 +51,7 @@ full_config = {
     'model': 'PSCModel',
     'circuit': 'Tangle_Shot_Circuit',
     # Run parameter
-    'epochs': 2,
+    'epochs': 1,
     'batch_size': 37,
     'learning_rate': 0.0094,
     'loss_function': 'mse',
@@ -62,8 +62,8 @@ full_config = {
     'layers': 2,  # Only Optuna/Tangle circuit
     # Shot prediction
     'approx_samples': 2,
-    'shots': 500,
-    'shot_predictions': 2,
+    'shots': 100000,
+    'shot_predictions': 100,
 }
 
 models = {

@@ -59,7 +59,7 @@ full_config = {
     # Shot prediction
     'approx_samples': 2,
     'shots': 10000,
-    'shot_predictions': 100,
+    'shot_predictions': 2,
 }
 
 
