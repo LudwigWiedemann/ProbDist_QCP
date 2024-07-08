@@ -53,6 +53,7 @@ def iterative_shot_forecast(function, model, dataset, config, logger=None, custo
 
             pred_pred = model.predict_shots(pred_input.reshape(config['time_steps'], ), shots=custome_shots)
             all_pred_predictions.append(np.array(pred_pred).flatten() * config['compress_factor'])
+
             pred_input = np.concatenate((pred_input.flatten(), np.array(pred_pred).flatten()))[-time_steps:].reshape(1,
                                                                                                                      -1,
                                                                                                                      1)
@@ -75,6 +76,7 @@ def iterative_shot_forecast(function, model, dataset, config, logger=None, custo
                          -time_steps:].reshape(1, -1, 1)
         pred_shot_predictions.append(all_pred_predictions)
         real_shot_predictions.append(all_real_predictions)
-
+    show_all_shot_forecasting_plots(function, [pred_shot_predictions[0]], dataset, config, logger=logger,
+                                    title=f'Fully_Iterative_Forecast_{title}')
     show_all_shot_forecasting_plots(function, pred_shot_predictions, dataset, config, logger=logger, title=f'Fully_Iterative_Forecast_{title}')
     show_all_shot_forecasting_plots(function, real_shot_predictions, dataset, config, logger=logger, title=f'Partial_Iterative_Forecast_{title}')

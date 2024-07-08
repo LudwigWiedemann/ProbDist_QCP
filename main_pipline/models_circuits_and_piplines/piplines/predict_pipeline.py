@@ -48,10 +48,10 @@ full_config = {
     'show_approx_plots': True,
     'steps_to_predict': 300,
     # Model parameter
-    'model': 'PCModel',
+    'model': 'PSCModel',
     'circuit': 'Tangle_Shot_Circuit',
     # Run parameter
-    'epochs': 300,
+    'epochs': 2,
     'batch_size': 37,
     'learning_rate': 0.0094,
     'loss_function': 'mse',
@@ -59,11 +59,11 @@ full_config = {
     'patience': 40,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 3,  # Only Optuna/Tangle circuit
+    'layers': 2,  # Only Optuna/Tangle circuit
     # Shot prediction
     'approx_samples': 2,
     'shots': 500,
-    'shot_predictions': 100,
+    'shot_predictions': 2,
 }
 
 models = {
@@ -123,10 +123,10 @@ def main():
 
     model, loss = run_model(dataset, full_config, logger)
 
-    iterative_forecast(function, model, dataset, full_config, logger=logger)
+    #iterative_forecast(function, model, dataset, full_config, logger=logger)
 
-
-    n_shots = [1000, 10000, 100000, 1000000]
+    logger.info("Start Shot_sample_forecasting")
+    n_shots = [1000, 10000, 100000]#, 1000000]
     for shots in n_shots:
         evaluate_sample_with_shot(model, dataset, full_config, logger, title=shots, custome_shots=shots)
     for shots in n_shots:

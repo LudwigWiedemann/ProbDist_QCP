@@ -56,20 +56,30 @@ def show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger,
 
         x_indices = np.arange(config['time_steps'] + config['future_steps'])
         y_real_combined = np.concatenate((input_sample.flatten(), output_sample.flatten()))
+
+        print(approx_outputs)
+
+
+        reshaped_predictions = []
+        for i in range(config['future_steps']):
+            step_predictions = []
+            for j in range(config['shot_predictions']):
+                step_predictions.append(approx_outputs[j][i])
+            reshaped_predictions.append(step_predictions)
+        print(reshaped_predictions)
         plot_approx_predictions(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                 approx_outputs,
                                 title=f'{title}_{i}', show=config['show_approx_plots'], logger=logger)
         plot_approx_predictions_mean(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
-                                     np.array(approx_outputs).reshape(config['future_steps'],
-                                                                      config['shot_predictions']),
+                                     np.array(reshaped_predictions),
                                      title=f'{title}_mean_{i}', show=config['show_approx_plots'], logger=logger)
         plot_approx_predictions_box(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
-                                    np.array(approx_outputs).reshape(config['future_steps'],
-                                                                     config['shot_predictions']),
+                                    np.array(reshaped_predictions),
                                     title=f'{title}_box_{i}', show=config['show_approx_plots'], logger=logger)
 
 
-def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, dataset, config, logger, title='Iterative_Forecast'):
+def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, dataset, config, logger,
+                                    title='Iterative_Forecast'):
     input_forecast = dataset['input_forecast']
     input_noisy_forecast = dataset['input_noisy_forecast']
     step_size = dataset['step_size']
@@ -80,17 +90,22 @@ def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, datas
 
     x_iter_indices = np.arange(config['time_steps'] + config['steps_to_predict'])
     y_iter_combined = np.concatenate((input_forecast.flatten(), real_future_values))
-
+    print(pred_y_forecast_data)
+    reshaped_predictions = []
+    for i in range(config['steps_to_predict']):
+        step_predictions = []
+        for j in range(config['shot_predictions']):
+            step_predictions.append(pred_y_forecast_data[j][i])
+        reshaped_predictions.append(step_predictions)
+    print(reshaped_predictions)
     plot_approx_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
                             pred_y_forecast_data,
                             title=f'{title}', show=config['show_approx_plots'], logger=logger)
     plot_approx_predictions_mean(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
-                                 y_iter_combined,
-                                 np.array(pred_y_forecast_data).reshape(config['steps_to_predict'], config['shot_predictions']),
+                                 y_iter_combined, reshaped_predictions,
                                  title=f'{title}_mean', show=config['show_approx_plots'], logger=logger)
     plot_approx_predictions_box(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
-                                y_iter_combined,
-                                np.array(pred_y_forecast_data).reshape(config['steps_to_predict'], config['shot_predictions']),
+                                y_iter_combined, reshaped_predictions,
                                 title=f'{title}_box', show=config['show_approx_plots'], logger=logger)
 
 
@@ -191,7 +206,7 @@ def plot_approx_predictions(x_data, input_real, input_noisy, y_real, approx_outp
         y_pred_combined = np.concatenate((input_real.flatten(), np.array(output).flatten()))
         plt.plot(x_data[len(input_real):len(y_pred_combined)],
                  y_pred_combined[len(input_real):],
-                 label=f'Prediction {i}', marker='x', linestyle='-', alpha=0.3, color='red')
+                 marker='x', linestyle='-', alpha=0.1, color='red')
     plt.xlabel('Time Steps')
     plt.ylabel('Values')
     plt.title(title)
@@ -220,7 +235,6 @@ def plot_approx_predictions_mean(x_data, input_real, input_noisy, y_real, approx
                  label='Real Future', color='green', marker='o', linestyle='-')
 
     # Calculate mean and standard deviation of predictions
-    approx_outputs = np.array(approx_outputs)
     mean_pred = np.mean(approx_outputs, axis=1)
     std_pred = np.std(approx_outputs, axis=1)
 
