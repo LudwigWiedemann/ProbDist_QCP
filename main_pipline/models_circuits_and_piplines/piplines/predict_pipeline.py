@@ -1,5 +1,7 @@
 import os
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+import random
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
     iterative_forecast
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_shot_forecaste import \
@@ -125,11 +127,11 @@ def main():
     #iterative_forecast(function, model, dataset, full_config, logger=logger)
 
     logger.info("Start Shot_sample_forecasting")
-    n_shots = [1000, 10000]#, 100000]#, 1000000]
+    n_shots = [5, 1000, 10000]#, 100000]#, 1000000]
+    sample_index = random.sample(range(len(dataset['input_test'])), full_config['approx_samples'])
     for shots in n_shots:
         logger.info(f'Evaluating Sample with {shots} shots')
-        index
-        evaluate_sample_with_shot(model, dataset, full_config, logger, title=shots, custome_shots=shots)
+        evaluate_sample_with_shot(model, dataset, sample_index, full_config, logger, title=shots, custome_shots=shots)
     for shots in n_shots:
         logger.info(f'Evaluating Forecast with {shots} shots')
         shots_start = time.time()

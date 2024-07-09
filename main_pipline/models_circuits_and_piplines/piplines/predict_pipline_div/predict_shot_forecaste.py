@@ -1,4 +1,4 @@
-import random
+
 
 import numpy as np
 
@@ -6,8 +6,8 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
     show_approx_sample_plots, show_all_shot_forecasting_plots
 
 
-def evaluate_sample_with_shot(model, dataset, config, logger, custome_shots=None, title=''):
-    sample_index = random.sample(range(len(dataset['input_test'])), config['approx_samples'])
+def evaluate_sample_with_shot(model, dataset, sample_index, config, logger, custome_shots=None, title=''):
+
     samples = dataset['input_test'][sample_index] / config['compress_factor']
 
     approx_sets = []
@@ -31,7 +31,7 @@ def evaluate_sample_with_shot(model, dataset, config, logger, custome_shots=None
     show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger, title=f'Approx_sample_{title}')
 
 
-def iterative_shot_forecast(function, model, dataset, config, logger=None, custome_shots=None, title=''):
+def iterative_shot_forecast(model, dataset, config, logger=None, custome_shots=None, title=''):
     input_pred = dataset['input_forecast'] / config['compress_factor']
     fully_predicted_ar = []
     for _ in range(config['shot_predictions']):
@@ -39,10 +39,10 @@ def iterative_shot_forecast(function, model, dataset, config, logger=None, custo
         for i in range(config['steps_to_predict'] // config['future_steps']):
             output_pred = model.predict_shots(input_pred.reshape(config['time_steps'], ), shots=custome_shots)
             output_ar.append(np.array(output_pred) * config['compress_factor'])
-            input_pred = np.concatenate([input_pred, output_pred])[-config['time_steps']:]
+            input_pred = np.concatenate([np.array(input_pred).flatten(), np.array(output_pred).flatten()])[-config['time_steps']:]
 
         fully_predicted_ar.append(np.concatenate(output_ar))
-    show_all_shot_forecasting_plots(function, fully_predicted_ar, dataset, config, logger=logger,
+    show_all_shot_forecasting_plots(fully_predicted_ar, dataset, config, logger=logger,
                                     title=f'Fully_Iterative_Forecast_{title}')
 
     input_partial_pred = dataset['extended_forecast_sample'][0] / config['compress_factor']
@@ -55,5 +55,5 @@ def iterative_shot_forecast(function, model, dataset, config, logger=None, custo
             output_ar.append(np.array(output) * config['compress_factor'])
             input_partial_pred = dataset['extended_forecast_sample'][i] / config['compress_factor']
         partial_predicted_ar.append(np.concatenate(output_ar))
-    show_all_shot_forecasting_plots(function, partial_predicted_ar, dataset, config, logger=logger,
+    show_all_shot_forecasting_plots(partial_predicted_ar, dataset, config, logger=logger,
                                     title=f'Partial_Iterative_Forecast_{title}')

@@ -75,18 +75,14 @@ def show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger,
         time.sleep(1.5)
 
 
-def show_all_shot_forecasting_plots(target_function, pred_y_forecast_data, dataset, config, logger,
+def show_all_shot_forecasting_plots(pred_y_forecast_data, dataset, config, logger,
                                     title='Iterative_Forecast'):
     input_forecast = dataset['input_forecast']
     input_noisy_forecast = dataset['input_noisy_forecast']
-    step_size = dataset['step_size']
-
-    future_frame_end = step_size * config['steps_to_predict']
-    real_future_values = target_function(
-        np.linspace(config['time_frame_end'], config['time_frame_end'] + future_frame_end, config['steps_to_predict']))
+    extended_y_data = dataset['extended_y_data']
 
     x_iter_indices = np.arange(config['time_steps'] + config['steps_to_predict'])
-    y_iter_combined = np.concatenate((input_forecast.flatten(), real_future_values))
+    y_iter_combined = np.concatenate((input_forecast.flatten(), extended_y_data))
     reshaped_predictions = []
     for i in range(config['steps_to_predict']):
         step_predictions = []
