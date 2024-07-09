@@ -131,11 +131,11 @@ def main():
     sample_index = random.sample(range(len(dataset['input_test'])), full_config['approx_samples'])
     for shots in n_shots:
         logger.info(f'Evaluating Sample with {shots} shots')
-        evaluate_sample_with_shot(model, dataset, sample_index, full_config, logger, title=shots, custome_shots=shots)
+        #evaluate_sample_with_shot(model, dataset, sample_index, full_config, logger, title=shots, custome_shots=shots)
     for shots in n_shots:
         logger.info(f'Evaluating Forecast with {shots} shots')
         shots_start = time.time()
-        iterative_shot_forecast(function, model, dataset, full_config, logger=logger, title=shots, custome_shots=shots)
+        iterative_shot_forecast(model, dataset, full_config, logger=logger, title=shots, custome_shots=shots)
         logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
 
 
