@@ -3,32 +3,32 @@ import pennylane as qml
 from pennylane import numpy as np
 
 optimizer = qml.GradientDescentOptimizer(0.01)
-epochs = 2
-input = [1, 1, 1, 2]
+epochs = 20
 
 
 def train_prob_dist(weights, input):
-
     for i in range(epochs):
-        print("hi")
-        weights = optimizer.step(cost, weights)
-        print("hi")
-
-        # params = optimizer.step(cost, params, samples=cost_samples)
-
+        weights = optimizer.step(cost, weights, distr_in=input)
     return weights
 
-def cost(weights):
-    prediction_dist = []
-    for i in range(len(input)):
-        prediction_dist.append(scale_prediction(circuit.predict_wuerfelwurf(weights)))
-    cost = 0
-    count_in = count_auspraegungen(input)
-    count_pred = count_auspraegungen(prediction_dist)
-    for auspr in [0,1]:
-        cost += (count_in[auspr] - count_pred[auspr]) ** 2
-    return cost
 
+def distribution(weights, n):
+    prediction_dist = []
+    for i in range(n):
+        prediction_dist.append(scale_prediction(circuit.predict_wuerfelwurf(weights)))
+    return prediction_dist
+
+
+def cost(weights, distr_in):
+    prediction_dist = distribution(weights, len(distr_in))
+    cost = 0
+    count_in = count_auspraegungen(distr_in)
+    count_pred = count_auspraegungen(prediction_dist)
+    print("goal: " + str(count_in) + " prediction: " + str(count_pred))
+    for auspr in [0, 1]:
+        cost += ((count_in[auspr] - count_pred[auspr]) ** 2)
+    print("cost: " + str(cost))
+    return cost
 
 
 def scale_prediction(pred):
@@ -40,7 +40,7 @@ def scale_prediction(pred):
 
 
 def count_auspraegungen(distr):
-    count = np.array([0,0])
+    count = np.array([0, 0])
     for elem in distr:
         if elem < 0:
             count[0] += 1
