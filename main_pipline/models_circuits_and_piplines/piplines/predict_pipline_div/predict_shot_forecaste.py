@@ -50,7 +50,7 @@ def iterative_shot_forecast(model, dataset, config, logger=None, custome_shots=N
 
     for _ in range(config['shot_predictions']):
         output_ar = []
-        for i in range(1, dataset['extended_forecast_sample']):
+        for i in range(1, len(dataset['extended_forecast_sample'])):
             output = model.predict_shots(input_partial_pred.reshape(config['time_steps'], ), shots=custome_shots)
             output_ar.append(np.array(output) * config['compress_factor'])
             input_partial_pred = dataset['extended_forecast_sample'][i] / config['compress_factor']
