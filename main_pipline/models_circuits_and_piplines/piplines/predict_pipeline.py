@@ -16,8 +16,7 @@ import numpy as np
 import main_pipline.input.div.filemanager as filemanager
 from main_pipline.input.div.logger import Logger
 
-from main_pipline.input.div.dataset_manager import generate_time_series_data
-
+from main_pipline.input.div.dataset_manager import generate_dataset
 from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit, new_baseline
 from main_pipline.models_circuits_and_piplines.circuits.amp_Circuit import base_Amp_Circuit, layered_Amp_Circuit, \
     tangle_Amp_Circuit, test_Amp_Circuit, double_Amp_Circuit
@@ -118,7 +117,7 @@ def main():
     logger = Logger(trial_folder)
 
     logger.info("Generating training data")
-    dataset = generate_time_series_data(function, full_config, logger)
+    dataset = generate_dataset(function, full_config, logger)
     logger.info("Training data generated")
 
     model, loss = run_model(dataset, full_config, logger)
@@ -126,11 +125,13 @@ def main():
     #iterative_forecast(function, model, dataset, full_config, logger=logger)
 
     logger.info("Start Shot_sample_forecasting")
-    n_shots = [1000, 10000, 100000]#, 1000000]
+    n_shots = [1000, 10000]#, 100000]#, 1000000]
     for shots in n_shots:
+        logger.info(f'Evaluating Sample with {shots} shots')
+        index
         evaluate_sample_with_shot(model, dataset, full_config, logger, title=shots, custome_shots=shots)
     for shots in n_shots:
-        logger.info(f'Evaluating with {shots} shots')
+        logger.info(f'Evaluating Forecast with {shots} shots')
         shots_start = time.time()
         iterative_shot_forecast(function, model, dataset, full_config, logger=logger, title=shots, custome_shots=shots)
         logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")

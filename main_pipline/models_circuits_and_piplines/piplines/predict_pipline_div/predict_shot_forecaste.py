@@ -32,48 +32,28 @@ def evaluate_sample_with_shot(model, dataset, config, logger, custome_shots=None
 
 
 def iterative_shot_forecast(function, model, dataset, config, logger=None, custome_shots=None, title=''):
-    steps = config['steps_to_predict']
-    time_steps = config['time_steps']
-    future_steps = config['future_steps']
-
-    pred_input = dataset['input_forecast'] / config['compress_factor']
-    real_input = dataset['input_forecast'] / config['compress_factor']
-
-    pred_shot_predictions = []
+    input_pred = dataset['input_forecast'] / config['compress_factor']
+    fully_predicted_ar = []
     for _ in range(config['shot_predictions']):
-        all_pred_predictions = []
-        for i in range(steps // future_steps):
-            if pred_input.shape[1] < time_steps:
-                padding = np.zeros((pred_input.shape[0], time_steps - pred_input.shape[1], pred_input.shape[2]))
-                pred_input = np.concatenate((padding, pred_input), axis=1)
-            pred_pred = model.predict_shots(pred_input.reshape(config['time_steps'], ), shots=custome_shots)
-            all_pred_predictions.append(np.array(pred_pred).flatten() * config['compress_factor'])
-            pred_input = np.concatenate((pred_input.flatten(), np.array(pred_pred).flatten()))[-time_steps:].reshape(1,-1,1)
-        pred_shot_predictions.append(np.concatenate(all_pred_predictions))
-    show_all_shot_forecasting_plots(function, pred_shot_predictions, dataset, config, logger=logger,
+        output_ar = []
+        for i in range(config['steps_to_predict'] // config['future_steps']):
+            output_pred = model.predict_shots(input_pred.reshape(config['time_steps'], ), shots=custome_shots)
+            output_ar.append(np.array(output_pred) * config['compress_factor'])
+            input_pred = np.concatenate([input_pred, output_pred])[-config['time_steps']:]
+
+        fully_predicted_ar.append(np.concatenate(output_ar))
+    show_all_shot_forecasting_plots(function, fully_predicted_ar, dataset, config, logger=logger,
                                     title=f'Fully_Iterative_Forecast_{title}')
 
-    real_shot_predictions = []
+    input_partial_pred = dataset['extended_forecast_sample'][0] / config['compress_factor']
+    partial_predicted_ar = []
+
     for _ in range(config['shot_predictions']):
-        all_real_predictions = []
-        for i in range(steps // future_steps):
-            if real_input.shape[1] < time_steps:
-                padding = np.zeros((real_input.shape[0], time_steps - real_input.shape[1], real_input.shape[2]))
-                real_input = np.concatenate((padding, real_input), axis=1)
-
-            real_pred = model.predict_shots(real_input.reshape(config['time_steps'], ), shots=custome_shots)
-            all_real_predictions.append(np.array(real_pred).flatten() * config['compress_factor'])
-
-            step_size = dataset['step_size']
-
-            future_frame_end = step_size * config['future_steps'] * i
-            real_data = function(
-                np.linspace(config['time_frame_end'], config['time_frame_end'] + future_frame_end,
-                            config['steps_to_predict']))
-
-            real_input = np.concatenate((real_input.flatten(), real_data.flatten() / config['compress_factor']))[
-                         -time_steps:].reshape(1, -1, 1)
-
-        real_shot_predictions.append(np.concatenate(all_real_predictions))
-    show_all_shot_forecasting_plots(function, real_shot_predictions, dataset, config, logger=logger,
+        output_ar = []
+        for i in range(1, dataset['extended_forecast_sample']):
+            output = model.predict_shots(input_partial_pred.reshape(config['time_steps'], ), shots=custome_shots)
+            output_ar.append(np.array(output) * config['compress_factor'])
+            input_partial_pred = dataset['extended_forecast_sample'][i] / config['compress_factor']
+        partial_predicted_ar.append(np.concatenate(output_ar))
+    show_all_shot_forecasting_plots(function, partial_predicted_ar, dataset, config, logger=logger,
                                     title=f'Partial_Iterative_Forecast_{title}')
