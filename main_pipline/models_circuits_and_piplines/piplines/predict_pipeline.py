@@ -1,5 +1,7 @@
 import os
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+import random
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
     iterative_forecast
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_shot_forecaste import \
@@ -16,8 +18,7 @@ import numpy as np
 import main_pipline.input.div.filemanager as filemanager
 from main_pipline.input.div.logger import Logger
 
-from main_pipline.input.div.dataset_manager import generate_time_series_data
-
+from main_pipline.input.div.dataset_manager import generate_dataset
 from main_pipline.models_circuits_and_piplines.circuits.variable_circuit import new_RYXZ_Circuit, new_baseline
 from main_pipline.models_circuits_and_piplines.circuits.amp_Circuit import base_Amp_Circuit, layered_Amp_Circuit, \
     tangle_Amp_Circuit, test_Amp_Circuit, double_Amp_Circuit
@@ -118,7 +119,7 @@ def main():
     logger = Logger(trial_folder)
 
     logger.info("Generating training data")
-    dataset = generate_time_series_data(function, full_config, logger)
+    dataset = generate_dataset(function, full_config, logger)
     logger.info("Training data generated")
 
     model, loss = run_model(dataset, full_config, logger)
@@ -126,13 +127,15 @@ def main():
     #iterative_forecast(function, model, dataset, full_config, logger=logger)
 
     logger.info("Start Shot_sample_forecasting")
-    n_shots = [1000, 10000, 100000]#, 1000000]
+    n_shots = [5, 1000, 10000]#, 100000]#, 1000000]
+    sample_index = random.sample(range(len(dataset['input_test'])), full_config['approx_samples'])
     for shots in n_shots:
-        evaluate_sample_with_shot(model, dataset, full_config, logger, title=shots, custome_shots=shots)
+        logger.info(f'Evaluating Sample with {shots} shots')
+        #evaluate_sample_with_shot(model, dataset, sample_index, full_config, logger, title=shots, custome_shots=shots)
     for shots in n_shots:
-        logger.info(f'Evaluating with {shots} shots')
+        logger.info(f'Evaluating Forecast with {shots} shots')
         shots_start = time.time()
-        iterative_shot_forecast(function, model, dataset, full_config, logger=logger, title=shots, custome_shots=shots)
+        iterative_shot_forecast(model, dataset, full_config, logger=logger, title=shots, custome_shots=shots)
         logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
 
 
