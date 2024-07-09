@@ -1,15 +1,11 @@
-import random
-
 import dill
-import numpy as np
 from keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
 import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
-from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
-    show_approx_sample_plots
+
 
 class PSCModel:
     def __init__(self, variable_circuit, config):
@@ -92,32 +88,9 @@ class PSCModel:
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
 
-    def evaluate_kl_div(self, dataset, logger):
-        shot_circuit = self.circuit.run_shot()
-        flat_weights = [w.flatten() for w in self.weights]
-
-        sample_index = random.sample(range(len(dataset['input_test'])), self.config['approx_samples'])
-        samples = dataset['input_test'][sample_index] / self.config['compress_factor']
-
-        approx_sets = []
-        for sample in samples:
-            predictions = []
-            for _ in range(self.config['shot_predictions']):
-                retry_attempts = 5
-                while retry_attempts > 0:
-                    try:
-                        prediction = np.array(shot_circuit(sample.reshape(64, ),  *flat_weights))
-                        predictions.append(prediction * self.config['compress_factor'])
-                        break  # Break if successful
-                    except ValueError as e:
-                        logger.error(f"ValueError: {e}, retrying...")
-                        retry_attempts -= 1
-                        if retry_attempts == 0:
-                            logger.error(f"Failed after {5} retries.")
-                            raise e
-
-            approx_sets.append(predictions)
-        show_approx_sample_plots(approx_sets, sample_index, dataset, self.config, logger)
+    def predict_shots(self, x_test, shots=None):
+        shot_circuit = self.circuit.run_shot(shots)
+        return shot_circuit(x_test, self.weights)
 
     def save_model(self, path, logger):
         try:
