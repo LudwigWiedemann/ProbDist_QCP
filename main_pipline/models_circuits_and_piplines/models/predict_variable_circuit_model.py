@@ -38,7 +38,7 @@ class PVCModel:
         return history
 
     def evaluate(self, dataset):
-        x_test = dataset['input_test']
+        x_test = dataset['input_noisy_test']
         y_test = dataset['output_test']
 
         pred_y_test_data = self.model.predict(x_test)
