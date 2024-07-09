@@ -3,8 +3,10 @@ from pennylane import numpy as np
 
 import training
 
+input_size = 3000
+
 if __name__ == "__main__":
-    input = [1,1,1,2]
+    input = np.random.randint(1, 3, size=input_size)
     n = len(input)
     weights = np.random.rand(cir.num_wires * 3 * cir.num_layers)
 
