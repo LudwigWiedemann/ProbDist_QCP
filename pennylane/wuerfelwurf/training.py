@@ -24,9 +24,11 @@ def cost(weights, distr_in):
     cost = 0
     count_in = count_auspraegungen(distr_in)
     count_pred = count_auspraegungen(prediction_dist)
-    print("goal: " + str(count_in) + " prediction: " + str(count_pred))
+    i=0
+    print(str(i)+": goal: " + str(count_in) + " prediction: " + str(count_pred))
     for auspr in [0, 1]:
         cost += ((count_in[auspr] - count_pred[auspr]) ** 2)
+        i+=1
     print("cost: " + str(cost))
     return cost
 
