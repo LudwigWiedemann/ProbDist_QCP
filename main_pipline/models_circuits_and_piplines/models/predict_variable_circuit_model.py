@@ -12,7 +12,7 @@ class PVCModel:
         self.circuit = variable_circuit()
         self.model = self.create_pvc_model(self.circuit, config)
 
-    def train(self, dataset):
+    def train(self, dataset, logger):
         x_train = dataset['input_train']
         y_train = dataset['output_train']
 
@@ -38,7 +38,7 @@ class PVCModel:
         return history
 
     def evaluate(self, dataset):
-        x_test = dataset['input_test']
+        x_test = dataset['input_noisy_test']
         y_test = dataset['output_test']
 
         pred_y_test_data = self.model.predict(x_test)

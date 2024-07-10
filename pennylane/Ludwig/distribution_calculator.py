@@ -132,51 +132,27 @@ def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
     for i in range(lenght_x_prediction):
         data=[]
         for prediction in predictions:
-            #print("Prediction: "+str(prediction))
             data.append(prediction[i])
-        #count, bins = np.histogram(data, bins=bin_edges)
-        #count=cluster_manually(data,minimum,maximum)
         count=count_values(data,minimum,maximum,num_bins)
         count=count/np.sum(count)       #normalizes the count
         counts_prediction.append(count)
-    #print("COUNTS:"+str(counts))
     for i in range(lenght_x_input):
         data=[]
         for dataset in datasets:
-            #print("Prediction: "+str(prediction))
             data.append(dataset[i])
-        #count, bins = np.histogram(data, bins=bin_edges)
         count=count_values(data,minimum,maximum,num_bins)
-        #count=count/np.sum(count)
         count=count/np.sum(count)       #normalizes the count
-        #counts_input.append(count)
         counts_input.append(count)
-    #counts_input=counts_input/np.sum(counts_input)   #normalize the counts
-    #counts_input_manuell=counts_input_manuell/np.sum(counts_input_manuell)   #normalize the counts
     kl_divergence_bits_list=[]
     kl_divergence_dits_list=[]
     js_divergence_list=[]
     js_distance_list=[]
-    kl_distribution_manuell_list=[]
-    #print("KL_length:"+str(len(counts_prediction)))
-    #print("inputs_length:"+str(len(counts_input)))
-    #print("start:"+str(start))
-    #print("end:"+str(end))
-    #print("END:"+str(lenght_x_input*stepsize))
     for i in range(lenght_x_input):
         bits,dits=kl_divergence(counts_input[i],counts_prediction[i])
-        #print(f"auto:    {counts_input[i]}")
-        #print(f"manuell: {counts_input_manuell[i]}")
         kl_divergence_bits_list.append(bits)
         kl_divergence_dits_list.append(dits)
-        #print(f"bits at x={i*stepsize}: {kl_divergence_bits_list[i]}")
-        #print(f"dits at x={i*stepsize}: {kl_divergence_dits_list[i]}")
         js_distance_list.append(jensen_shannon_distance(counts_input[i],counts_prediction[i]))
         js_divergence_list.append(jensen_shannon_divergence(counts_input[i],counts_prediction[i]))
-        #print(f"js_distance at x={i*stepsize}: {js_distance_list[i]}")
-        #print(f"js_divergence at x={i*stepsize}: {js_divergence_list[i]}")
-        #print(counts_input[i])
-        #print(counts_prediction[i])
     plt.plot_kl_divergence(value_list=kl_divergence_bits_list, x_start=start, step_size=stepsize, y_label="Kuback-Leibler-divergence in bits", color="orange")
     plt.plot_kl_divergence(kl_divergence_dits_list, start, stepsize, "Kuback-Leibler-divergence in dits", color="red")
     plt.plot_kl_divergence(js_distance_list, start, stepsize, "Jensen-Shannon distance", color="yellow")
@@ -193,26 +169,3 @@ def count_values(value_list, minimum_value, maximum_value, bins):
         index = min(index, bins-1)
         count_list[index] += 1
     return count_list
-
-#x=[9.5,11,29.5]
-#minimum_value=1
-#max_value=100
-#print(x)
-#count=count_values(x,minimum_value,max_value)
-#print(count)
-#count_manually=count/np.sum(count)
-#print(count_manually)
-
-
-
-
-
-
-
-#dis1= np.array([0.10, 0.40, 0.50])
-#dis2= np.array([0.80, 0.15, 0.05])
-#print(f"1||2: {kl_divergence(dis1,dis2)}")
-#print(f"reverse: {kl_divergence(dis2,dis1)}")
-#print(f"proof: {kl_divergence(dis1,dis1)}")
-
-

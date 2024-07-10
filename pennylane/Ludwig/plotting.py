@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from pennylane import numpy as np
-import matplotlib.ticker as mtick
 
 
 def plot(data, x_start, step_size, original_data_length):
@@ -18,10 +17,16 @@ def plot(data, x_start, step_size, original_data_length):
     plt.show()
 
 
-def plot_evaluation(predictions, x_start, step_size, original_data_length):
+def plot_evaluation(predictions, x_start, step_size, original_data_length,extended_data):
     x_axis = np.linspace(x_start, x_start + (step_size * len(predictions[0])), len(predictions[0]))
     plt.plot(x_axis[0:original_data_length], predictions[0][0:original_data_length], label='known data', alpha=0.5, marker='o',
              color='blue')
+    # Plot extended_data
+    extended_x_axis = np.linspace(0, len(predictions[0])*step_size, len(extended_data))
+    plt.plot(extended_x_axis, extended_data, label='extended data', alpha=0.2, color='green')
+
+
+
     for i in range(len(predictions)):
         plt.plot(x_axis[original_data_length:len(x_axis)], predictions[i][original_data_length:len(predictions[i])],
                  alpha=0.01, color='red')
@@ -32,24 +37,6 @@ def plot_evaluation(predictions, x_start, step_size, original_data_length):
     plt.ylabel("f(x)")
     # plt.title("RY RZ CRY")
     plt.show()
-
-
-def f(x):
-    #return np.sin(x)
-    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
-
-def plot_kl_divergence(distributions):
-    # Create an array of indices for the x-coordinates of the bars
-    x_coords = np.arange(distributions.size)
-    print("COORDINATES:")
-    print(distributions)
-    # Create a bar plot
-    plt.bar(x_coords, distributions)
-    plt.xlabel('Distribution Pair')
-    plt.ylabel('Average KL Divergence')
-    plt.title('Average KL Divergence for Each Pair of Distributions')
-    plt.show()
-
 
 def plot_kl_divergence(value_list, x_start, step_size, y_label, color="red"):
     # Calculate the KL divergence
@@ -72,6 +59,12 @@ def plot_kl_divergence(value_list, x_start, step_size, y_label, color="red"):
 
     # Show the plot
     plt.show()
+
+
+def f(x):
+    #return np.sin(x)
+    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+
 
 #
 # x_axis = np.linspace(-3, 6, 21000)

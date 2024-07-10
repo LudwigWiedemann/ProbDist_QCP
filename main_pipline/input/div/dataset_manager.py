@@ -14,19 +14,6 @@ dataset_settings = {
     "size": 150
 }
 
-test_config = {
-    # Example training data parameters
-
-    'time_frame_start': -4 * np.pi,  # start of timeframe
-    'time_frame_end': 12 * np.pi,  # end of timeframe, needs to be bigger than time_frame_start
-    'n_steps': 200,  # How many points are in the full timeframe
-    'time_steps': 50,  # How many consecutive points are in train/test sample
-    'future_steps': 10,  # How many points are predicted in train/test sample
-    'num_samples': 1000,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'noise_level': 0.1,  # Noise level on Inputs
-    'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
-}
-
 
 # TODO should function also be stored so we know which function dataset was used for?
 def function(x):
@@ -43,19 +30,44 @@ def function(x):
     return function_dictionary.get("sin")
 
 
-def generate_time_series_data(func, config, logger):
+def generate_dataset(func, config, logger):
+    x_data, y_data, noisy_y_data = generate_timeline(config, func, logger)
+
+    input_train, output_train, input_noisy_test, output_test, input_real_test = generate_samples(config, x_data, y_data,
+                                                                                                 noisy_y_data, logger)
+    # Prepare data for foresight
+    input_foresight, input_noisy_foresight, extended_y_data, extended_noisy_y_data, extended_forecast_sample = generate_foresight_samples(
+        config, x_data, y_data, func)
+
+    dataset = {'input_train': input_train, 'output_train': output_train,
+               'input_noisy_test': input_noisy_test, 'input_test': input_real_test, 'output_test': output_test,
+               'input_forecast': input_foresight, 'input_noisy_forecast': input_noisy_foresight,
+               'extended_y_data': extended_y_data, 'extended_noisy_y_data': extended_noisy_y_data,
+               'extended_forecast_sample': extended_forecast_sample}
+
+    return dataset
+
+
+def generate_timeline(config, func, logger):
     time_steps = config['time_steps']
-    num_samples = config['num_samples']
     future_steps = config['future_steps']
     noise_level = config.get('noise_level', 0.0)
     n_steps = config['n_steps']
 
     # Ensure the length of x_data is greater than time_steps
     n_steps = max(time_steps + future_steps, n_steps)  # Ensure a minimum length
-    x_data = np.linspace(config['time_frame_start'], config['time_frame_end'],
-                         n_steps)
+    x_data = np.linspace(config['time_frame_start'], config['time_frame_end'], n_steps)
     y_data = func(x_data)
     noisy_y_data = y_data + np.random.normal(0, noise_level, size=y_data.shape)
+    plot_full_timeframe_data(x_data, y_data, noisy_y_data, title='Full Timeframe Data',
+                             show=config['show_dataset_plots'], logger=logger)
+    return x_data, y_data, noisy_y_data
+
+
+def generate_samples(config, x_data, y_data, noisy_y_data, logger):
+    time_steps = config['time_steps']
+    future_steps = config['future_steps']
+    num_samples = config['num_samples']
 
     input_train = []
     output_train = []
@@ -84,25 +96,40 @@ def generate_time_series_data(func, config, logger):
         if i in preview_sample:
             show_sample_preview_plots(input_sample, output_sample, input_noisy_sample, config, logger)
 
-    # Prepare data for foresight
+    input_train = np.array(input_train).reshape(-1, time_steps, 1)
+    output_train = np.array(output_train).reshape(-1, future_steps, 1)
+
+    input_real_test = np.array(input_real_test).reshape(-1, time_steps, 1)
+    input_noisy_test = np.array(input_noisy_test).reshape(-1, time_steps, 1)
+    output_test = np.array(output_test).reshape(-1, future_steps, 1)
+
+    return input_train, output_train, input_noisy_test, output_test, input_real_test
+
+
+def generate_foresight_samples(config, x_data, y_data, func):
+    time_steps = config['time_steps']
+    noise_level = config['noise_level']
+    future_steps = config['future_steps']
+
     future_start_idx = len(x_data) - time_steps
     input_foresight = y_data[future_start_idx:future_start_idx + time_steps]
     input_noisy_foresight = input_foresight + np.random.normal(0, noise_level, input_foresight.shape)
-    step_size = (config['time_frame_end'] - config['time_frame_start']) / (n_steps - 1)
+    step_size = (config['time_frame_end'] - config['time_frame_start']) / (config['n_steps'] - 1)
 
-    input_train = np.array(input_train).reshape(-1, time_steps, 1)
-    output_train = np.array(output_train).reshape(-1, future_steps)
-    input_real_test = np.array(input_real_test).reshape(-1, time_steps, 1)
-    input_noisy_test = np.array(input_noisy_test).reshape(-1, time_steps, 1)
-    output_test = np.array(output_test).reshape(-1, future_steps)
-    input_foresight = np.array(input_foresight).reshape(1, time_steps, 1)
-    input_noisy_foresight = np.array(input_noisy_foresight).reshape(1, time_steps, 1)
-    plot_full_timeframe_data(x_data, y_data, noisy_y_data, title='Full Timeframe Data', show=config['show_dataset_plots'],logger=logger)
-    dataset = {'input_train': input_train, 'output_train': output_train, 'input_noisy_test': input_noisy_test,
-               'input_test': input_real_test, 'output_test': output_test,
-               'input_forecast': input_foresight, 'input_noisy_forecast': input_noisy_foresight, 'step_size': step_size}
+    extended_x_data = step_size * config['steps_to_predict']
+    extended_y_data = func(
+        np.linspace(config['time_frame_end'], config['time_frame_end'] + extended_x_data, config['steps_to_predict']))
+    extended_noisy_y_data = extended_y_data + np.random.normal(0, noise_level, size=extended_y_data.shape)
 
-    return dataset
+    forecast_y_data = np.concatenate([input_noisy_foresight, extended_noisy_y_data])
+    extended_forecast_sample = []
+    for i in range(config['steps_to_predict'] // future_steps):
+        foresight_input = forecast_y_data[i * future_steps: i * future_steps + time_steps]
+        extended_forecast_sample.append(np.array(foresight_input).reshape(-1, time_steps, 1))
+
+    input_foresight = np.array(input_foresight).reshape(-1, time_steps, 1)
+    input_noisy_foresight = np.array(input_noisy_foresight).reshape(-1, time_steps, 1)
+    return input_foresight, input_noisy_foresight, extended_y_data, extended_noisy_y_data, extended_forecast_sample
 
 
 def generate_and_save_dataset(dataset_name, config):
@@ -110,7 +137,7 @@ def generate_and_save_dataset(dataset_name, config):
     Generates the dataset with given config and saves it into a deserializable pickle
     file in the datasets directory
     """
-    dataset_to_save = generate_time_series_data(function, config)
+    dataset_to_save = generate_data(function, config)
     with open(f"datasets/{dataset_name}.pkl", 'wb') as f:
         dill.dump(dataset_to_save, f)
 
@@ -128,7 +155,7 @@ def test_functionality(file_name="test_dataset"):
     """
     Test if the save load works with a valid config
     """
-    generate_and_save_dataset(file_name, test_config)
+    generate_and_save_dataset(file_name)
     dataset = load_dataset(file_name)
     print(dataset)
 
