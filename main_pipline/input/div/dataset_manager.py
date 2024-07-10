@@ -93,8 +93,8 @@ def generate_samples(config, x_data, y_data, noisy_y_data, logger):
             input_noisy_test.append(input_noisy_sample)
             input_real_test.append(input_sample)
             output_test.append(output_sample)
-        if i in preview_sample:
-            show_sample_preview_plots(input_sample, output_sample, input_noisy_sample, config, logger)
+    if i in preview_sample:
+        show_sample_preview_plots(input_sample, output_sample, input_noisy_sample, config, logger)
 
     input_train = np.array(input_train).reshape(-1, time_steps, 1)
     output_train = np.array(output_train).reshape(-1, future_steps, 1)
@@ -123,7 +123,7 @@ def generate_foresight_samples(config, x_data, y_data, func):
 
     forecast_y_data = np.concatenate([input_noisy_foresight, extended_noisy_y_data])
     extended_forecast_sample = []
-    for i in range(config['steps_to_predict'] // future_steps):
+    for i in range((config['steps_to_predict'] // future_steps)+1):
         foresight_input = forecast_y_data[i * future_steps: i * future_steps + time_steps]
         extended_forecast_sample.append(np.array(foresight_input).reshape(-1, time_steps, 1))
 
