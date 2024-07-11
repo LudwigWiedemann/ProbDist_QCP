@@ -3,8 +3,8 @@ from pennylane import numpy as np
 
 import training
 
-input_size = 1000
-np.random.seed(6)
+input_size = 100
+np.random.seed(2)
 auspraegungen = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 if __name__ == "__main__":

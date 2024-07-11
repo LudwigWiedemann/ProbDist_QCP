@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 import pennylane as qml
@@ -5,6 +6,7 @@ from pennylane import numpy as np
 import circuit as cir
 import simulation as sim
 from simulation import full_config as conf
+import plotting as plt
 
 
 training_iterations = conf['epochs']
@@ -14,7 +16,8 @@ num_samples = conf['num_samples']
 total_steps_to_forecast = conf['steps_to_forecast']
 learning_rate = conf['learning_rate']
 
-optimizer = qml.GradientDescentOptimizer(learning_rate)
+# optimizer = qml.GradientDescentOptimizer(learning_rate)
+optimizer = qml.AdamOptimizer(learning_rate)
 
 def f(x):
     #return np.sin(x)
@@ -24,32 +27,33 @@ def f(x):
 def train_from_y_values(dataset):
     training_samples = []
     test_samples = []
+    # for s in range(len(dataset) -(time_steps + future_steps + 1)):
     for s in range(num_samples):
         # t_start = 0
         t_start = np.random.randint(0, len(dataset) - (time_steps + future_steps))
+        # t_start = s
 
         f_start = t_start + time_steps
         ts = dataset[t_start: t_start + time_steps]
         fs = dataset[f_start: f_start + future_steps]
-        if s % 10 == 0:  # TODO: generate more test data sets
+        if s % 20 == 0:  # TODO: generate more test data sets
             test_samples.append((ts, fs))
-
+            plt.plot_sample((ts, fs), sim.step_size, s)
         else:
             training_samples.append((ts, fs))
-
 
     # params = np.random.rand(time_steps)
     first_sample = training_samples[0]
     middle_sample = training_samples[len(training_samples) // 2]
     last_sample = training_samples[len(training_samples)-1]
     # params = guess_starting_params(first_sample, middle_sample, last_sample)
-    params = np.random.rand(sim.num_weights)
+    params = np.array([np.random.rand(sim.num_weights) for _ in range(sim.num_weights_per_layer)])
     start_time = datetime.now()
     iteration_start_time = datetime.now()
     for it in range(training_iterations):
         if it % 10 == 1:
             iteration_start_time = datetime.now()
-        batch_size = 50
+        batch_size = 20
         for start in range(int(len(training_samples)/batch_size)):
             cost_samples = training_samples[start*batch_size:(start+1)*batch_size]
             # gradients = tf.gradients(cost(params,sample[0], sample[1]), params)
@@ -69,31 +73,6 @@ def train_from_y_values(dataset):
             start_time = datetime.now()
     return params
 
-#
-# def train_params(distributions):
-#     param_list = [[]] * len(distributions)
-#     i = 0
-#     for dist in distributions:
-#         params = guess_starting_params(9)
-#         print("Training the circuit...")
-#         for iteration in range(training_iterations):
-#             for training_x, training_y in dist:
-#                 params = optimizer.step(cost, params, x=training_x, target=training_y)
-#             total_error = 0
-#             if iteration % 10 == 0:
-#                 print(f"Iteration {iteration}:")
-#                 for training_x, training_y in dist:
-#                     predicted_output = cir.run_circuit(params, training_x)
-#                     error = np.abs(predicted_output - training_y)
-#                     total_error += error
-#                     # print( f"Input: {training_x}, Expected: {training_y:.4f}, Predicted: {predicted_output:.4f},
-#                     # Error: {error:.4f}")
-#                 print("total: " + str(total_error) + "average: " + str(total_error / len(dist)))
-#                 # plot.plot([params], [dist], f)
-#         param_list[i] = params
-#         i += 1
-#     return param_list
-
 
 def cost(params, samples):
     total_cost = 0
@@ -103,7 +82,10 @@ def cost(params, samples):
         predicted_output = cir.multiple_wires(params, inputs)
         sample_cost = 0
         for i in range(len(predicted_output)):
-            sample_cost += ((predicted_output[i] - compare_outputs[i]) ** 2)
+            po = predicted_output[i]
+            co = compare_outputs[i]
+            bla = ((po - co) ** 2)
+            sample_cost += bla
             # cost += np.abs((predicted_output[i] - compare_outputs[i]))
         total_cost += sample_cost
     return total_cost
