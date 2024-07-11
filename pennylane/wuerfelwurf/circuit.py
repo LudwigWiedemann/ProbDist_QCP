@@ -32,6 +32,7 @@ def predict_wuerfelwurf(weights):
 
 @qml.qnode(shot_dev)
 def poc(weights):
+    qml.Hadamard(wires=0)
     qml.RY(weights[0], wires=0)
     qml.RX(weights[1], wires=0)
     qml.RY(weights[2], wires=0)

@@ -1,14 +1,23 @@
-import circuit
+import circuit as cir
 import simulation as sim
 import pennylane as qml
 from pennylane import numpy as np
 
-optimizer = qml.GradientDescentOptimizer(0.01)
-epochs = 20
+optimizer = qml.GradientDescentOptimizer(100)
+epochs = 2000
 
 
 def train_prob_dist(weights, input):
     for i in range(epochs):
+        # print("iteration: " + str(i))
+        # random_adjustment = np.random.normal(loc=0, scale=0.01, size=weights.shape)
+        # new_weights = weights + random_adjustment
+        # new_cost = cost(new_weights, input)
+        # old_cost = cost(weights, input)
+        # if new_cost < old_cost:
+        #     weights = new_weights
+        #     print("new_cost: " + str(new_cost))
+
         weights = optimizer.step(cost, weights, distr_in=input)
     return weights
 
@@ -16,7 +25,7 @@ def train_prob_dist(weights, input):
 def distribution(weights, n):
     prediction_dist = []
     for i in range(n):
-        prediction_dist.append(scale_prediction(circuit.predict_wuerfelwurf(weights)))
+        prediction_dist.append(scale_prediction(cir.poc(weights)))
     return prediction_dist
 
 
@@ -29,7 +38,6 @@ def cost(weights, distr_in):
     print("goal: " + str(count_in) + " prediction: " + str(count_pred))
     for auspr in sim.auspraegungen:
         cost += ((count_in[auspr] - count_pred[auspr]) ** 2)
-    print("cost: " + str(cost))
     return cost
 
 
