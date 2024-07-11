@@ -18,12 +18,12 @@ full_config = {
 
     # circuit parameter
     'weights_per_wire': 3,
-    'num_layers': 4,
+    'num_layers': 5,
 
     # training parameter
     'time_steps': 8,
     'future_steps': 2,
-    'num_samples': 150,
+    'num_samples': 100,
     'epochs': 80,
     'learning_rate': 0.01,
     # Forecasting parameter
