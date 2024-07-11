@@ -1,4 +1,5 @@
 import dill
+import numpy as np
 from keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
@@ -90,7 +91,7 @@ class PSCModel:
 
     def predict_shots(self, x_test, shots=None):
         shot_circuit = self.circuit.run_shot(shots)
-        return shot_circuit(x_test, self.weights)
+        return np.array(shot_circuit(x_test / self.config['compress_factor'], self.weights)) * self.config['compress_factor']
 
     def save_model(self, path, logger):
         try:

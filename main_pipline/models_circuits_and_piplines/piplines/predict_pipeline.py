@@ -1,14 +1,11 @@
 import os
+import random
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-import random
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
-    iterative_forecast
+    fully_iterative_forecast, partial_iterative_forecast
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_shot_forecaste import \
-    evaluate_sample_with_shot, iterative_shot_forecast
-
-
-
+    fully_iterative_shot_forecast, partial_iterative_shot_forecast, evaluate_sample_with_shot
 from main_pipline.models_circuits_and_piplines.circuits.shots_Circuit import test_Shot_Circuit, Tangle_Shot_Circuit
 from main_pipline.models_circuits_and_piplines.models.predict_shots_circuit_model import PSCModel
 
@@ -29,7 +26,7 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_evaluation_plots
 
-trial_name = 'classic_output'
+trial_name = 'Quantum_computing_last_test'
 
 full_config = {
     # Dataset parameter
@@ -52,15 +49,15 @@ full_config = {
     'model': 'PSCModel',
     'circuit': 'Tangle_Shot_Circuit',
     # Run parameter
-    'epochs': 1,
+    'epochs': 50,
     'batch_size': 37,
-    'learning_rate': 0.0094,
+    'learning_rate': 0.055,
     'loss_function': 'mse',
-    'compress_factor':  4.116,
+    'compress_factor': 4.116,
     'patience': 40,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 2,  # Only Optuna/Tangle circuit
+    'layers': 16,  # Only Optuna/Tangle circuit
     # Shot prediction
     'approx_samples': 2,
     'shots': 100000,
@@ -84,12 +81,21 @@ circuits = {
     'Test_Circuit': test_Amp_Circuit,
     'Double_Amp_Circuit': double_Amp_Circuit,
     'test_Shot_Circuit': test_Shot_Circuit,
-    'Tangle_Shot_Circuit':Tangle_Shot_Circuit
+    'Tangle_Shot_Circuit': Tangle_Shot_Circuit
 }
 
 
 def function(x):
-    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+    return np.sin(x)  # + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+
+
+def create_unique_folder_name(base_name):
+    counter = 0
+    unique_name = base_name
+    while os.path.exists(unique_name):
+        counter += 1
+        unique_name = f"{base_name}_{counter}"
+    return unique_name
 
 
 def run_model(dataset, config, logger):
@@ -99,7 +105,6 @@ def run_model(dataset, config, logger):
     logger.info("Config of this run:")
     for key in config.keys():
         logger.info(f"{key} : {config[key]}")
-    model_save_path = os.path.join(logger.folder_path, "fitted_model")
 
     logger.info("Starting training")
     loss_progress = model.train(dataset, logger)
@@ -110,12 +115,15 @@ def run_model(dataset, config, logger):
     logger.info(f"Test Loss: {loss}")
 
     show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger)
-    #model.save_model(model_save_path, logger)
+
+    # model_save_path = os.path.join(logger.folder_path, "fitted_model")
+    # model.save_model(model_save_path, logger)
     return model, loss
 
 
 def main():
-    trial_folder = filemanager.create_folder(trial_name)
+    trial_folder = create_unique_folder_name(trial_name)
+    trial_folder = filemanager.create_folder(trial_folder)
     logger = Logger(trial_folder)
 
     logger.info("Generating training data")
@@ -124,20 +132,27 @@ def main():
 
     model, loss = run_model(dataset, full_config, logger)
 
-    #iterative_forecast(function, model, dataset, full_config, logger=logger)
+    fully_iterative_forecast(model, dataset, full_config, logger=logger)
+    partial_iterative_forecast(model, dataset, full_config, logger=logger)
 
     logger.info("Start Shot_sample_forecasting")
-    n_shots = [5, 1000, 10000]#, 100000]#, 1000000]
+    n_shots = [5, 1000, 10000, 100000, 1000000]
+    n_predictions = [1, 5, 10, 50]
     sample_index = random.sample(range(len(dataset['input_test'])), full_config['approx_samples'])
-    for shots in n_shots:
-        logger.info(f'Evaluating Sample with {shots} shots')
-        #evaluate_sample_with_shot(model, dataset, sample_index, full_config, logger, title=shots, custome_shots=shots)
-    for shots in n_shots:
-        logger.info(f'Evaluating Forecast with {shots} shots')
-        shots_start = time.time()
-        iterative_shot_forecast(model, dataset, full_config, logger=logger, title=shots, custome_shots=shots)
-        logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
-
+    for prediction in n_predictions:
+        full_config.update({'shot_predictions': prediction})
+        for shots in n_shots:
+            logger.info(f'Evaluating Sample with {shots} shots with {prediction} prediction')
+            evaluate_sample_with_shot(model, dataset, sample_index, full_config, logger,
+                                      title=f'{shots}_shots_{prediction}_predictions', custome_shots=shots)
+        for shots in n_shots:
+            logger.info(f'Evaluating Forecasting with {shots} shots with {prediction} prediction')
+            shots_start = time.time()
+            fully_iterative_shot_forecast(model, dataset, full_config, logger=logger,
+                                          title=f'{shots}_shots_{prediction}_predictions', custome_shots=shots)
+            partial_iterative_shot_forecast(model, dataset, full_config, logger=logger,
+                                            title=f'{shots}_shots_{prediction}_predictions', custome_shots=shots)
+            logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
 
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
 

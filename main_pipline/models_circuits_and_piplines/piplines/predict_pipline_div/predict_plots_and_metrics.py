@@ -64,15 +64,15 @@ def show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger,
         plot_approx_predictions(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                 approx_outputs,
                                 title=f'{title}_{i}', show=config['show_approx_plots'], logger=logger)
-        time.sleep(1.5)
+        time.sleep(5)
         plot_approx_predictions_mean(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                      np.array(reshaped_predictions),
                                      title=f'{title}_mean_{i}', show=config['show_approx_plots'], logger=logger)
-        time.sleep(1.5)
+        time.sleep(5)
         plot_approx_predictions_box(x_indices, input_sample.flatten(), input_noisy_sample.flatten(), y_real_combined,
                                     np.array(reshaped_predictions),
                                     title=f'{title}_box_{i}', show=config['show_approx_plots'], logger=logger)
-        time.sleep(1.5)
+        time.sleep(5)
 
 
 def show_all_shot_forecasting_plots(pred_y_forecast_data, dataset, config, logger,
@@ -92,15 +92,15 @@ def show_all_shot_forecasting_plots(pred_y_forecast_data, dataset, config, logge
     plot_approx_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
                             pred_y_forecast_data,
                             title=f'{title}', show=config['show_approx_plots'], logger=logger)
-    time.sleep(1.5)
+    time.sleep(3)
     plot_approx_predictions_mean(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
                                  y_iter_combined, reshaped_predictions,
                                  title=f'{title}_mean', show=config['show_approx_plots'], logger=logger)
-    time.sleep(1.5)
+    time.sleep(3)
     plot_approx_predictions_box(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
                                 y_iter_combined, reshaped_predictions,
                                 title=f'{title}_box', show=config['show_approx_plots'], logger=logger)
-    time.sleep(1.5)
+    time.sleep(3)
 
 
 def plot_metrics(loss_progress, show=False, logger=None):
