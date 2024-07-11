@@ -13,21 +13,21 @@ shot_dev = qml.device("default.qubit", wires=num_wires, shots=num_shots)
 
 @qml.qnode(dev)
 def multiple_wires(params, inputs):
-    # for layer in range(num_layers):
-    # data encoding
     qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
+    for layer in range(num_layers):
+        # data encoding
 
-    for i in range(num_wires):
-        qml.RY(params[3 * i], wires=i)
-        qml.RZ(params[3 * i + 1], wires=i)
-
-    # entangle the output wires with all other ones
-    output_wires = range(num_outputs)
-    for wire in output_wires:
         for i in range(num_wires):
-            # qml.CNOT(wires=[i + num_outputs, wire])
-            if not i == wire:
-                qml.CRY(params[3 * i + 2], wires=[i, wire])
+            qml.RY(params[layer][3 * i], wires=i)
+            qml.RZ(params[layer][3 * i + 1], wires=i)
+
+        # entangle the output wires with all other ones
+        output_wires = range(num_outputs)
+        for wire in output_wires:
+            for i in range(num_wires):
+                # qml.CNOT(wires=[i + num_outputs, wire])
+                if not i == wire:
+                    qml.CRY(params[layer][3 * i + 2], wires=[i, wire])
 
     # measure the output wires
     outputs = []
@@ -41,19 +41,22 @@ def multiple_wires(params, inputs):
 @qml.qnode(shot_dev)
 def multiple_shots(params, inputs):
     qml.AmplitudeEmbedding(features=inputs, wires=range(num_wires), normalize=True)
+    for layer in range(num_layers):
+        # data encoding
 
-    for i in range(num_wires):
-        qml.RY(params[3 * i], wires=i)
-        qml.RZ(params[3 * i + 1], wires=i)
-
-    # entangle the output wires with all other ones
-    output_wires = range(num_outputs)
-    for wire in output_wires:
         for i in range(num_wires):
-            # qml.CNOT(wires=[i + num_outputs, wire])
-            if not i == wire:
-                qml.CRY(params[3 * i + 2], wires=[i, wire])
+            qml.RY(params[layer][3 * i], wires=i)
+            qml.RZ(params[layer][3 * i + 1], wires=i)
 
+        # entangle the output wires with all other ones
+        output_wires = range(num_outputs)
+        for wire in output_wires:
+            for i in range(num_wires):
+                # qml.CNOT(wires=[i + num_outputs, wire])
+                if not i == wire:
+                    qml.CRY(params[layer][3 * i + 2], wires=[i, wire])
+
+    # measure the output wires
     outputs = []
     for wire in output_wires:
         outputs.append(qml.expval(qml.PauliZ(wires=wire)))

@@ -18,12 +18,12 @@ full_config = {
 
     # circuit parameter
     'weights_per_wire': 3,
-    'num_layers': 1,
+    'num_layers': 4,
 
     # training parameter
     'time_steps': 8,
     'future_steps': 2,
-    'num_samples': 80,
+    'num_samples': 150,
     'epochs': 80,
     'learning_rate': 0.01,
     # Forecasting parameter
@@ -33,8 +33,10 @@ full_config = {
 
 }
 step_size = ((full_config['x_end'] - full_config['x_start']) / (full_config['total_training_points'] - 1))
+num_layers = full_config['num_layers']
 num_wires = int(math.log2(full_config['time_steps']))
-num_weights = num_wires * full_config['weights_per_wire'] * full_config['num_layers']
+num_weights_per_layer = full_config['weights_per_wire'] * num_wires
+num_weights = num_weights_per_layer * full_config['num_layers']
 
 def prepare_data():
     training_time_steps = np.linspace(full_config['x_start'], full_config['x_end'],

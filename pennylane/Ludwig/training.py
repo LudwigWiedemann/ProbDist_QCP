@@ -47,7 +47,7 @@ def train_from_y_values(dataset):
     middle_sample = training_samples[len(training_samples) // 2]
     last_sample = training_samples[len(training_samples)-1]
     # params = guess_starting_params(first_sample, middle_sample, last_sample)
-    params = np.random.rand(sim.num_weights)
+    params = np.array([np.random.rand(sim.num_weights) for _ in range(sim.num_weights_per_layer)])
     start_time = datetime.now()
     iteration_start_time = datetime.now()
     for it in range(training_iterations):
