@@ -7,12 +7,13 @@ from datetime import datetime
 import distribution_calculator as dc
 import noise as ns
 
+scale_factor = 1.3
 np.random.seed(9)
 full_config = {
     # data parameter
     'x_start': 0,
-    'x_end': 10,
-    'total_training_points': 20,
+    'x_end': 20,
+    'total_training_points': 40,
     'noise_level': 0.1,
     'train_test_ratio': 0.6,
 
@@ -23,7 +24,7 @@ full_config = {
     # training parameter
     'time_steps': 8,
     'future_steps': 2,
-    'num_samples': 100,
+    'num_samples': 120,
     'epochs': 80,
     'learning_rate': 0.01,
     # Forecasting parameter
@@ -38,19 +39,29 @@ num_wires = int(math.log2(full_config['time_steps']))
 num_weights_per_layer = full_config['weights_per_wire'] * num_wires
 num_weights = num_weights_per_layer * full_config['num_layers']
 
+
+def scale_up(ds):
+    return np.array([(y * scale_factor) for y in ds])
+
+
+def scale_down(ds):
+    return np.array([(y / scale_factor) for y in ds])
+
 def prepare_data():
     training_time_steps = np.linspace(full_config['x_start'], full_config['x_end'],
                                       full_config['total_training_points'])
     training_dataset = [tr.f(x) for x in training_time_steps]
     return training_dataset + ns.white(full_config['noise_level'], len(training_dataset))
 
+
 def prepare_extended_data():
     training_time_steps = np.linspace(full_config['x_start'],
-                                      full_config['x_end']+full_config['steps_to_forecast'],
-                                      full_config['total_training_points']+full_config['steps_to_forecast']
+                                      full_config['x_end'] + full_config['steps_to_forecast'],
+                                      full_config['total_training_points'] + full_config['steps_to_forecast']
                                       )
     training_dataset = [tr.f(x) for x in training_time_steps]
     return training_dataset  # + ns.white(full_config['noise_level', num_training_points)
+
 
 if __name__ == "__main__":
     print("run")
@@ -58,6 +69,9 @@ if __name__ == "__main__":
         dataset = prepare_data()
         # plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
         plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
+        dataset = scale_down(dataset)
+        plot.plot(dataset, full_config['x_start'], step_size, full_config['total_training_points'])
+
         params = tr.train_from_y_values(dataset)
         # params = np.random.rand(3)
         # dataset = dataset[0:full_config['time_steps']]
@@ -66,7 +80,7 @@ if __name__ == "__main__":
 
         for i in range(full_config['predictions_for_distribution']):
             prediction_dataset = list(dataset)
-            prediction = tr.iterative_forecast(params, prediction_dataset)
+            prediction = scale_up(tr.iterative_forecast(params, prediction_dataset))
             predictions.append(prediction)
 
         # extended_dataset= prepare_extended_data()
@@ -81,3 +95,7 @@ if __name__ == "__main__":
         # print("prediction took", prediction_end_time - prediction_start_time)
         # plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'], extended_dataset)
         plot.plot_evaluation(predictions, full_config['x_start'], step_size, full_config['total_training_points'])
+
+
+
+

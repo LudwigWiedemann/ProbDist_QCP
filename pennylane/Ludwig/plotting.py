@@ -8,7 +8,7 @@ def plot(data, x_start, step_size, original_data_length):
              color='blue')
     plt.plot(x_axis[original_data_length:len(x_axis)], data[original_data_length:len(data)], label='prediction',
              alpha=0.5, marker='o', color='red')
-    plt.ylim(-2, 2)
+    plt.ylim(-3, 3)
     plt.grid(True)
     plt.legend()
     plt.xlabel("time steps")
@@ -34,7 +34,7 @@ def plot_evaluation(predictions, x_start, step_size, original_data_length):
     plt.plot(x_axis[original_data_length:len(x_axis)], predictions[i][original_data_length:len(predictions[i])],
              alpha=0.05, marker='o', color='red', label='predictions')
 
-    plt.ylim(-2, 2)
+    plt.ylim(-3, 3)
     plt.grid(True)
     plt.legend()
     plt.title('Prediction density per timestep')
@@ -83,7 +83,7 @@ def plot_sample(sample, step_size, num):
     plt.title('Sample ' + str(num))
     plt.xlabel('time steps')
     plt.ylabel('observed value')
-    plt.ylim(-1.5, 1.5)
+    plt.ylim(-3, 3)
 
     plt.grid(True)
     plt.legend()
