@@ -22,6 +22,8 @@ optimizer = qml.AdamOptimizer(learning_rate)
 def f(x):
     #return np.sin(x)
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+    # return 1.4 * np.sin(x) + 2 * np.cos(2 * x) - 0.25 * np.sin(3 * x)
+
 
 
 def train_from_y_values(dataset):
@@ -122,3 +124,7 @@ def iterative_forecast(params, dataset):
         # if i % 3 == 0:
         #     plot.plot(dataset, conf['x_start'], sim.step_size, label= f"training {i+1}")
     return dataset
+
+
+def scale(n):
+    return n/scale_factor
