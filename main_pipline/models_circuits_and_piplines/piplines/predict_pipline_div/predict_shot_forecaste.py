@@ -1,4 +1,4 @@
-import numpy as np
+from pennylane import numpy as np
 
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_approx_sample_plots, show_all_shot_forecasting_plots

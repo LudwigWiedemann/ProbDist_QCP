@@ -1,33 +1,26 @@
-import numpy as np
+from pennylane import numpy as np
 import dill
 from random import sample
 
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     plot_full_timeframe_data, show_sample_preview_plots
 
-# TODO write all relevant settings. Currently only examples
-dataset_settings = {
-    "name": "Test_set_4_150_1_15",
-    "n_wires": 4,  # Number of wires for the quantum device.
-    "min_target_depth": 5,  # Minimum depth of target.
-    "max_target_depth": 15,  # Maximum depth of target.
-    "size": 150
-}
+def function0(x):
+    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+def function1(x):
+    return np.sin(x) * np.cos(2 * x) + 0.5 * np.sin(2 * x) * np.cos(3 * x)
 
+def function2(x):
+    return np.sin(x) + 0.9 * np.sin(2 * x)
 
-# TODO should function also be stored so we know which function dataset was used for?
-def function(x):
-    """
-    Function to get y values for x values. Add function into the dictionary and call it in return statement.
-    :param x: x value
-    :return: y value
-    """
-    function_dictionary = {
-        "sin": np.sin(x),
-        "cos": np.cos(x),
-        "complex_function": np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
-    }
-    return function_dictionary.get("sin")
+def function3(x):
+    return np.cos(x) + 0.3 * np.cos(2 * x)
+
+def function4(x):
+    return np.cos(x / 2) + 0.5 * np.sin(3 * x**2) - 0.4 * np.cos(4 * x**0.5)
+
+def function5(x):
+    return np.cos(x) + 0.75 * np.sin(2 * x) + 0.5 * np.cos(3 * x)
 
 
 def generate_dataset(func, config, logger):
@@ -130,6 +123,7 @@ def generate_foresight_samples(config, x_data, y_data, func):
     input_foresight = np.array(input_foresight).reshape(-1, time_steps, 1)
     input_noisy_foresight = np.array(input_noisy_foresight).reshape(-1, time_steps, 1)
     return input_foresight, input_noisy_foresight, extended_y_data, extended_noisy_y_data, extended_forecast_sample
+
 
 
 def generate_and_save_dataset(dataset_name, config):

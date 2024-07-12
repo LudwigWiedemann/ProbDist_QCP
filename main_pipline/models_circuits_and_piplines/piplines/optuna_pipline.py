@@ -5,17 +5,15 @@ import multiprocessing
 import numpy as np
 import optuna
 from silence_tensorflow import silence_tensorflow
-from main_pipline.input.div.dataset_manager import generate_time_series_data
+from main_pipline.input.div.dataset_manager import generate_dataset
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipeline import run_model
 
 import main_pipline.input.div.filemanager as filemanager
 from main_pipline.input.div.logger import Logger
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
-    iterative_forecast
-from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_shot_forecaste import \
-    iterative_shot_forecast
+    fully_iterative_forecast, partial_iterative_forecast
 
-trial_name = 'Major_Test_v3'
+trial_name = 'Major_Test_Ludwig'
 n_trials = 200
 num_workers = 5  # Set the number of workers here
 
@@ -28,12 +26,12 @@ SAVE_INTERVAL = 1
 
 full_config = {
     # Dataset parameter
-    'time_frame_start': -4 * np.pi,
-    'time_frame_end': 12 * np.pi,
-    'n_steps': 256,
-    'time_steps': 64,
-    'future_steps': 6,
-    'num_samples': 256,
+    'time_frame_start': 0,
+    'time_frame_end': 10,
+    'n_steps': 20,
+    'time_steps': 8,
+    'future_steps': 2,
+    'num_samples': 100,
     'noise_level': 0.05,
     'train_test_ratio': 0.6,
     # Plotting parameter
@@ -45,21 +43,21 @@ full_config = {
     'steps_to_predict': 300,
     # Model parameter
     'model': 'PSCModel',
-    'circuit': 'Tangle_Shot_Circuit',
+    'circuit': 'Ludwig2_Shot_Circuit',
     # Run parameter
-    'epochs': 50,
-    'batch_size': 55,
+    'epochs': 100,
+    'batch_size': 16,
     'learning_rate': 0.03,
     'loss_function': 'mse',
-    'compress_factor': 8.61,
-    'patience': 40,
+    'compress_factor': 1,
+    'patience': 10,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 22,  # Only Optuna/Tangle circuit
+    'layers': 5,  # Only Optuna/Tangle circuit
     # Shot prediction
     'approx_samples': 2,
-    'shots': 10000,
-    'shot_predictions': 2,
+    'shots': 100,
+    'shot_predictions': 20,
 }
 
 
@@ -67,9 +65,9 @@ def function(x):
     return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
 
-def generate_dataset(logger):
+def generate_datasete(logger):
     try:
-        dataset = generate_time_series_data(function, full_config, logger)
+        dataset = generate_dataset(function, full_config, logger)
         logger.info("Training data generated")
         return dataset
     except Exception as e:
@@ -79,12 +77,10 @@ def generate_dataset(logger):
 
 def optimize(trial):
     silence_tensorflow()
-    layers = trial.suggest_int('layers', 10, 25)
+    layers = trial.suggest_int('layers', 1, 15)
     learning_rate = trial.suggest_float('learning_rate', 0.0001, 0.1)
     compress_factor = trial.suggest_float('compress_factor', 1, 10)
     batch_size = trial.suggest_int('batch_size', 1, 64)
-    n_steps = trial.suggest_int('n_steps', 70, 256)
-
     trial_folder = filemanager.create_folder(
         f"{trial_name}_{trial.number}_la{layers}_lr{np.round(learning_rate, 4)}_cf{np.round(compress_factor, 2)}_bs{batch_size}")
     logger = Logger(trial_folder)
@@ -92,7 +88,7 @@ def optimize(trial):
     logger.info(
         f"Trial {trial.number}: Start optimization with parameters: layers={layers}, learning_rate={learning_rate}, compress_factor={compress_factor}")
 
-    dataset = generate_dataset(logger)
+    dataset = generate_datasete(logger)
 
     config = full_config.copy()
     config.update({
@@ -100,14 +96,11 @@ def optimize(trial):
         'learning_rate': learning_rate,
         'compress_factor': compress_factor,
         'batch_size': batch_size,
-        'n_steps': n_steps
     })
 
     model, loss = run_model(dataset, config, logger)
-
-    iterative_forecast(function, model, dataset, config, logger=logger)
-    iterative_shot_forecast(function, model, dataset, full_config, logger=logger)
-
+    fully_iterative_forecast(model, dataset, config, logger=logger)
+    partial_iterative_forecast(model, dataset, config, logger=logger)
     logger.info(
         f"Trial {trial.number}: Finished with parameters: layers={layers}, learning_rate={learning_rate},"
         f" compress_factor={compress_factor}, batch_size={batch_size}")

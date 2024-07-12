@@ -1,9 +1,9 @@
 import dill
-import numpy as np
+import pennylane as qml
+from pennylane import numpy as np
 from keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
-import pennylane as qml
 import tensorflow as tf
 from tqdm import tqdm
 
@@ -13,7 +13,7 @@ class PSCModel:
         self.config = config
         self.circuit = variable_circuit(config)
         self.model = self.create_psc_model(self.circuit, config)
-        self.weights = self.model.get_weights()
+        self.weights = np.array(self.model.get_weights())
         self.optimizer = Adam(learning_rate=config['learning_rate'])
         self.loss_fn = tf.keras.losses.get(config['loss_function'])
         self.normalization_factor = None
@@ -24,7 +24,7 @@ class PSCModel:
 
         epochs = self.config['epochs']
         batch_size = self.config['batch_size']
-        steps_per_epoch = len(x_train) // batch_size
+        steps_per_epoch = max(1, len(x_train) // batch_size)  # Ensure steps_per_epoch is at least 1
 
         history = {'loss': []}
 
@@ -107,4 +107,4 @@ class PSCModel:
             logger.info(f"Model weights saved to {path}")
 
     def print_circuit(self, filename="circuit_diagram.txt"):
-        self.circuit.draw_circuit(self.weights, filename="circuit_diagram.txt")
+        self.circuit.draw_circuit(self.weights, filename)

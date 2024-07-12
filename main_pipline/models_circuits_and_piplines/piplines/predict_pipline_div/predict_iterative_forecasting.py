@@ -1,4 +1,4 @@
-import numpy as np
+from pennylane import numpy as np
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_forecasting_plots
 
@@ -13,7 +13,7 @@ def fully_iterative_forecast(model, dataset, config, logger=None):
                      -config['time_steps']:]
     show_all_forecasting_plots(np.concatenate(output_ar).flatten(), dataset, config, logger=logger,
                                extention=f'Fully_Iterative_Forecast')
-
+    return np.concatenate(output_ar).flatten()
 
 def partial_iterative_forecast(model, dataset, config, logger=None):
     input_partial_pred = dataset['extended_forecast_sample'][0]
@@ -24,3 +24,4 @@ def partial_iterative_forecast(model, dataset, config, logger=None):
         input_partial_pred = dataset['extended_forecast_sample'][i]
     show_all_forecasting_plots(np.concatenate(output_ar).flatten(), dataset, config, logger=logger,
                                extention=f'Partial_Iterative_Forecast')
+    return np.concatenate(output_ar).flatten()

@@ -1,5 +1,6 @@
 from keras.models import Model
 from keras.src.layers import LSTM
+from keras.src.utils import plot_model
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.optimizers import Adam
 import pennylane as qml
@@ -64,6 +65,9 @@ class PCModel:
 
         return history
 
+    def plot_model_architecture(self, file_path):
+        plot_model(self.model, to_file=file_path, show_shapes=True, show_layer_names=True)
+
     def evaluate(self, dataset):
         x_test = dataset['input_test'] / self.config['compress_factor']
         y_test = dataset['output_test'] / self.config['compress_factor']
@@ -95,3 +99,19 @@ class PCModel:
     def load_model(self, path, logger):
         self.model = tf.keras.models.load_model(path, custom_objects={'KerasLayer': qml.qnn.KerasLayer})
         logger.info(f"Model loaded from {path}")
+
+
+if __name__ == "__main__":
+    config = {
+        'time_steps': 10,
+        'future_steps': 5,
+        'learning_rate': 0.001,
+        'loss_function': 'mean_squared_error',
+        'compress_factor': 1.0,
+        'epochs': 10,
+        'batch_size': 32,
+        'patience': 5,
+        'min_delta': 0.001,
+    }
+    model = PCModel(dummy_circuit=None, config=config)
+    model.plot_model_architecture('model_architecture.png')

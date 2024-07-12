@@ -1,8 +1,7 @@
 import time
-
+from pennylane import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-import numpy as np
 
 
 def show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger):
@@ -21,6 +20,7 @@ def show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, 
             plot_predictions(x_indices, input_test[i].flatten(), input_noisy_test[i].flatten(), y_real_combined,
                              y_pred_combined,
                              title=f'Test_Data_Sample_{i + 1}', show=config['show_model_plots'], logger=logger)
+            time.sleep(3)
 
     plot_residuals(output_test.flatten(), pred_y_test_data.flatten(), title='Residuals on Test Data',
                    show=config['show_model_plots'], logger=logger)
@@ -36,6 +36,37 @@ def show_all_forecasting_plots(pred_y_forecast_data, dataset, config, extention,
     plot_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
                      np.concatenate((input_forecast.flatten(), pred_y_forecast_data)),
                      title=f'{extention}_Iterative_Forecast', show=config['show_forecast_plots'], logger=logger)
+
+
+def show_all_seed_evaluation_plots(forecast_data_set, dataset, config, logger, title=''):
+    input_forecast = dataset['input_forecast']
+    input_noisy_forecast = dataset['input_noisy_forecast']
+    extended_y_data = dataset['extended_y_data']
+
+    x_iter_indices = np.arange(config['time_steps'] + config['steps_to_predict'])
+    y_iter_combined = np.concatenate((input_forecast.flatten(), extended_y_data))
+    plot_seed_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
+                     forecast_data_set,
+                     title=f'5_Seeds_{title}Iterative_Forecast', show=config['show_forecast_plots'], logger=logger)
+    reshaped_predictions = []
+    for i in range(config['steps_to_predict']):
+        step_predictions = []
+        for j in range(5):
+            step_predictions.append(forecast_data_set[j][i])
+        reshaped_predictions.append(step_predictions)
+    plot_approx_predictions(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(), y_iter_combined,
+                            forecast_data_set,
+                            title=f'5_Seeds_{title}Iterative_Forecast', show=config['show_approx_plots'], logger=logger)
+    time.sleep(3)
+    plot_approx_predictions_mean(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
+                                 y_iter_combined, reshaped_predictions,
+                                 title=f'5_Seeds_{title}Iterative_Forecast_mean', show=config['show_approx_plots'], logger=logger)
+    time.sleep(3)
+    plot_approx_predictions_box(x_iter_indices, input_forecast.flatten(), input_noisy_forecast.flatten(),
+                                y_iter_combined, reshaped_predictions,
+                                title=f'5_Seeds_{title}Iterative_Forecast_box', show=config['show_approx_plots'], logger=logger)
+    time.sleep(3)
+
 
 
 def show_sample_preview_plots(input_test, output_test, input_noisy_test, config, logger):
@@ -295,3 +326,32 @@ def plot_approx_predictions_box(x_data, input_real, input_noisy, y_real, approx_
         plt.show()
 
     plt.close()
+
+
+def plot_seed_predictions(x_data, input_real, input_noisy, y_real, forecast_data_set, title='Real vs Predicted', show=False, logger=None):
+    plt.figure(figsize=(max(10, len(x_data) / 10), 10))
+    plt.plot(x_data[:len(input_real)], input_real, label='Known', color='blue', marker='o', linestyle='-')
+    plt.plot(x_data[:len(input_real)], input_noisy, label='Known (Noisy)', color='cyan', marker='o', linestyle='--')
+    plt.plot([x_data[len(input_real) - 1], x_data[len(input_real)]], [input_real[-1], y_real[len(input_real)]],
+             color='blue', linestyle='-')
+    if len(y_real) > len(input_real):
+        plt.plot(x_data[len(input_real):len(input_real) + len(y_real) - len(input_real)], y_real[len(input_real):],
+                 label='Real Future', color='green', marker='o', linestyle='-')
+
+    for i in range(len(forecast_data_set)):
+        y_pred = np.concatenate((input_real.flatten(), np.array(forecast_data_set[i]).flatten()))
+        plt.plot(x_data[len(input_real):len(y_pred)], y_pred[len(input_real):],
+                 label=f'Predicted_Future_Seed_{i}', marker='x', linestyle='-')
+
+    plt.xlabel('Time Steps')
+    plt.ylabel('Values')
+    plt.title(title)
+    plt.legend()
+    if logger.folder_path:
+        plt.savefig(Path(logger.folder_path) / f"{title}_plot_predictions.png")
+    else:
+        print(f"Warning: Logger folder path is None. Plot {title} not saved.")
+    if show:
+        plt.show()
+    plt.close()
+
