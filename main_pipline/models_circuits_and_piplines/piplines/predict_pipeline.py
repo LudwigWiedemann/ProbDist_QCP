@@ -26,7 +26,7 @@ from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hy
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
     show_all_evaluation_plots
 
-trial_name = 'Quantum_computing_last_test'
+trial_name = 'Quantum_computing_old_settings'
 
 full_config = {
     # Dataset parameter
@@ -40,8 +40,8 @@ full_config = {
     'train_test_ratio': 0.6,
     # Plotting parameter
     'preview_samples': 3,
-    'show_dataset_plots': False,
-    'show_model_plots': False,
+    'show_dataset_plots': True,
+    'show_model_plots': True,
     'show_forecast_plots': True,
     'show_approx_plots': True,
     'steps_to_predict': 300,
@@ -51,7 +51,7 @@ full_config = {
     # Run parameter
     'epochs': 50,
     'batch_size': 37,
-    'learning_rate': 0.055,
+    'learning_rate': 0.079,
     'loss_function': 'mse',
     'compress_factor': 4.116,
     'patience': 40,
@@ -86,7 +86,7 @@ circuits = {
 
 
 def function(x):
-    return np.sin(x)  # + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
 
 def create_unique_folder_name(base_name):
@@ -101,6 +101,8 @@ def create_unique_folder_name(base_name):
 def run_model(dataset, config, logger):
     circuit = circuits[config['circuit']]
     model = models[config['model']](circuit, config)
+    model.print_circuit(config['circuit'])
+
     logger.info(f"Model: {config['model']}, Circuit: {config['circuit']}")
     logger.info("Config of this run:")
     for key in config.keys():
@@ -137,7 +139,7 @@ def main():
 
     logger.info("Start Shot_sample_forecasting")
     n_shots = [5, 1000, 10000, 100000, 1000000]
-    n_predictions = [1, 5, 10, 50]
+    n_predictions = [1, 5, 10, 50, 100]
     sample_index = random.sample(range(len(dataset['input_test'])), full_config['approx_samples'])
     for prediction in n_predictions:
         full_config.update({'shot_predictions': prediction})

@@ -81,6 +81,11 @@ class PSCModel:
     def predict(self, x_test):
         return self.model.predict((x_test / self.config['compress_factor'])) * self.config['compress_factor']
 
+    def predict_shots(self, x_test, shots=None):
+        shot_circuit = self.circuit.run_shot(shots)
+        return np.array(shot_circuit(x_test / self.config['compress_factor'], self.weights)) * self.config[
+            'compress_factor']
+
     def create_psc_model(self, circuit, config):
         inputs = Input(shape=(config['time_steps'], 1))
         reshaped_inputs = tf.keras.layers.Reshape((config['time_steps'],))(inputs)
@@ -88,10 +93,6 @@ class PSCModel:
         model = Model(inputs=inputs, outputs=quantum_layer)
         model.compile(optimizer=Adam(learning_rate=config['learning_rate']), loss=config['loss_function'])
         return model
-
-    def predict_shots(self, x_test, shots=None):
-        shot_circuit = self.circuit.run_shot(shots)
-        return np.array(shot_circuit(x_test / self.config['compress_factor'], self.weights)) * self.config['compress_factor']
 
     def save_model(self, path, logger):
         try:
@@ -104,3 +105,6 @@ class PSCModel:
                 dill.dump(self.weights, f)
             return
             logger.info(f"Model weights saved to {path}")
+
+    def print_circuit(self, filename="circuit_diagram.txt"):
+        self.circuit.draw_circuit(self.weights, filename="circuit_diagram.txt")

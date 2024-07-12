@@ -17,16 +17,6 @@ class Shot_Circuit:
     def get_wires(self):
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def draw_circuit(self, filename="circuit_diagram.txt"):
-        inputs = np.random.random(2 ** self.n_wires)
-        weights = [np.random.random(self.weight_shapes[key]) for key in self.weight_shapes]
-        circuit = self.run()
-        drawer = qml.draw(circuit)
-        diagram = drawer(inputs, *weights)
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write(diagram)
-        print(f"Circuit diagram saved to {filename}")
-
 
 class test_Shot_Circuit(Shot_Circuit):
     def __init__(self, config):
@@ -102,6 +92,18 @@ class Tangle_Shot_Circuit(Shot_Circuit):
 
     def get_wires(self):
         return self.n_wires
+
+    def draw_circuit(self, weights, filename="circuit_diagram.txt"):
+        inputs = np.random.random(2 ** self.n_wires)
+        circuit = self.run_shot()
+        drawer = qml.draw(circuit)
+        diagram = drawer(inputs, weights)
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(diagram)
+        print(f"Circuit diagram saved to {filename}")
+
+        fig, ax = qml.draw_mpl(circuit)(inputs, weights)
+        fig.show()
 
 
 class Custom_Shot_Circuit(Shot_Circuit):
