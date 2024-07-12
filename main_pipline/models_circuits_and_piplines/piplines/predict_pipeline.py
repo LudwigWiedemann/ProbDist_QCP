@@ -146,9 +146,11 @@ def main():
         for shots in n_shots:
             logger.info(f'Evaluating Forecasting with {shots} shots with {prediction} prediction')
             shots_start = time.time()
-            fully_iterative_shot_forecast(model, dataset, full_config, logger=logger,
+
+            #hier gibt es die outputs
+            fully_kl_output = fully_iterative_shot_forecast(model, dataset, full_config, logger=logger,
                                           title=f'{shots}_shots_{prediction}_predictions', custome_shots=shots)
-            partial_iterative_shot_forecast(model, dataset, full_config, logger=logger,
+            partial_kl_output = partial_iterative_shot_forecast(model, dataset, full_config, logger=logger,
                                             title=f'{shots}_shots_{prediction}_predictions', custome_shots=shots)
             logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
 

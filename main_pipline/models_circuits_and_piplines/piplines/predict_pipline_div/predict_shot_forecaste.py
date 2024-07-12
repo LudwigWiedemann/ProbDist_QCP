@@ -42,7 +42,7 @@ def fully_iterative_shot_forecast(model, dataset, config, logger=None, custome_s
         fully_predicted_ar.append(np.concatenate(output_ar))
     show_all_shot_forecasting_plots(fully_predicted_ar, dataset, config, logger=logger,
                                     title=f'Fully_Iterative_Forecast_{title}')
-
+    return fully_predicted_ar
 
 def partial_iterative_shot_forecast(model, dataset, config, logger=None, custome_shots=None, title=''):
     input_partial_pred = dataset['extended_forecast_sample'][0]
@@ -57,3 +57,4 @@ def partial_iterative_shot_forecast(model, dataset, config, logger=None, custome
         partial_predicted_ar.append(np.concatenate(output_ar))
     show_all_shot_forecasting_plots(partial_predicted_ar, dataset, config, logger=logger,
                                     title=f'Partial_Iterative_Forecast_{title}')
+    return partial_predicted_ar
