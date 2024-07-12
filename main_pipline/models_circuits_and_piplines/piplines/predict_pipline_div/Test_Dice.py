@@ -56,7 +56,7 @@ def ggt_multiple(values):
 def generate_random_number_list():
     '''Generate a list of random floats between -1 and 1.'''
     rand = []
-    for i in range(100):
+    for i in range(36):
         random_bits = generate_random_bits()
         adjusted_bits = [(bit + 1) / 2 for sublist in random_bits for bit in np.atleast_1d(sublist)] # Adjust bits to be 0 or 1
         random_float = bits_to_float(adjusted_bits) # Convert bits to a float between -1 and 1
@@ -90,7 +90,8 @@ def map_random_values_to_splits(random_float_list, adjusted_split_points, normal
 
 
 #inputs=["Josef", "Ina", "Simon", "Josef", "Josef", "Ina"]
-inputs=[2,3,4,5,6,7, 3,4,5,6,7,8, 3,4,5,6,7,8,9, 4,5,6,7,8,9,10, 5,6,7,8,9,10,11, 6,7,8,9,10,11,12]
+#inputs=[2,3,4,5,6,7, 3,4,5,6,7,8, 3,4,5,6,7,8,9, 4,5,6,7,8,9,10, 5,6,7,8,9,10,11, 6,7,8,9,10,11,12]
+inputs=[1,2]
 inputs.sort()
 
 # Count each unique value in Inputs to a list

@@ -1,22 +1,52 @@
-import circuit
+import random
+
+import circuit as cir
 import simulation as sim
 import pennylane as qml
 from pennylane import numpy as np
+import distribution_calculator as dc
 
 optimizer = qml.GradientDescentOptimizer(0.01)
-epochs = 20
-
+epochs = 200000
 
 def train_prob_dist(weights, input):
+    input_distr = count_auspraegungen(input)
+    old_cost=float("inf")
     for i in range(epochs):
-        weights = optimizer.step(cost, weights, distr_in=input)
+        old_weights = weights.copy()  # Copy of the current weights
+
+        # Generate valid integer indices within the range of weights' indices
+        random_plus = random.randint(0, len(weights) - 1)
+        random_minus = random.randint(0, len(weights) - 1)
+
+        random_value = random.uniform(0, 1)
+        new_weights = weights.copy()
+        new_weights[random_plus] += random_value
+        new_weights[random_minus] -= random_value
+        new_cost, new_pred = cost(new_weights, input)
+        #print("old cost: " + str(old_cost) + " new cost: " + str(new_cost))
+        if new_cost < old_cost:
+            weights = new_weights  # Update weights only if new cost is lower
+            current_cost = new_cost
+        else:
+            current_cost = old_cost
+            weights= old_weights
+        if current_cost == 0:
+            break
+        old_cost= current_cost
+        if i%1==0:
+            print("iteration: " + str(i))
+            print("weights " + str(weights))
+            print("difference " + str(input_distr) + "  " + str(new_pred))
+            print("Epoch: " + str(i) + " Cost: " + str(current_cost))
+    print("Final cost: " + str(current_cost))
     return weights
 
 
 def distribution(weights, n):
     prediction_dist = []
     for i in range(n):
-        prediction_dist.append(scale_prediction(circuit.predict_wuerfelwurf(weights)))
+        prediction_dist.append(scale_prediction(cir.interpret_measurement(cir.predict_wuerfelwurf(weights))))
     return prediction_dist
 
 
@@ -24,13 +54,11 @@ def cost(weights, distr_in):
     count_in = count_auspraegungen(distr_in)
 
     prediction_dist = distribution(weights, len(distr_in))
-    cost = 0
     count_pred = count_auspraegungen(prediction_dist)
-    print("goal: " + str(count_in) + " prediction: " + str(count_pred))
-    for auspr in sim.auspraegungen:
-        cost += ((count_in[auspr] - count_pred[auspr]) ** 2)
-    print("cost: " + str(cost))
-    return cost
+    #print("goal: " + str(count_in) + " prediction: " + str(count_pred))
+    cost,_=dc.kl_divergence(count_in, count_pred)
+    #print("cost: " + str(cost))
+    return cost, count_pred
 
 
 def scale_prediction(pred):

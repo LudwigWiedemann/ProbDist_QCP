@@ -11,7 +11,7 @@ full_config = {
     # data parameter
     'x_start': 0,
     'x_end': 10,
-    'total_training_points': 20,
+    'total_training_points': 100,
     'noise_level': 0.1,  # Noise level on Inputs
     'train_test_ratio': 0.6,  # The higher the ratio to more data is used for training
 
@@ -23,7 +23,7 @@ full_config = {
     'time_steps': 8,  # How many consecutive points are in train/test sample
     'future_steps': 2,  # How many points are predicted in train/test sample
     'num_samples': 400,  # How many samples of time_steps/future_steps are generated from the timeframe
-    'epochs': 80,  # Adjusted to start with a reasonable number
+    'epochs': 200,  # Adjusted to start with a reasonable number
     'learning_rate': 0.01,  # Adjusted to a common starting point
     # Forecasting parameter
     'steps_to_forecast': 50,

@@ -1,8 +1,9 @@
 import pennylane as qml
+import numpy as np
 
 num_wires = 3
-num_shots = 20
-num_layers = 2
+num_shots = 200
+num_layers = 1
 shot_dev = qml.device("default.qubit", wires=num_wires, shots=num_shots)
 
 
@@ -10,24 +11,23 @@ shot_dev = qml.device("default.qubit", wires=num_wires, shots=num_shots)
 
 @qml.qnode(shot_dev)
 def predict_wuerfelwurf(weights):
-    for layer in range(num_layers):
-        qml.RZ(weights[layer + 0], wires=0)
-        qml.RX(weights[layer + 1], wires=0)
-        qml.RY(weights[layer + 2], wires=0)
+    # Assuming weights is a flat array with length num_wires * 3 * num_layers
+    # and num_layers = 1 for simplicity
+    for i in range(num_wires):
+        qml.RY(weights[i * 3], wires=i)
+        qml.RX(weights[i * 3 + 1], wires=i)
+        qml.RY(weights[i * 3 + 2], wires=i)
 
-        qml.RZ(weights[layer + 3], wires=1)
-        qml.RX(weights[layer + 4], wires=1)
-        qml.RY(weights[layer + 5], wires=1)
+    # Apply PauliZ to each wire individually
+    return [qml.sample(qml.PauliZ(wires=i)) for i in range(num_wires)]
 
-        qml.RZ(weights[layer + 6], wires=2)
-        qml.RX(weights[layer + 7], wires=2)
-        qml.RY(weights[layer + 8], wires=2)
+def interpret_measurement(measurement):
+    # Convert the list to a NumPy array before flattening
+    measurement_array = np.array(measurement)
+    binary_result = ''.join(['1' if x == 1 else '0' for x in measurement_array.flatten()])
+    number = int(binary_result, 2)
+    return number
 
-        for wire in range(num_wires):
-            for other_wire in range(num_wires):
-                if wire != other_wire:
-                    qml.CNOT(wires=[wire, other_wire])
-    return qml.expval(qml.PauliZ(wires=0))
 
 
 @qml.qnode(shot_dev)
