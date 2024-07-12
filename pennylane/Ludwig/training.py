@@ -21,8 +21,8 @@ optimizer = qml.AdamOptimizer(learning_rate)
 
 def f(x):
     #return np.sin(x)
-    return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
-    # return 1.4 * np.sin(x) + 2 * np.cos(2 * x) - 0.25 * np.sin(3 * x)
+    # return np.sin(x) + 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
+    return np.sin(x) - 0.5 * np.cos(2 * x) + 0.25 * np.sin(3 * x)
 
 
 

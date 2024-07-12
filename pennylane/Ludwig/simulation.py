@@ -12,8 +12,8 @@ np.random.seed(9)
 full_config = {
     # data parameter
     'x_start': 0,
-    'x_end': 10,
-    'total_training_points': 20,
+    'x_end': 20,
+    'total_training_points': 40,
     'noise_level': 0.1,
     'train_test_ratio': 0.6,
 
@@ -24,7 +24,7 @@ full_config = {
     # training parameter
     'time_steps': 8,
     'future_steps': 2,
-    'num_samples': 100,
+    'num_samples': 120,
     'epochs': 80,
     'learning_rate': 0.01,
     # Forecasting parameter
