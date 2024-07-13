@@ -1,7 +1,8 @@
 import os
-import random
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+import random
+
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_iterative_forecasting import \
     fully_iterative_forecast, partial_iterative_forecast
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_shot_forecaste import \
@@ -25,7 +26,7 @@ from main_pipline.models_circuits_and_piplines.models.predict_variable_circuit_m
 from main_pipline.models_circuits_and_piplines.models.predict_amp_circuit_model import PACModel
 from main_pipline.models_circuits_and_piplines.models.baseline_models.predict_hybrid_model import PHModel
 from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.predict_plots_and_metrics import \
-    show_all_evaluation_plots, show_all_shot_forecasting_plots
+    show_all_evaluation_plots
 
 trial_name = 'Ludwig_computing'
 
@@ -107,14 +108,14 @@ def run_model(dataset, config, logger):
     logger.info("Training completed")
 
     logger.info("Starting evaluation")
-    pred_y_test_data, loss = model.evaluate(dataset)
-    logger.info(f"Test Loss: {loss}")
+    #pred_y_test_data, loss = model.evaluate(dataset)
+    #logger.info(f"Test Loss: {loss}")
 
-    show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger)
+    #show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger)
 
     # model_save_path = os.path.join(logger.folder_path, "fitted_model")
     # model.save_model(model_save_path, logger)
-    return model, loss, pred_y_test_data
+    return model
 
 
 def main():
@@ -127,38 +128,16 @@ def main():
 
     model, loss, pred_y_test_data = run_model(dataset, full_config, logger)
 
-    fully_iterative_forecast(model, dataset, full_config, logger=logger)
-    partial_iterative_forecast(model, dataset, full_config, logger=logger)
+    #fully_iterative_forecast(model, dataset, full_config, logger=logger)
+    #partial_iterative_forecast(model, dataset, full_config, logger=logger)
 
-    logger.info("Start Shot_sample_forecasting")
-    n_shots = [5, 1000, 10000, 100000, 1000000]
-    n_predictions = [1, 5, 10, 50, 100]
-    sample_index = random.sample(range(len(dataset['input_test'])), full_config['approx_samples'])
-    for prediction in n_predictions:
-        full_config.update({'shot_predictions': prediction})
 
-        for shots in n_shots:
-            logger.info(f'Evaluating Sample with {shots} shots with {prediction} prediction')
-            evaluate_sample_with_shot(model, dataset, sample_index, full_config, logger,
-                                      title=f'{shots}_shots_{prediction}_predictions', custome_shots=shots)
+    fully_kl_output = fully_iterative_shot_forecast(model, dataset, full_config)
 
-        for shots in n_shots:
-            logger.info(f'Evaluating Forecasting with {shots} shots with {prediction} prediction')
-            shots_start = time.time()
 
-            fully_outputs = fully_iterative_shot_forecast(model, dataset, full_config, custome_shots=shots)
-
-            show_all_shot_forecasting_plots(fully_outputs, dataset, full_config, logger=logger,
-                                            title=f'Fully_Iterative_Forecast_{shots}_shots_{prediction}_predictions')
-
-            partial_outputs = partial_iterative_shot_forecast(model, dataset, full_config, custome_shots=shots)
-
-            show_all_shot_forecasting_plots(partial_outputs, dataset, full_config, logger=logger,
-                                            title=f'Partial_Iterative_Forecast_{shots}_shots_{prediction}_predictions')
-            logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
+    partial_kl_output = partial_iterative_shot_forecast(model, dataset, full_config)
 
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
-
 
 if __name__ == "__main__":
     start_time = time.time()

@@ -28,7 +28,7 @@ def evaluate_sample_with_shot(model, dataset, sample_index, config, logger, cust
     show_approx_sample_plots(approx_sets, sample_index, dataset, config, logger, title=f'Approx_sample_{title}')
 
 
-def fully_iterative_shot_forecast(model, dataset, config, logger=None, custome_shots=None, title=''):
+def fully_iterative_shot_forecast(model, dataset, config, custome_shots=None):
     input_pred = dataset['input_forecast']
     fully_predicted_ar = []
     for _ in range(config['shot_predictions']):
@@ -40,8 +40,6 @@ def fully_iterative_shot_forecast(model, dataset, config, logger=None, custome_s
                          -config['time_steps']:]
 
         fully_predicted_ar.append(np.concatenate(output_ar))
-    show_all_shot_forecasting_plots(fully_predicted_ar, dataset, config, logger=logger,
-                                    title=f'Fully_Iterative_Forecast_{title}')
     return fully_predicted_ar
 
 def partial_iterative_shot_forecast(model, dataset, config, logger=None, custome_shots=None, title=''):
@@ -55,6 +53,5 @@ def partial_iterative_shot_forecast(model, dataset, config, logger=None, custome
             output_ar.append(np.array(output))
             input_partial_pred = dataset['extended_forecast_sample'][i]
         partial_predicted_ar.append(np.concatenate(output_ar))
-    show_all_shot_forecasting_plots(partial_predicted_ar, dataset, config, logger=logger,
-                                    title=f'Partial_Iterative_Forecast_{title}')
+
     return partial_predicted_ar
