@@ -10,23 +10,31 @@ shot_dev = qml.device("default.qubit", wires=num_wires, shots=num_shots)
 
 @qml.qnode(shot_dev)
 def predict_wuerfelwurf(weights):
-    for layer in range(num_layers):
-        qml.RZ(weights[layer + 0], wires=0)
-        qml.RX(weights[layer + 1], wires=0)
-        qml.RY(weights[layer + 2], wires=0)
+    num_qubits = num_wires
+    params_per_qubit = 3  # Assuming RZ, RX, RY for each qubit
+    total_params_needed = num_qubits * params_per_qubit * 2  # For two layers
 
-        qml.RZ(weights[layer + 3], wires=1)
-        qml.RX(weights[layer + 4], wires=1)
-        qml.RY(weights[layer + 5], wires=1)
+    if len(weights) != total_params_needed:
+        raise ValueError(f"Expected {total_params_needed} weights, got {len(weights)}")
 
-        qml.RZ(weights[layer + 6], wires=2)
-        qml.RX(weights[layer + 7], wires=2)
-        qml.RY(weights[layer + 8], wires=2)
+    # First parameterized layer
+    for qubit in range(num_qubits):
+        qml.RZ(weights[qubit * params_per_qubit + 0], wires=qubit)
+        qml.RX(weights[qubit * params_per_qubit + 1], wires=qubit)
+        qml.RY(weights[qubit * params_per_qubit + 2], wires=qubit)
 
-        for wire in range(num_wires):
-            for other_wire in range(num_wires):
-                if wire != other_wire:
-                    qml.CNOT(wires=[wire, other_wire])
+    # Entangling layer
+    for qubit in range(num_qubits - 1):
+        qml.CNOT(wires=[qubit, qubit + 1])
+    qml.CNOT(wires=[num_qubits - 1, 0])  # Entangle the last qubit with the first for a loop
+
+    # Second parameterized layer
+    offset = num_qubits * params_per_qubit  # Offset for the second layer weights
+    for qubit in range(num_qubits):
+        qml.RZ(weights[offset + qubit * params_per_qubit + 0], wires=qubit)
+        qml.RX(weights[offset + qubit * params_per_qubit + 1], wires=qubit)
+        qml.RY(weights[offset + qubit * params_per_qubit + 2], wires=qubit)
+
     return qml.expval(qml.PauliZ(wires=0))
 
 

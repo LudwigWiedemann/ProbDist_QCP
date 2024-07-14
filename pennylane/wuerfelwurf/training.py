@@ -2,13 +2,18 @@ import circuit as cir
 import simulation as sim
 import pennylane as qml
 from pennylane import numpy as np
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.distribution_calculator import kl_divergence
 
 optimizer = qml.GradientDescentOptimizer(100)
 epochs = 2000
 
 
 def train_prob_dist(weights, input):
-    for i in range(epochs):
+    i=0
+    old_cost = cost(weights, input)
+    optimizer = qml.GradientDescentOptimizer(0.01)
+    while True:
+    #for i in range(epochs):
         # print("iteration: " + str(i))
         # random_adjustment = np.random.normal(loc=0, scale=0.01, size=weights.shape)
         # new_weights = weights + random_adjustment
@@ -17,29 +22,46 @@ def train_prob_dist(weights, input):
         # if new_cost < old_cost:
         #     weights = new_weights
         #     print("new_cost: " + str(new_cost))
+        print("iteration: " + str(i))
+        new_weights = optimizer.step(lambda v: cost(v, input), weights)
+        current_cost = cost(weights, input)
+        print(f"Iteration: {i+1}, Current Cost: {current_cost}")
 
-        weights = optimizer.step(cost, weights, distr_in=input)
+        if current_cost < old_cost:
+            old_cost = current_cost
+            weights = new_weights
+        if current_cost < 0.5:
+            break
     return weights
 
 
 def distribution(weights, n):
     prediction_dist = []
     for i in range(n):
-        prediction_dist.append(scale_prediction(cir.poc(weights)))
+        prediction_dist.append(scale_prediction(cir.predict_wuerfelwurf(weights)))
     return prediction_dist
 
 
 def cost(weights, distr_in):
-    count_in = count_auspraegungen(distr_in)
-
+    count_in = normalize_counts(count_auspraegungen(distr_in))
     prediction_dist = distribution(weights, len(distr_in))
-    cost = 0
-    count_pred = count_auspraegungen(prediction_dist)
+    cost = 0.0  # Initialize cost as a float
+    count_pred = normalize_counts(count_auspraegungen(prediction_dist))
     print("goal: " + str(count_in) + " prediction: " + str(count_pred))
-    for auspr in sim.auspraegungen:
-        cost += ((count_in[auspr] - count_pred[auspr]) ** 2)
-    return cost
+    # Assuming kl_divergence returns a float; ensure it's not implicitly converting to int
+    cost,_ = kl_divergence(count_in, count_pred)
+    return cost  # This ensures cost is returned as a float
 
+import numpy as np
+
+def normalize_counts(counts):
+    total = np.sum(counts)
+    if total > 0:
+        normalized_counts = counts / total
+    else:
+        # Explicitly return an array of zeros with the same shape as counts
+        normalized_counts = np.zeros_like(counts)
+    return normalized_counts
 
 def scale_prediction(pred):
     # print(pred)

@@ -9,7 +9,7 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
 from main_pipline.models_circuits_and_piplines.circuits.shots_Circuit import test_Shot_Circuit, Tangle_Shot_Circuit, \
     Reup_Shot_Circuit, Ludwig2_Shot_Circuit
 from main_pipline.models_circuits_and_piplines.models.predict_shots_circuit_model import PSCModel
-
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.distribution_calculator import calculate_distribution_with_KLD
 import time
 from silence_tensorflow import silence_tensorflow
 from pennylane import numpy as np
@@ -33,9 +33,9 @@ full_config = {
     # Dataset parameter
     'time_frame_start': 0,
     'time_frame_end': 10,
-    'n_steps': 174,
-    'time_steps': 64,
-    'future_steps': 6,
+    'n_steps': 20,
+    'time_steps': 8,
+    'future_steps': 2,
     'num_samples': 100,
     'noise_level': 0.05,
     'train_test_ratio': 0.6,
@@ -131,8 +131,8 @@ def main():
     partial_iterative_forecast(model, dataset, full_config, logger=logger)
 
     logger.info("Start Shot_sample_forecasting")
-    n_shots = [5, 1000, 10000, 100000, 1000000]
-    n_predictions = [1, 5, 10, 50, 100]
+    n_shots = [10000]
+    n_predictions = [20]
     sample_index = random.sample(range(len(dataset['input_test'])), full_config['approx_samples'])
     for prediction in n_predictions:
         full_config.update({'shot_predictions': prediction})
@@ -150,12 +150,20 @@ def main():
 
             show_all_shot_forecasting_plots(fully_outputs, dataset, full_config, logger=logger,
                                             title=f'Fully_Iterative_Forecast_{shots}_shots_{prediction}_predictions')
-
+            step_size=1
             partial_outputs = partial_iterative_shot_forecast(model, dataset, full_config, custome_shots=shots)
 
             show_all_shot_forecasting_plots(partial_outputs, dataset, full_config, logger=logger,
                                             title=f'Partial_Iterative_Forecast_{shots}_shots_{prediction}_predictions')
-            logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
+            # Ensure dataset is an iterable (e.g., list of datasets)
+            if not isinstance(dataset, (list, tuple)):
+                datasets = [dataset]  # Wrap dataset in a list if it's not already an iterable
+            else: datasets = dataset
+            calculate_distribution_with_KLD(fully_outputs, datasets[0]['extended_y_data'], step_size, full_config['time_frame_start'], full_config['time_frame_end'])
+
+
+    logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
+
 
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
 

@@ -1,6 +1,7 @@
 from scipy.special import rel_entr
 import numpy as np
-import distribution_plotter as plt
+import pennylane as qml
+import main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.distribution_plotter as plt
 
 def average_kl_divergence(distributions, smoothing_constant=1e-10):
     # Add the smoothing constant to the distributions
@@ -12,7 +13,7 @@ def average_kl_divergence(distributions, smoothing_constant=1e-10):
     for i in range(n):
         for j in range(i+1, n):
             print(f"distr: {distributions[i]}")
-            total_kl_div += kl_div(distributions[i], distributions[j]).sum()
+            ##total_kl_div += kl_div(distributions[i], distributions[j]).sum()
             print(f"KL_div: {total_kl_div}")
     # Return the average KL divergence
     print(total_kl_div/(n*(n-1)/2))
@@ -27,7 +28,8 @@ def information_radius(distributions):
     # Calculate KL divergence for each pair of distributions
     for i in range(n):
         for j in range(i+1, n):
-            total_kl_div += kl_div(distributions[i], distributions[j]).sum()
+            None
+            #total_kl_div += kl_div(distributions[i], distributions[j]).sum()
 
     # Return the Information Radius
     return total_kl_div / n
@@ -119,11 +121,18 @@ def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
     minimum = min(min(flat_predictions), min(flat_datasets))
     #print("MAXIMUM:"+str(maximum))
     #print("MINIMUM:"+str(minimum))
+    #print("predictions:"+str(predictions))
+    #print("datasets:"+str(datasets))
+    #print(type(datasets))
     num_predictions=len(predictions)
-    num_inputs=len(datasets)
+    datasets = [datasets.tolist()]
+    num_inputs_length = len(datasets)
     lenght_x_prediction=len(predictions[0])
     lenght_x_input=len(datasets[0])
-    num_bins = 11          #number of bins the data is divided into
+    print(f"lenght_x_input: {lenght_x_input}")
+    print(f"lenght_x_prediction: {lenght_x_prediction}")
+    num_bins = 10          #number of bins the data is divided into
+    num_bins+=1
     # Define the bin edges
     bin_edges = np.linspace(minimum-1, maximum+1, num_bins)
     counts_prediction=[]        #initialize the counts array
@@ -138,11 +147,15 @@ def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
         counts_prediction.append(count)
     for i in range(lenght_x_input):
         data=[]
+        #print(f"datasets!!!!: {datasets}")
         for dataset in datasets:
             data.append(dataset[i])
         count=count_values(data,minimum,maximum,num_bins)
         count=count/np.sum(count)       #normalizes the count
         counts_input.append(count)
+    #for i in range(lenght_x_input):
+        #print(str(i) +" count_input        "+str(counts_input))
+        #print(str(i) +" count_predcictionms"+str(counts_prediction))
     kl_divergence_bits_list=[]
     kl_divergence_dits_list=[]
     js_divergence_list=[]
@@ -153,10 +166,10 @@ def calculate_distribution_with_KLD(predictions,datasets,stepsize, start, end):
         kl_divergence_dits_list.append(dits)
         js_distance_list.append(jensen_shannon_distance(counts_input[i],counts_prediction[i]))
         js_divergence_list.append(jensen_shannon_divergence(counts_input[i],counts_prediction[i]))
-    plt.plot_kl_divergence(value_list=kl_divergence_bits_list, x_start=start, step_size=stepsize, y_label="Kuback-Leibler-divergence in bits", color="orange")
-    plt.plot_kl_divergence(kl_divergence_dits_list, start, stepsize, "Kuback-Leibler-divergence in dits", color="red")
-    plt.plot_kl_divergence(js_distance_list, start, stepsize, "Jensen-Shannon distance", color="yellow")
-    plt.plot_kl_divergence(js_divergence_list, start, stepsize, "Jensen-Shannon divergence", color="green")
+    plt.plot_kl_divergence(value_list=kl_divergence_bits_list, x_start=end, step_size=stepsize, y_label="Kuback-Leibler-divergence in bits", color="orange")
+    plt.plot_kl_divergence(kl_divergence_dits_list, end, stepsize, "Kuback-Leibler-divergence in dits", color="red")
+    plt.plot_kl_divergence(js_distance_list, end, stepsize, "Jensen-Shannon distance", color="yellow")
+    plt.plot_kl_divergence(js_divergence_list, end, stepsize, "Jensen-Shannon divergence", color="green")
 
 def count_values(value_list, minimum_value, maximum_value, bins):
     value_range = maximum_value - minimum_value

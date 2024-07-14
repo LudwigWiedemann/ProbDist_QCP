@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def plot_kl_divergence(value_list, x_start, step_size, y_label, color="red"):
     # Calculate the KL divergence
