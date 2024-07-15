@@ -4,23 +4,10 @@
     <img src="pennylane/assets/images/QAR_LAB_Logo.png" style="margin: 24px">
 </div>
 
-# Quantum Computing Practical | Probability Distribution VQC
-
-## Introduction
-
-### Background
-### Related Work
-### Theoretical Concepts
-
-## First Steps
-
-### Pennylane
-### Algorithm
-### Pipeline
-
-## Stochastic Data Generation
-
-### Noisy sine data
+# Abgabe relevante Dateien: 
+Der für die Abgabe relevante code befindet sich in folgenden Ordnern: 
+    * Optimierter Ansatz mit verschiedenen Libraries: /main_pipeline/
+    * Simpler Ansatz ohne libraries zur Optimierung: /pennylane/Ludwig/
 
 ## Milestones
 
