@@ -23,8 +23,12 @@ loss_function = None,  # currently at 'mse'
 steps_to_predict = None
 
 
-# TODO function to load a config file
 def config_load(path):
+    """
+    Load the config from the file
+    :param path: str: path to the config file
+    :return: list: config
+    """
     global time_frame_start, time_frame_end, n_steps, time_steps, future_steps, num_samples, noise_level, train_test_ratio, model, custom_circuit, circuit, epochs, batch_size, learning_rate, loss_function, steps_to_predict
     with open(path, 'rb') as f:
         config = dill.load(f)
@@ -48,6 +52,11 @@ def config_load(path):
 
 
 def load_from_values(config):
+    """
+    Load the config from input
+    :param config: string: configname
+    :return: none
+    """
     global time_frame_start, time_frame_end, n_steps, time_steps, future_steps, num_samples, noise_level, train_test_ratio, model, custom_circuit, circuit, epochs, batch_size, learning_rate, loss_function, steps_to_predict
     time_frame_start = int(config[0])
     time_frame_end = int(config[1])
@@ -68,6 +77,10 @@ def load_from_values(config):
 
 
 def config_save():
+    """
+    Save the config to the file
+    :return: None
+    """
     file.create_folder()
     config = {
         'time_frame_start': time_frame_start,
@@ -90,10 +103,14 @@ def config_save():
 
     with open(f"{file.path}/config.pkl", 'wb') as f:
         dill.dump(config, f)
-    return
 
 
 def config_create(config):
+    """
+    Create the config from the input
+    :param config: str:  configname
+    :return: list: config
+    """
     return {'time_frame_start': int(config[0]),
             'time_frame_end': int(config[1]),
             'n_steps': int(config[2]),
@@ -114,5 +131,10 @@ def config_create(config):
 
 
 def to_list(config):
+    """
+    Convert the config to a list
+    :param config: str: configname
+    :return: list: config
+    """
     return [config['time_frame_start'], config['time_frame_end'], config['n_steps'], config['time_steps'],
             config['future_steps'], config['num_samples'], config['noise_level'], config['train_test_ratio']]

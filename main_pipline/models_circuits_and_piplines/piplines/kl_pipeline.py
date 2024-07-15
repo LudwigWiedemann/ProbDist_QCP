@@ -144,7 +144,7 @@ def main():
     if not isinstance(dataset, (list, tuple)):
         dataset = [dataset]  # Wrap dataset in a list if it's not already an iterable
 
-    calculate_distribution_with_KLD(fully_kl_output, dataset[0]['extended_y_data'], step_size, full_config['time_frame_start'], full_config['time_frame_end']+full_config['steps_to_predict'])
+    calculate_distribution_with_KLD(fully_kl_output, dataset[0]['extended_y_data'], step_size, full_config['time_frame_start'], full_config['time_frame_end']+full_config['steps_to_predict'],logger)
 
 
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")

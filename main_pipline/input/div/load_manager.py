@@ -73,6 +73,10 @@ def test_inputs(config):
 
 
 def dialog_load_config():
+    """
+    Dialog to load a config
+    :return: dict: config
+    """
     button = easygui.buttonbox('Do you want to run with a existing config or create a new one?', 'Load config',
                                ["create custom one", "load exising"])
     match button:

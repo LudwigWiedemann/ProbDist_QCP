@@ -118,6 +118,11 @@ def run_model(dataset, config, logger):
 
 
 def main():
+    """
+    Main function to run the pipeline
+    :return: None
+    """
+    # Create a new folder for the trial and a new logger
     trial_folder = filemanager.create_folder(trial_name)
     logger = Logger(trial_folder)
 
@@ -131,8 +136,9 @@ def main():
     partial_iterative_forecast(model, dataset, full_config, logger=logger)
 
     logger.info("Start Shot_sample_forecasting")
+    # Evaluate the model with different number of shots and predictions
     n_shots = [10000]
-    n_predictions = [20]
+    n_predictions = [50]
     sample_index = random.sample(range(len(dataset['input_test'])), full_config['approx_samples'])
     for prediction in n_predictions:
         full_config.update({'shot_predictions': prediction})
@@ -159,12 +165,9 @@ def main():
             if not isinstance(dataset, (list, tuple)):
                 datasets = [dataset]  # Wrap dataset in a list if it's not already an iterable
             else: datasets = dataset
-            calculate_distribution_with_KLD(fully_outputs, datasets[0]['extended_y_data'], step_size, full_config['time_frame_start'], full_config['time_frame_end'])
-
-
+            # Calculate the KL divergence between the fully and partially iterative forecasts
+            calculate_distribution_with_KLD(fully_outputs, datasets[0]['extended_y_data'], step_size, full_config['time_frame_start'], full_config['time_frame_end'],logger)
     logger.info(f"Shot_Forecast with {shots} took {time.time() - shots_start}")
-
-
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
 
 
