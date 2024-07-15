@@ -10,7 +10,7 @@ from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.pred
 from main_pipline.models_circuits_and_piplines.circuits.shots_Circuit import test_Shot_Circuit, Tangle_Shot_Circuit, \
     Reup_Shot_Circuit, Ludwig2_Shot_Circuit
 from main_pipline.models_circuits_and_piplines.models.predict_shots_circuit_model import PSCModel
-
+from main_pipline.models_circuits_and_piplines.piplines.predict_pipline_div.distribution_calculator import calculate_distribution_with_KLD
 import time
 from silence_tensorflow import silence_tensorflow
 from pennylane import numpy as np
@@ -37,7 +37,7 @@ full_config = {
     'n_steps': 174,
     'time_steps': 64,
     'future_steps': 6,
-    'num_samples': 100,
+    'num_samples': 10,
     'noise_level': 0.05,
     'train_test_ratio': 0.6,
     # Plotting parameter
@@ -46,12 +46,12 @@ full_config = {
     'show_model_plots': True,
     'show_forecast_plots': True,
     'show_approx_plots': True,
-    'steps_to_predict': 300,
+    'steps_to_predict': 30,
     # Model parameter
     'model': 'PSCModel',
     'circuit': 'Ludwig2_Shot_Circuit',
     # Run parameter
-    'epochs': 80,
+    'epochs': 5,
     'batch_size': 16,
     'learning_rate': 0.03,
     'loss_function': 'mse',
@@ -59,11 +59,11 @@ full_config = {
     'patience': 10,
     'min_delta': 0.001,
     # Circuit parameter
-    'layers': 5,  # Only Optuna/Tangle circuit
+    'layers': 1,  # Only Optuna/Tangle circuit
     # Shot prediction
     'approx_samples': 3,
-    'shots': 100,
-    'shot_predictions': 20,
+    'shots': 10,
+    'shot_predictions': 300,
 }
 
 models = {
@@ -107,15 +107,21 @@ def run_model(dataset, config, logger):
     loss_progress = model.train(dataset, logger)
     logger.info("Training completed")
 
-    logger.info("Starting evaluation")
-    #pred_y_test_data, loss = model.evaluate(dataset)
-    #logger.info(f"Test Loss: {loss}")
+    # Placeholder for computing the loss on evaluation data
+    # You need to replace this with actual logic to compute loss
+    loss = "computed_loss_placeholder"
 
-    #show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger)
+    # Placeholder for generating predictions on test data
+    # You need to replace this with actual logic to generate predictions
+    pred_y_test_data = "pred_y_test_data_placeholder"
 
-    # model_save_path = os.path.join(logger.folder_path, "fitted_model")
-    # model.save_model(model_save_path, logger)
-    return model
+    # Uncomment and adjust the following lines according to your actual evaluation logic
+    # logger.info("Starting evaluation")
+    # pred_y_test_data, loss = model.evaluate(dataset)
+    # logger.info(f"Test Loss: {loss}")
+    # show_all_evaluation_plots(pred_y_test_data, loss_progress, dataset, config, logger)
+
+    return model, loss, pred_y_test_data
 
 
 def main():
@@ -128,14 +134,18 @@ def main():
 
     model, loss, pred_y_test_data = run_model(dataset, full_config, logger)
 
-    #fully_iterative_forecast(model, dataset, full_config, logger=logger)
-    #partial_iterative_forecast(model, dataset, full_config, logger=logger)
-
-
     fully_kl_output = fully_iterative_shot_forecast(model, dataset, full_config)
-
+    step_size = 1
 
     partial_kl_output = partial_iterative_shot_forecast(model, dataset, full_config)
+
+
+    # Ensure dataset is an iterable (e.g., list of datasets)
+    if not isinstance(dataset, (list, tuple)):
+        dataset = [dataset]  # Wrap dataset in a list if it's not already an iterable
+
+    calculate_distribution_with_KLD(fully_kl_output, dataset[0]['extended_y_data'], step_size, full_config['time_frame_start'], full_config['time_frame_end']+full_config['steps_to_predict'],logger)
+
 
     logger.info(f"Pipeline complete in {time.time() - start_time} seconds")
 
